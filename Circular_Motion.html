@@ -30,23 +30,134 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    header {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+    /* Main App Header matching reference design */
+    .app-header {
+      background: linear-gradient(180deg, #131d31 0%, #0d1527 100%);
       border-bottom: 1px solid var(--border);
-      padding: 0.85rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 0.8rem;
+      gap: 1.25rem;
       position: sticky;
       top: 0;
       z-index: 50;
       backdrop-filter: blur(12px);
     }
-    .brand-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.6rem; color: #fff; }
-    .brand-title span { background: linear-gradient(135deg, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+    .app-icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #431407 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(129, 140, 248, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-icon-badge svg {
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.6));
+    }
+    .header-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .main-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .chapter-tag {
+      background: rgba(8, 145, 178, 0.25);
+      border: 1px solid #06b6d4;
+      color: #38bdf8;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.18rem 0.65rem;
+      border-radius: 9999px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: -0.1px;
+    }
+
+    /* Pill-shaped Mode Selector Toggle matching reference */
+    .mode-toggle-capsule {
+      background: #090d16;
+      border: 1px solid #24324b;
+      border-radius: 9999px;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .mode-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.45rem 1.1rem;
+      border-radius: 9999px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .mode-pill:hover {
+      color: #fff;
+    }
+    .mode-pill.active {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.45);
+    }
+    .mode-pill.rigor-active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.45);
+    }
+
+    /* Secondary sub-nav for simulations & decoder */
+    .sim-ribbon {
+      background: #0a0f1d;
+      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      overflow-x: auto;
+    }
+
     .nav-tabs { display: flex; gap: 0.4rem; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
     .nav-tab {
       background: rgba(255,255,255,0.05);
@@ -77,6 +188,7 @@
       gap: 0.4rem;
       box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
       transition: transform 0.15s ease;
+      white-space: nowrap;
     }
     .action-btn:hover { transform: translateY(-1px); }
 
@@ -301,10 +413,39 @@
 </head>
 <body>
 
-<header>
-  <div class="brand-title">
-    <span>⚛️ MECHANICS LAB</span> &bull; Circular Motion & Vertical Loops
+<header class="app-header">
+  <div class="header-left">
+    <div class="app-icon-badge" title="Circular Motion & Mechanics Lab">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="23" stroke="#818cf8" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.6"/>
+        <circle cx="32" cy="32" r="14" stroke="#38bdf8" stroke-width="2.5"/>
+        <path d="M 32 9 A 23 23 0 0 1 55 32" stroke="#ec4899" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M 52 26 L 56 32 L 50 35" fill="#ec4899"/>
+        <circle cx="32" cy="9" r="4.5" fill="#fbbf24"/>
+        <circle cx="32" cy="32" r="3.5" fill="#ffffff"/>
+        <line x1="32" y1="32" x2="32" y2="9" stroke="#38bdf8" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="header-titles">
+      <div class="title-row">
+        <h1 class="main-title">Circular Motion & Vertical Loops Lab</h1>
+        <span class="chapter-tag">Cambridge Mechanics Ch 15</span>
+      </div>
+      <p class="subtitle">Interactive Radial Dynamics, Conical Trajectories & Vertical Slacks with Step-by-Step Rigor</p>
+    </div>
   </div>
+
+  <div class="mode-toggle-capsule">
+    <button class="mode-pill active" id="headerModeChild" onclick="setPerspective('child')">
+      <span>🚗</span> 6-Year-Old Mode
+    </button>
+    <button class="mode-pill" id="headerModeRigid" onclick="setPerspective('rigid')">
+      <span>🎓</span> A-Level Mechanics Mode
+    </button>
+  </div>
+</header>
+
+<div class="sim-ribbon">
   <div class="nav-tabs" id="simTabs">
     <button class="nav-tab active" data-sim="horizontal_table">1. Horizontal Table</button>
     <button class="nav-tab" data-sim="conical_pendulum">2. Conical Pendulum</button>
@@ -316,7 +457,7 @@
   <button class="action-btn" id="openDecoderBtn">
     <span>⚡</span> "Twisted Exam Traps" Decoder
   </button>
-</header>
+</div>
 
 <main>
   <div class="viewport-card">
@@ -517,8 +658,21 @@ document.querySelectorAll('#simTabs .nav-tab').forEach(tab => {
 
 function setPerspective(persp) {
   currentPerspective = persp;
-  document.getElementById('tabChild').classList.toggle('active', persp === 'child');
-  document.getElementById('tabRigid').classList.toggle('active', persp === 'rigid');
+  
+  // Update in-card tabs
+  const tabChild = document.getElementById('tabChild');
+  const tabRigid = document.getElementById('tabRigid');
+  if (tabChild) tabChild.classList.toggle('active', persp === 'child');
+  if (tabRigid) tabRigid.classList.toggle('active', persp === 'rigid');
+
+  // Update header pills
+  const headerChild = document.getElementById('headerModeChild');
+  const headerRigid = document.getElementById('headerModeRigid');
+  if (headerChild && headerRigid) {
+    headerChild.className = `mode-pill ${persp === 'child' ? 'active' : ''}`;
+    headerRigid.className = `mode-pill ${persp === 'rigid' ? 'rigor-active' : ''}`;
+  }
+
   updateExplanations();
 }
 
@@ -1858,7 +2012,6 @@ function loadExamProblem(idx) {
 // Initial Boot
 initSimulation('horizontal_table');
 </script>
-<!-- Robust Global Logo & Home Link Injector -->
 <script>
 (function() {
   const LOGO_SRC = 'logo.png';

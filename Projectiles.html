@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAIE Further Mechanics Projectiles Simulator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for high precision mathematical typography -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .font-eli6 {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-mono-math {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Sliders styling */
+    input[type=range] {
+      accent-color: #38bdf8;
+    }
+    .eli6-mode input[type=range] {
+      accent-color: #f59e0b;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* Pulsing animations */
+    @keyframes targetGlow {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+    .target-ring {
+      animation: targetGlow 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased transition-colors duration-300" id="bodyRoot">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 py-2.5 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Syllabus Badge -->
+      <div class="flex items-center gap-3">
+        <div id="badgeIcon" class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xl shadow-inner">
+          🚀
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="appTitle" class="font-bold text-base md:text-lg tracking-tight text-white flex items-center gap-2">
+              CAIE 9231 / 9709 Projectiles Laboratory
+            </h1>
+            <span id="subBadge" class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-950 text-blue-300 border border-blue-700/60">
+              Ch 13: Projectiles & Trajectories
+            </span>
+          </div>
+          <p id="appSubtitle" class="text-xs text-slate-400">
+            Newtonian mechanics, Cartesian trajectory equation $y = x\tan\theta - \frac{gx^2}{2u^2}(1+\tan^2\theta)$, $g = 10\text{ ms}^{-2}$
+          </p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher & Audio Controls -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div class="flex items-center p-1 bg-slate-950 rounded-xl border border-slate-800 shadow-inner">
+          <button id="btnExamMode" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-blue-600 text-white shadow">
+            🎓 Exam Mode (CAIE 9231)
+          </button>
+          <button id="btnEli6Mode" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-amber-300 transition-all">
+            🧸 Explain Like I'm 6
+          </button>
+        </div>
+
+        <button id="btnMute" title="Toggle Sound FX" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm transition">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Topic Navigation Bar -->
+  <div class="bg-slate-900 border-b border-slate-800 px-4 py-2">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <div class="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 md:pb-0 scrollbar-thin">
+        <span class="text-slate-400 font-semibold uppercase text-[10px] whitespace-nowrap mr-1">📚 Exam Topics:</span>
+        <button onclick="selectTopic('cartesian')" id="tab-cartesian" class="topic-tab px-2.5 py-1 rounded-lg bg-blue-600/30 border border-blue-500 text-blue-200 whitespace-nowrap font-medium transition">
+          1. Cartesian & $\tan\theta$ Quadratic
+        </button>
+        <button onclick="selectTopic('direction')" id="tab-direction" class="topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition">
+          2. Tangents & $\mathbf{u}\perp\mathbf{v}$
+        </button>
+        <button onclick="selectTopic('platform')" id="tab-platform" class="topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition">
+          3. Cliffs & Depression (Ghost Paths)
+        </button>
+        <button onclick="selectTopic('elevation')" id="tab-elevation" class="topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition">
+          4. Line-of-Sight Angle $\beta$
+        </button>
+        <button onclick="selectTopic('curvefit')" id="tab-curvefit" class="topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition">
+          5. Unknown Trajectory Fitting
+        </button>
+      </div>
+
+      <!-- Quick Preset Dropdown -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-slate-400 whitespace-nowrap text-[11px]">Worked Examples:</span>
+        <select id="presetSelect" onchange="loadPreset(this.value)" class="bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-blue-500">
+          <option value="standard">Ex 13.1: Ground Launch (20 m/s, 25°)</option>
+          <option value="platform">Ex 13.2: Cliff Launch (h=15m, 45°)</option>
+          <option value="airplane">Ex 13.3: Moving Airplane Sensor (-25°)</option>
+          <option value="targetTwoPath">Review Ex 13 Q1: Dual Path to (16, 7)</option>
+          <option value="depression">Worked Ex 13.5: Angle of Depression</option>
+          <option value="sight30">Review Ex 13 Q2: Line of Sight β = 30°</option>
+          <option value="examStyle">Exam-Style Trajectory: y = 0.75x - 0.02x²</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid Content -->
+  <main class="max-w-7xl mx-auto w-full p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+    
+    <!-- LEFT / CANVAS VIEWPORT (Col span 7 on large) -->
+    <div class="lg:col-span-7 flex flex-col gap-3">
+      <div class="relative bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex-1 min-h-[460px] flex flex-col">
+        
+        <!-- Canvas Overlay HUD -->
+        <div class="absolute top-3 left-3 z-10 flex flex-wrap gap-2 pointer-events-none">
+          <div class="bg-slate-900/95 backdrop-blur border border-slate-700/80 rounded-xl px-3 py-1.5 shadow-lg text-xs flex items-center gap-3 pointer-events-auto">
+            <span class="text-slate-400">Time: <b id="hudTime" class="text-white font-mono">0.00s</b></span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400">Position: <b id="hudCoords" class="text-sky-400 font-mono">(0.0m, 0.0m)</b></span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400">Speed $v$: <b id="hudSpeed" class="text-emerald-400 font-mono">0.0 m/s</b></span>
+          </div>
+
+          <div id="targetBadge" class="hidden bg-purple-950/90 backdrop-blur border border-purple-600 text-purple-200 rounded-xl px-3 py-1.5 text-xs flex items-center gap-2 pointer-events-auto shadow-lg">
+            <span>🎯 Target: <b id="targetPosText" class="font-mono">x=16.0m, y=7.0m</b></span>
+            <button onclick="clearTarget()" title="Remove Target" class="text-purple-400 hover:text-white font-bold ml-1">✕</button>
+          </div>
+        </div>
+
+        <!-- Canvas Quick Toolbar -->
+        <div class="absolute top-3 right-3 z-10 pointer-events-auto flex items-center gap-2">
+          <button id="btnClickMode" onclick="toggleClickTarget()" class="bg-slate-900/90 hover:bg-slate-800 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 flex items-center gap-1.5 shadow transition">
+            🎯 <span>Click to Set Target</span>
+          </button>
+          <button onclick="resetCamera()" class="bg-slate-900/90 hover:bg-slate-800 text-xs px-2 py-1.5 rounded-lg border border-slate-700 text-slate-300 shadow transition" title="Fit to Viewport">
+            🔍 Fit
+          </button>
+        </div>
+
+        <!-- Interactive Drag Callout Banner -->
+        <div class="absolute bottom-16 left-3 z-10 pointer-events-none bg-slate-900/80 backdrop-blur border border-slate-700/60 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 flex items-center gap-1.5 shadow">
+          <span>🖐️</span>
+          <span><b>Tip:</b> Click & drag the ball directly along the curve!</span>
+        </div>
+
+        <!-- The Canvas Simulation Element -->
+        <canvas id="simCanvas" class="w-full flex-1 bg-slate-950 cursor-grab active:cursor-grabbing block touch-none"></canvas>
+
+        <!-- Animation Timeline Playbar & Scrubber -->
+        <div class="bg-slate-900/95 border-t border-slate-800 p-2.5 flex items-center gap-3">
+          <button id="btnPlayPause" class="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center font-bold text-sm shadow transition active:scale-95">
+            ▶
+          </button>
+          <button id="btnReset" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm border border-slate-700 transition active:scale-95" title="Rewind to Launch">
+            ↺
+          </button>
+          
+          <!-- Scrubber Timeline -->
+          <div class="flex-1 flex items-center gap-2">
+            <span class="text-[10px] text-slate-400 font-mono">0.0s</span>
+            <input type="range" id="timeScrubber" min="0" max="5" step="0.01" value="0" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+            <span id="maxTimeLabel" class="text-[10px] text-slate-400 font-mono">3.50s</span>
+          </div>
+
+          <!-- Speed multiplier -->
+          <select id="simSpeedSelect" class="bg-slate-800 text-slate-300 text-xs rounded-lg border border-slate-700 px-2 py-1 outline-none">
+            <option value="0.25">0.25x (Analysis)</option>
+            <option value="0.5">0.5x (Slow)</option>
+            <option value="1" selected>1.0x (Realtime)</option>
+            <option value="2">2.0x (Fast)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Real-Time Dynamic Component Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
+          <div class="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-md"></div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Resultant Velocity $\mathbf{v}$</div>
+            <div id="metricV" class="font-mono text-sky-400 font-bold">20.0 m/s</div>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
+          <div class="w-3.5 h-3.5 rounded-full bg-amber-400 shadow-md"></div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Horizontal $v_x$</div>
+            <div id="metricVx" class="font-mono text-amber-300 font-bold">18.1 m/s (Const)</div>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
+          <div class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-md"></div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Vertical $v_y$</div>
+            <div id="metricVy" class="font-mono text-emerald-300 font-bold">8.5 m/s</div>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
+          <div class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-md"></div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Downward Accel $g$</div>
+            <div class="font-mono text-rose-400 font-bold">-10.0 m/s²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT / CONTROLS & EXPLANATION SIDEBAR (Col span 5 on large) -->
+    <div class="lg:col-span-5 flex flex-col gap-3">
+      
+      <!-- Interactive Launch Parameters Control Card -->
+      <div class="bg-slate-900/95 p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3.5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
+            <span>⚙️</span> Launch Parameters
+          </h2>
+          <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">CAIE $g = 10\text{ ms}^{-2}$</span>
+        </div>
+
+        <!-- Initial Speed (u) -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <label for="sliderU" class="text-slate-300 font-medium">Initial Speed ($u$):</label>
+            <span id="labelU" class="font-mono text-sky-400 font-semibold">20.0 m/s</span>
+          </div>
+          <input type="range" id="sliderU" min="2" max="60" step="0.5" value="20" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+        </div>
+
+        <!-- Launch Angle (theta) -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <label for="sliderAngle" class="text-slate-300 font-medium">Launch Angle ($\theta$):</label>
+            <span id="labelAngle" class="font-mono text-amber-400 font-semibold">25.0° (Elevation)</span>
+          </div>
+          <input type="range" id="sliderAngle" min="-60" max="89" step="0.5" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 mt-0.5 font-mono">
+            <span>-60° (Depression)</span>
+            <span>0° (Flat)</span>
+            <span>+45° (Max Range)</span>
+            <span>+89° (Vertical)</span>
+          </div>
+        </div>
+
+        <!-- Platform Height (h) -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <label for="sliderH" class="text-slate-300 font-medium">Platform Height ($h$):</label>
+            <span id="labelH" class="font-mono text-emerald-400 font-semibold">0.0 m (Ground level)</span>
+          </div>
+          <input type="range" id="sliderH" min="0" max="40" step="1" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+        </div>
+
+        <!-- Carrier horizontal velocity (Airplane drop) -->
+        <div id="carrierBox" class="pt-2 border-t border-slate-800">
+          <div class="flex justify-between text-xs mb-1">
+            <label for="sliderCarrier" class="text-slate-300 font-medium">Moving Carrier Velocity ($u_{\text{carrier}}$):</label>
+            <span id="labelCarrier" class="font-mono text-purple-400 font-semibold">0.0 m/s</span>
+          </div>
+          <input type="range" id="sliderCarrier" min="0" max="60" step="2" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+        </div>
+
+        <!-- Visual Toggles -->
+        <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-800">
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
+            <input type="checkbox" id="checkVectors" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
+            <span>Velocity Vectors</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
+            <input type="checkbox" id="checkGhost" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
+            <span>Ghost Trajectory ($t < 0$)</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
+            <input type="checkbox" id="checkKeyPoints" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
+            <span>Apex & Landing Markers</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
+            <input type="checkbox" id="checkSightLine" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
+            <span>Line of Sight Angle $\beta$</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- DYNAMIC EXPLANATION CONTAINER (EXAM MODE VS 6-YEAR-OLD MODE) -->
+      <div id="explanationCard" class="bg-slate-900/95 p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col flex-1 overflow-y-auto max-h-[500px]">
+        <div id="explanationContent"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* =========================================================
+       AUDIO SYNTHESIS SYSTEM (Web Audio API, no external URLs)
+       ========================================================= */
+    let audioCtx = null;
+    let isMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      if (isMuted) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'launch') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(140, t);
+          osc.frequency.exponentialRampToValueAtTime(420, t + 0.14);
+          gain.gain.setValueAtTime(0.3, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+          osc.start(t);
+          osc.stop(t + 0.22);
+        } else if (type === 'hit') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(160, t);
+          osc.frequency.exponentialRampToValueAtTime(35, t + 0.16);
+          gain.gain.setValueAtTime(0.35, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+          osc.start(t);
+          osc.stop(t + 0.18);
+        } else if (type === 'targetHit') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, t); // C5
+          osc.frequency.setValueAtTime(659.25, t + 0.08); // E5
+          osc.frequency.setValueAtTime(783.99, t + 0.16); // G5
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.start(t);
+          osc.stop(t + 0.35);
+        } else if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, t);
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+          osc.start(t);
+          osc.stop(t + 0.04);
+        }
+      } catch (e) {
+        console.warn('Audio blocked or not permitted', e);
+      }
+    }
+
+    /* =========================================================
+       PHYSICS STATE (CAIE 9231 standard: g = 10 m/s^2)
+       ========================================================= */
+    const g = 10.0;
+    const state = {
+      u: 20.0,
+      angleDeg: 25.0,
+      h: 0.0,
+      carrierVx: 0.0,
+      currentTime: 0.0,
+      totalFlightTime: 0.0,
+      isPlaying: false,
+      speedMultiplier: 1.0,
+      mode: 'exam',           // 'exam' or 'eli6'
+      currentTopic: 'cartesian', // 'cartesian', 'direction', 'platform', 'elevation', 'curvefit'
+      target: null,           // {x, y}
+      targetPaths: null,      // { low: {thetaDeg, tArrival}, high: {thetaDeg, tArrival} }
+      clickModeTarget: false,
+      isDraggingBall: false,
+      isHoveringBall: false
+    };
+
+    // Canvas coordinate viewport state
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const view = {
+      scale: 14,             // pixels per meter
+      offsetX: 60,           // screen X of origin (0, 0)
+      offsetY: 380           // screen Y of ground (y = 0)
+    };
+
+    /**
+     * Compute general projectile kinematics
+     */
+    function computeKinematics(u, angleDeg, h, carrierVx = 0) {
+      const theta = (angleDeg * Math.PI) / 180;
+      const ux = u * Math.cos(theta) + carrierVx;
+      const uy = u * Math.sin(theta);
+
+      // Vertical position: y(t) = h + uy*t - 0.5*g*t^2 = 0
+      // 5*t^2 - uy*t - h = 0
+      const aQuad = 0.5 * g;
+      const bQuad = -uy;
+      const cQuad = -h;
+      const disc = bQuad * bQuad - 4 * aQuad * cQuad;
+
+      let flightTime = 0;
+      let virtualStartTime = 0; // negative when h > 0
+      if (disc >= 0) {
+        const t1 = (-bQuad + Math.sqrt(disc)) / (2 * aQuad);
+        const t2 = (-bQuad - Math.sqrt(disc)) / (2 * aQuad);
+        flightTime = Math.max(t1, t2);
+        virtualStartTime = Math.min(t1, t2);
+      }
+
+      // Apex where v_y = 0
+      let tApex = uy / g;
+      let apexX = ux * tApex;
+      let apexY = h + (uy * uy) / (2 * g);
+      if (tApex < 0) {
+        tApex = 0;
+        apexX = 0;
+        apexY = h;
+      }
+
+      // Range on ground (y = 0)
+      const rangeX = ux * flightTime;
+
+      // Final speed at impact
+      const vImpactX = ux;
+      const vImpactY = uy - g * flightTime;
+      const impactSpeed = Math.hypot(vImpactX, vImpactY);
+      const impactAngleDeg = (Math.atan2(vImpactY, vImpactX) * 180) / Math.PI;
+
+      // Time when velocity is perpendicular to initial velocity: u . v = 0
+      // u^2 - u*g*t*sin(theta) = 0 => tPerp = u / (g * sin(theta))
+      let tPerp = null;
+      if (uy > 0) {
+        const tp = u / (g * Math.sin(theta));
+        if (tp <= flightTime) {
+          tPerp = tp;
+        }
+      }
+
+      return {
+        theta,
+        ux,
+        uy,
+        flightTime,
+        virtualStartTime,
+        tApex,
+        apexX,
+        apexY,
+        rangeX,
+        impactSpeed,
+        impactAngleDeg,
+        tPerp
+      };
+    }
+
+    /**
+     * Get instantaneous particle position and velocity at time t
+     */
+    function getParticleAtTime(t, u, angleDeg, h, carrierVx = 0) {
+      const theta = (angleDeg * Math.PI) / 180;
+      const ux = u * Math.cos(theta) + carrierVx;
+      const uy = u * Math.sin(theta);
+
+      const x = ux * t;
+      const y = h + uy * t - 0.5 * g * t * t;
+      const vx = ux;
+      const vy = uy - g * t;
+      const speed = Math.hypot(vx, vy);
+      const angle = (Math.atan2(vy, vx) * 180) / Math.PI;
+
+      // Line of sight angle from launch point (0, h)
+      const dy = y - h;
+      const sightAngleDeg = (x > 0.001) ? (Math.atan2(dy, x) * 180) / Math.PI : angleDeg;
+
+      return { x, y, vx, vy, speed, angle, sightAngleDeg };
+    }
+
+    /**
+     * Solves for projection angles theta to hit target (targetX, targetY)
+     * From Section 13.2 / Review Exercise 13 Q1:
+     * (g*X^2 / (2*u^2)) * T^2 - X * T + (Y + g*X^2 / (2*u^2)) = 0
+     */
+    function solveTwoTrajectories(targetX, targetY, u, h = 0) {
+      const X = targetX;
+      const Y = targetY - h;
+      if (X <= 0) return null;
+
+      const A = (g * X * X) / (2 * u * u);
+      const B = -X;
+      const C = Y + A;
+
+      const disc = B * B - 4 * A * C;
+      if (disc < 0) {
+        return null; // Beyond safety bounding parabola
+      }
+
+      const T1 = (-B - Math.sqrt(disc)) / (2 * A);
+      const T2 = (-B + Math.sqrt(disc)) / (2 * A);
+
+      const theta1Deg = (Math.atan(T1) * 180) / Math.PI;
+      const theta2Deg = (Math.atan(T2) * 180) / Math.PI;
+
+      const t1 = X / (u * Math.cos(theta1Deg * Math.PI / 180));
+      const t2 = X / (u * Math.cos(theta2Deg * Math.PI / 180));
+
+      return {
+        low: { tanTheta: T1, thetaDeg: theta1Deg, tArrival: t1 },
+        high: { tanTheta: T2, thetaDeg: theta2Deg, tArrival: t2 },
+        disc
+      };
+    }
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      const rect = container.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * dpr;
+      canvas.height = (rect.height - 52) * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      view.offsetY = (rect.height - 52) - 60;
+      view.offsetX = Math.max(50, rect.width * 0.08);
+
+      adjustScaleToFit();
+      draw();
+    }
+
+    function worldToScreen(x, y) {
+      return {
+        px: view.offsetX + x * view.scale,
+        py: view.offsetY - y * view.scale
+      };
+    }
+
+    function screenToWorld(px, py) {
+      return {
+        x: (px - view.offsetX) / view.scale,
+        y: (view.offsetY - py) / view.scale
+      };
+    }
+
+    function adjustScaleToFit() {
+      const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+      const maxX = Math.max(kin.rangeX, state.target ? state.target.x : 0, 32);
+      const maxY = Math.max(kin.apexY, state.h, state.target ? state.target.y : 0, 16);
+
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = canvas.height / (window.devicePixelRatio || 1);
+
+      const availW = w - view.offsetX - 70;
+      const availH = view.offsetY - 45;
+
+      const scaleX = availW / (maxX * 1.15);
+      const scaleY = availH / (maxY * 1.25);
+      view.scale = Math.max(7, Math.min(26, Math.min(scaleX, scaleY)));
+    }
+
+    function resetCamera() {
+      adjustScaleToFit();
+      draw();
+    }
+
+    function draw() {
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = canvas.height / (window.devicePixelRatio || 1);
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Sky gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+      if (state.mode === 'eli6') {
+        skyGrad.addColorStop(0, '#1e293b');
+        skyGrad.addColorStop(1, '#0b1329');
+      } else {
+        skyGrad.addColorStop(0, '#090d16');
+        skyGrad.addColorStop(1, '#020617');
+      }
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Coordinate grid
+      drawGrid(w, h);
+
+      // Ground and platform
+      drawEnvironment(w, h);
+
+      const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+      state.totalFlightTime = kin.flightTime;
+
+      // Target marker if placed
+      if (state.target) {
+        drawTargetMarker(state.target.x, state.target.y);
+      }
+
+      // Parabolic safety bounding envelope (when in Cartesian topic)
+      if (state.currentTopic === 'cartesian' && state.h === 0) {
+        drawSafetyBoundingEnvelope();
+      }
+
+      // Ghost backwards trajectory if platform raised (Page 4 of PDF)
+      if (state.h > 0 && document.getElementById('checkGhost').checked) {
+        drawGhostTrajectory(kin);
+      }
+
+      // Trajectory path curve
+      drawCartesianCurve(kin);
+
+      // Dual target paths if target exists
+      if (state.targetPaths) {
+        drawDualTargetTrajectories();
+      }
+
+      // Markers (Apex, Landing, Perpendicular point)
+      if (document.getElementById('checkKeyPoints').checked) {
+        drawKeyPoints(kin);
+      }
+
+      // Line of sight ray if toggled
+      if (document.getElementById('checkSightLine').checked) {
+        drawLineOfSight(kin);
+      }
+
+      // Main Projectile Ball, Trail and Vectors
+      drawParticleAndVectors(kin);
+
+      // Update Header HUD values
+      updateHUD(kin);
+    }
+
+    function drawGrid(w, h) {
+      ctx.save();
+      ctx.lineWidth = 1;
+      const stepM = view.scale < 12 ? 10 : 5;
+
+      ctx.font = '10px JetBrains Mono, monospace';
+      // Vertical grid
+      for (let xm = 0; xm * view.scale + view.offsetX < w; xm += stepM) {
+        const sx = view.offsetX + xm * view.scale;
+        ctx.strokeStyle = (xm % 10 === 0) ? 'rgba(51, 65, 85, 0.45)' : 'rgba(30, 41, 59, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx, h);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(`${xm}m`, sx + 3, view.offsetY + 14);
+      }
+
+      // Horizontal grid
+      for (let ym = 0; view.offsetY - ym * view.scale > 0; ym += stepM) {
+        const sy = view.offsetY - ym * view.scale;
+        ctx.strokeStyle = (ym % 10 === 0) ? 'rgba(51, 65, 85, 0.45)' : 'rgba(30, 41, 59, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(0, sy);
+        ctx.lineTo(w, sy);
+        ctx.stroke();
+
+        if (ym > 0) {
+          ctx.fillStyle = '#64748b';
+          ctx.fillText(`${ym}m`, Math.max(10, view.offsetX - 32), sy - 3);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawEnvironment(w, h) {
+      ctx.save();
+      // Ground plane y = 0
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, view.offsetY);
+      ctx.lineTo(w, view.offsetY);
+      ctx.stroke();
+
+      // Earth fill
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, view.offsetY, w, h - view.offsetY);
+
+      // Platform if h > 0
+      if (state.h > 0) {
+        const pTop = worldToScreen(0, state.h);
+        const pBase = worldToScreen(0, 0);
+        const towerWidth = 26;
+
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 2;
+        ctx.fillRect(pTop.px - towerWidth, pTop.py, towerWidth, pBase.py - pTop.py);
+        ctx.strokeRect(pTop.px - towerWidth, pTop.py, towerWidth, pBase.py - pTop.py);
+
+        // Tower ledge
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(pTop.px - towerWidth - 4, pTop.py - 3, towerWidth + 8, 4);
+
+        // Height label
+        ctx.strokeStyle = '#38bdf8';
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(pTop.px - towerWidth - 10, pTop.py);
+        ctx.lineTo(pTop.px - towerWidth - 10, pBase.py);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '11px JetBrains Mono, monospace';
+        ctx.fillText(`h=${state.h.toFixed(1)}m`, pTop.px - towerWidth - 58, (pTop.py + pBase.py) / 2);
+      }
+
+      // Moving airplane symbol if carrierVx > 0
+      if (state.carrierVx > 0) {
+        const pTop = worldToScreen(0, state.h);
+        ctx.font = '18px sans-serif';
+        ctx.fillText('✈️', pTop.px - 32, pTop.py - 12);
+        ctx.fillStyle = '#c084fc';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillText(`+${state.carrierVx} m/s`, pTop.px - 34, pTop.py - 24);
+      }
+      ctx.restore();
+    }
+
+    function drawCartesianCurve(kin) {
+      ctx.save();
+      ctx.strokeStyle = state.mode === 'eli6' ? 'rgba(251, 191, 36, 0.85)' : 'rgba(56, 189, 248, 0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+
+      const steps = 120;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * kin.flightTime;
+        const pt = getParticleAtTime(t, state.u, state.angleDeg, state.h, state.carrierVx);
+        const scr = worldToScreen(pt.x, pt.y);
+        if (i === 0) ctx.moveTo(scr.px, scr.py);
+        else ctx.lineTo(scr.px, scr.py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawGhostTrajectory(kin) {
+      if (kin.virtualStartTime >= 0) return;
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.55)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+
+      const steps = 40;
+      for (let i = 0; i <= steps; i++) {
+        const t = kin.virtualStartTime + (i / steps) * (-kin.virtualStartTime);
+        const pt = getParticleAtTime(t, state.u, state.angleDeg, state.h, state.carrierVx);
+        const scr = worldToScreen(pt.x, pt.y);
+        if (i === 0) ctx.moveTo(scr.px, scr.py);
+        else ctx.lineTo(scr.px, scr.py);
+      }
+      ctx.stroke();
+
+      const ghostOrigin = getParticleAtTime(kin.virtualStartTime, state.u, state.angleDeg, state.h, state.carrierVx);
+      const ghostScr = worldToScreen(ghostOrigin.x, ghostOrigin.y);
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.85)';
+      ctx.beginPath();
+      ctx.arc(ghostScr.px, ghostScr.py, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = '10px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`Virtual origin (t=${kin.virtualStartTime.toFixed(2)}s)`, ghostScr.px - 60, ghostScr.py + 16);
+      ctx.restore();
+    }
+
+    function drawSafetyBoundingEnvelope() {
+      // Parabolic safety envelope equation: Y = u^2/(2g) - (g / (2u^2)) * X^2
+      ctx.save();
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.35)';
+      ctx.setLineDash([6, 6]);
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+
+      const maxX = (state.u * state.u) / g;
+      const steps = 60;
+      for (let i = 0; i <= steps; i++) {
+        const x = (i / steps) * maxX;
+        const y = (state.u * state.u) / (2 * g) - (g * x * x) / (2 * state.u * state.u);
+        if (y < 0) break;
+        const scr = worldToScreen(x, y);
+        if (i === 0) ctx.moveTo(scr.px, scr.py);
+        else ctx.lineTo(scr.px, scr.py);
+      }
+      ctx.stroke();
+
+      const labelScr = worldToScreen(maxX * 0.45, (state.u * state.u) / (2 * g) * 0.7);
+      ctx.fillStyle = 'rgba(236, 72, 153, 0.7)';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('Safety Envelope (Δ=0)', labelScr.px, labelScr.py);
+      ctx.restore();
+    }
+
+    function drawKeyPoints(kin) {
+      ctx.save();
+      // 1. Apex
+      if (kin.tApex > 0 && kin.tApex < kin.flightTime) {
+        const pApex = worldToScreen(kin.apexX, kin.apexY);
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(pApex.px, pApex.py, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(pApex.px, pApex.py);
+        ctx.lineTo(pApex.px, view.offsetY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(`Apex: (${kin.apexX.toFixed(1)}m, ${kin.apexY.toFixed(1)}m)`, pApex.px - 45, pApex.py - 10);
+      }
+
+      // 2. Landing Point
+      const pLand = worldToScreen(kin.rangeX, 0);
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(pLand.px, pLand.py, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillStyle = '#f87171';
+      ctx.fillText(`Landing: ${kin.rangeX.toFixed(1)}m`, pLand.px - 35, pLand.py + 26);
+
+      // 3. Perpendicular velocity point (u . v = 0)
+      if (kin.tPerp) {
+        const perpPt = getParticleAtTime(kin.tPerp, state.u, state.angleDeg, state.h, state.carrierVx);
+        const pPerp = worldToScreen(perpPt.x, perpPt.y);
+        ctx.fillStyle = '#a855f7';
+        ctx.beginPath();
+        ctx.arc(pPerp.px, pPerp.py, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillStyle = '#c084fc';
+        ctx.fillText(`u ⊥ v (t=${kin.tPerp.toFixed(2)}s)`, pPerp.px + 10, pPerp.py);
+      }
+      ctx.restore();
+    }
+
+    function drawLineOfSight(kin) {
+      const curT = Math.min(state.currentTime, kin.flightTime);
+      const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+      const pStart = worldToScreen(0, state.h);
+      const pBall = worldToScreen(pt.x, pt.y);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(pStart.px, pStart.py);
+      ctx.lineTo(pBall.px, pBall.py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (curT > 0.08) {
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillStyle = '#f472b6';
+        ctx.fillText(`β = ${pt.sightAngleDeg.toFixed(1)}°`, (pStart.px + pBall.px) / 2 + 6, (pStart.py + pBall.py) / 2 - 6);
+      }
+      ctx.restore();
+    }
+
+    function drawTargetMarker(tx, ty) {
+      ctx.save();
+      const p = worldToScreen(tx, ty);
+
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 13, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 6, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ec4899';
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Crosshairs
+      ctx.beginPath();
+      ctx.moveTo(p.px - 17, p.py);
+      ctx.lineTo(p.px + 17, p.py);
+      ctx.moveTo(p.px, p.py - 17);
+      ctx.lineTo(p.px, p.py + 17);
+      ctx.stroke();
+
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillStyle = '#f472b6';
+      ctx.fillText(`Target (${tx.toFixed(1)}m, ${ty.toFixed(1)}m)`, p.px + 16, p.py - 6);
+      ctx.restore();
+    }
+
+    function drawDualTargetTrajectories() {
+      if (!state.targetPaths) return;
+      ctx.save();
+      const { low, high } = state.targetPaths;
+
+      // Direct low fire
+      ctx.strokeStyle = '#38bdf8';
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const steps = 70;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * low.tArrival;
+        const pt = getParticleAtTime(t, state.u, low.thetaDeg, state.h, 0);
+        const scr = worldToScreen(pt.x, pt.y);
+        if (i === 0) ctx.moveTo(scr.px, scr.py);
+        else ctx.lineTo(scr.px, scr.py);
+      }
+      ctx.stroke();
+
+      // High mortar arc
+      ctx.strokeStyle = '#a855f7';
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * high.tArrival;
+        const pt = getParticleAtTime(t, state.u, high.thetaDeg, state.h, 0);
+        const scr = worldToScreen(pt.x, pt.y);
+        if (i === 0) ctx.moveTo(scr.px, scr.py);
+        else ctx.lineTo(scr.px, scr.py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawParticleAndVectors(kin) {
+      const curT = Math.min(state.currentTime, kin.flightTime);
+      const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+      const scr = worldToScreen(pt.x, pt.y);
+
+      // Traversed trail
+      ctx.save();
+      ctx.strokeStyle = state.mode === 'eli6' ? '#f59e0b' : '#38bdf8';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      const steps = 60;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * curT;
+        const trace = getParticleAtTime(t, state.u, state.angleDeg, state.h, state.carrierVx);
+        const pScr = worldToScreen(trace.x, trace.y);
+        if (i === 0) ctx.moveTo(pScr.px, pScr.py);
+        else ctx.lineTo(pScr.px, pScr.py);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Projectile ball with glow ring
+      ctx.save();
+      const ballRadius = state.isHoveringBall || state.isDraggingBall ? 10 : (state.mode === 'eli6' ? 8.5 : 7);
+      ctx.shadowColor = state.mode === 'eli6' ? '#fbbf24' : '#38bdf8';
+      ctx.shadowBlur = state.isDraggingBall ? 18 : 12;
+      ctx.fillStyle = state.isDraggingBall ? '#38bdf8' : (state.mode === 'eli6' ? '#f59e0b' : '#ffffff');
+      ctx.beginPath();
+      ctx.arc(scr.px, scr.py, ballRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outer drag grab halo
+      if (state.isHoveringBall || state.isDraggingBall) {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(scr.px, scr.py, ballRadius + 5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Instantaneous coordinate badge when hovering / dragging
+      if (state.isHoveringBall || state.isDraggingBall) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.fillRect(scr.px + 12, scr.py - 30, 110, 24);
+        ctx.strokeRect(scr.px + 12, scr.py - 30, 110, 24);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillText(`(${pt.x.toFixed(1)}m, ${pt.y.toFixed(1)}m)`, scr.px + 18, scr.py - 14);
+        ctx.restore();
+      }
+
+      // Velocity Vectors (v, vx, vy)
+      if (document.getElementById('checkVectors').checked && curT < kin.flightTime) {
+        const vScale = 2.4;
+        // vx (horizontal)
+        drawArrow(scr.px, scr.py, scr.px + pt.vx * vScale, scr.py, '#fbbf24', 2, 'v_x');
+        // vy (vertical)
+        drawArrow(scr.px, scr.py, scr.px, scr.py - pt.vy * vScale, '#34d399', 2, 'v_y');
+        // v (tangent resultant)
+        drawArrow(scr.px, scr.py, scr.px + pt.vx * vScale, scr.py - pt.vy * vScale, '#60a5fa', 2.5, 'v');
+      }
+    }
+
+    function drawArrow(fromX, fromY, toX, toY, color, width, label) {
+      const headLen = 8;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy);
+      if (len < 1.5) return;
+
+      const angle = Math.atan2(dy, dx);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.fillText(label, toX + 6 * Math.cos(angle), toY + 6 * Math.sin(angle));
+      }
+      ctx.restore();
+    }
+
+    function updateHUD(kin) {
+      const curT = Math.min(state.currentTime, kin.flightTime);
+      const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+
+      document.getElementById('hudTime').textContent = `${curT.toFixed(2)}s / ${kin.flightTime.toFixed(2)}s`;
+      document.getElementById('hudCoords').textContent = `(${pt.x.toFixed(1)}m, ${Math.max(0, pt.y).toFixed(1)}m)`;
+      document.getElementById('hudSpeed').textContent = `${pt.speed.toFixed(1)} m/s`;
+
+      document.getElementById('metricV').textContent = `${pt.speed.toFixed(1)} m/s (θ=${pt.angle.toFixed(1)}°)`;
+      document.getElementById('metricVx').textContent = `${pt.vx.toFixed(1)} m/s (Const)`;
+      document.getElementById('metricVy').textContent = `${pt.vy.toFixed(1)} m/s`;
+
+      const scrubber = document.getElementById('timeScrubber');
+      scrubber.max = kin.flightTime > 0 ? kin.flightTime : 1;
+      scrubber.value = curT;
+      document.getElementById('maxTimeLabel').textContent = `${kin.flightTime.toFixed(2)}s`;
+    }
+
+    function renderExplanations() {
+      const container = document.getElementById('explanationContent');
+      const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+      const curT = Math.min(state.currentTime, kin.flightTime);
+      const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+
+      if (state.mode === 'exam') {
+        renderExamMode(container, kin, curT, pt);
+      } else {
+        renderEli6Mode(container, kin, curT, pt);
+      }
+
+      // Re-trigger KaTeX rendering
+      if (window.renderMathInElement) {
+        renderMathInElement(container, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function renderExamMode(container, kin, curT, pt) {
+      let topicSpecificHtml = '';
+
+      if (state.currentTopic === 'cartesian') {
+        topicSpecificHtml = `
+          <!-- Topic 1: Cartesian Trajectory & Tan Quadratic -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-sky-400 text-xs flex justify-between">
+              <span>Section 13.2: Cartesian Trajectory & Quadratic in $\\tan\\theta$</span>
+              <span class="text-[10px] text-slate-400">Review Ex 13 Q1</span>
+            </div>
+            <div class="text-[11px] font-mono-math space-y-1.5 text-slate-300">
+              <p>Eliminate $t = \\frac{x}{u\\cos\\theta}$ into $y = u\\sin\\theta t - \\frac{1}{2}gt^2$ with $\\sec^2\\theta = 1 + \\tan^2\\theta$:</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-purple-300">
+                $$y = x\\tan\\theta - \\frac{gx^2}{2u^2}(1 + \\tan^2\\theta)$$
+              </div>
+              <p>Arranged as a quadratic in $T = \\tan\\theta$:</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-amber-300">
+                $$\\left(\\frac{gx^2}{2u^2}\\right)T^2 - xT + \\left(y - h + \\frac{gx^2}{2u^2}\\right) = 0$$
+              </div>
+              <p class="text-slate-400 text-[10px]">
+                <b>Twisted Exam Rule:</b> Discriminant $\\Delta = x^2 - 4\\left(\\frac{gx^2}{2u^2}\\right)\\left(y + \\frac{gx^2}{2u^2}\\right) \\ge 0$.
+                Setting $\\Delta = 0$ yields the <i>Parabolic Safety Bounding Envelope</i>: $y_{\\max} = \\frac{u^2}{2g} - \\frac{gx^2}{2u^2}$.
+              </p>
+              ${state.targetPaths ? `
+                <div class="mt-2 p-2 rounded bg-purple-950/40 border border-purple-800/80 text-purple-200">
+                  🎯 <b>Target Hit Solution for (${state.target.x}, ${state.target.y}):</b><br>
+                  • Low Direct Fire: $\\theta_1 = ${state.targetPaths.low.thetaDeg.toFixed(2)}^\\circ$, flight time $t_1 = ${state.targetPaths.low.tArrival.toFixed(2)}\\text{s}$<br>
+                  • High Mortar Path: $\\theta_2 = ${state.targetPaths.high.thetaDeg.toFixed(2)}^\\circ$, flight time $t_2 = ${state.targetPaths.high.tArrival.toFixed(2)}\\text{s}$
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      } else if (state.currentTopic === 'direction') {
+        topicSpecificHtml = `
+          <!-- Topic 2: Direction of Motion & Perpendicularity -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-emerald-400 text-xs flex justify-between">
+              <span>Direction of Motion & Orthogonality ($\mathbf{u} \\perp \\mathbf{v}$)</span>
+              <span class="text-[10px] text-slate-400">Worked Ex 13.7</span>
+            </div>
+            <div class="text-[11px] font-mono-math space-y-1.5 text-slate-300">
+              <p>Instantaneous velocity direction is given by tangent of angle of elevation/depression:</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-emerald-300">
+                $$\\tan\\theta_v = \\frac{v_y}{v_x} = \\frac{u\\sin\\theta - gt}{u\\cos\\theta}$$
+              </div>
+              <p><b>Condition for $\\mathbf{u} \\perp \\mathbf{v}$ (Dot Product $= 0$):</b></p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-sky-300">
+                $$\\mathbf{u} \\cdot \\mathbf{v} = 0 \\iff (u\\cos\\theta)^2 + (u\\sin\\theta)(u\\sin\\theta - gt) = 0 \\iff t_\\perp = \\frac{u}{g\\sin\\theta}$$
+              </div>
+              <p class="text-slate-400 text-[10px]">
+                ${kin.tPerp ? `For current launch, perpendicular motion occurs at <b>$t = ${kin.tPerp.toFixed(2)}\\text{ s}$</b>.` : `Perpendicularity requires $t_\\perp \\le T_{\\text{flight}}$ (only possible when projected upwards with sufficient airtime).`}
+              </p>
+            </div>
+          </div>
+        `;
+      } else if (state.currentTopic === 'platform') {
+        topicSpecificHtml = `
+          <!-- Topic 3: Cliffs & Depression -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-amber-400 text-xs flex justify-between">
+              <span>Section 13.1: Platforms, Depressions & Virtual Ghost Path</span>
+              <span class="text-[10px] text-slate-400">Ex 13.2, 13.3 & 13.5</span>
+            </div>
+            <div class="text-[11px] font-mono-math space-y-1.5 text-slate-300">
+              <p>Displacement below launch platform is negative ($s_y = -h$):</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-amber-300">
+                $$-h = (u\\sin\\theta)t - \\frac{1}{2}gt^2 \\implies \\frac{1}{2}gt^2 - (u\\sin\\theta)t - h = 0$$
+              </div>
+              <p><b>Energy Conservation Principle (CAIE Invariant):</b></p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-rose-300">
+                $$v_{\\text{impact}} = \\sqrt{u^2 + 2gh} = \\sqrt{${state.u}^2 + 2(10)(${state.h})} = ${kin.impactSpeed.toFixed(2)}\\text{ ms}^{-1}$$
+              </div>
+              <p class="text-slate-400 text-[10px]">
+                Notice that $v_{\\text{impact}}$ is independent of the projection angle $\\theta$! The dashed trail indicates the <i>ghost trajectory</i> traced back to ground level at $t = ${kin.virtualStartTime.toFixed(2)}\\text{s}$.
+              </p>
+            </div>
+          </div>
+        `;
+      } else if (state.currentTopic === 'elevation') {
+        topicSpecificHtml = `
+          <!-- Topic 4: Line of Sight Angle -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-pink-400 text-xs flex justify-between">
+              <span>Line of Sight Elevation $\\beta$ from Launch Origin</span>
+              <span class="text-[10px] text-slate-400">Review Ex 13 Q2</span>
+            </div>
+            <div class="text-[11px] font-mono-math space-y-1.5 text-slate-300">
+              <p>Angle of elevation of projectile as seen from origin $O$:</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-pink-300">
+                $$\\tan\\beta = \\frac{y}{x} = \\frac{u\\sin\\theta t - \\frac{1}{2}gt^2}{u\\cos\\theta t} = \\tan\\theta - \\frac{gt}{2u\\cos\\theta}$$
+              </div>
+              <p>In terms of horizontal distance $x$:</p>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 text-sky-300">
+                $$\\tan\\beta = \\tan\\theta - \\frac{gx}{2u^2\\cos^2\\theta} = \\tan\\theta - \\frac{gx}{2u^2}(1 + \\tan^2\\theta)$$
+              </div>
+              <p class="text-slate-400 text-[10px]">
+                Current Line of Sight angle: <b>$\\beta = ${pt.sightAngleDeg.toFixed(1)}^\\circ$</b> (pink dashed line).
+              </p>
+            </div>
+          </div>
+        `;
+      } else if (state.currentTopic === 'curvefit') {
+        topicSpecificHtml = `
+          <!-- Topic 5: Trajectory Curve Fitting -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-cyan-400 text-xs flex justify-between">
+              <span>Section 13.2: Curve Fitting $y = ax - bx^2$</span>
+              <span class="text-[10px] text-slate-400">Worked Ex 13.6 & Review Q3</span>
+            </div>
+            <div class="text-[11px] font-mono-math space-y-1.5 text-slate-300">
+              <p>Equating coefficients with $y = x\\tan\\theta - \\frac{g(1+\\tan^2\\theta)}{2u^2}x^2$:</p>
+              <div class="grid grid-cols-2 gap-2 text-[10px]">
+                <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                  <span class="text-slate-400">Linear Term:</span><br>
+                  $a = \\tan\\theta \\implies \\theta = \\arctan(a)$
+                </div>
+                <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                  <span class="text-slate-400">Quadratic Term:</span><br>
+                  $b = \\frac{g(1+a^2)}{2u^2} \\implies u = \\sqrt{\\frac{g(1+a^2)}{2b}}$
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-3 text-xs text-slate-300">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="font-bold text-slate-100 flex items-center gap-1.5 text-sm">
+              <span>📘</span> CAIE Exam Mechanics Derivations
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-blue-950 border border-blue-800 text-blue-300 font-mono">
+              Paper 3 / 9231
+            </span>
+          </div>
+
+          <!-- Dynamic Topic Content Card -->
+          ${topicSpecificHtml}
+
+          <!-- Live Particle Analytical Breakdown -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="font-semibold text-emerald-400 text-xs flex justify-between">
+              <span>Instantaneous State ($t = ${curT.toFixed(2)}\\text{s}$)</span>
+              <span class="text-[10px] text-slate-400 font-mono">Drag ball to change</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono-math">
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <span class="text-slate-400">Position $(x, y)$:</span><br>
+                <b class="text-sky-300">(${pt.x.toFixed(2)}m, ${pt.y.toFixed(2)}m)</b>
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <span class="text-slate-400">Speed & Direction:</span><br>
+                <b class="text-amber-300">${pt.speed.toFixed(2)} m/s</b> (${pt.angle.toFixed(1)}°)
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <span class="text-slate-400">Apex Height $H$:</span><br>
+                <b class="text-purple-300">${kin.apexY.toFixed(2)} m</b>
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <span class="text-slate-400">Total Ground Range:</span><br>
+                <b class="text-emerald-300">${kin.rangeX.toFixed(2)} m</b>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEli6Mode(container, kin, curT, pt) {
+      container.innerHTML = `
+        <div class="space-y-3 font-eli6 text-slate-200">
+          <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+            <span class="font-bold text-amber-300 flex items-center gap-2 text-base">
+              <span>🧸</span> The Great Flying Ball Adventure!
+            </span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
+              6-Year-Old Mode
+            </span>
+          </div>
+
+          <!-- The Two Friends Story -->
+          <div class="bg-amber-950/30 border border-amber-500/30 p-3 rounded-2xl space-y-2">
+            <div class="text-sm font-bold text-amber-200 flex items-center gap-1.5">
+              <span>🛼</span> Meet the Two Secret Helpers!
+            </div>
+            <p class="text-xs leading-relaxed text-amber-100/90">
+              When you throw a ball into the sky, it doesn't just do one thing. <b>Two invisible buddies</b> control it:
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+              <div class="bg-slate-900 p-2.5 rounded-xl border border-amber-400/30">
+                <div class="font-bold text-amber-300 flex items-center gap-1">
+                  <span>🛹</span> 1. The Sideways Skater
+                </div>
+                <p class="text-[11px] text-slate-300 mt-1">
+                  He carries the ball forwards at <b>${kin.ux.toFixed(1)} meters every single second</b>. Nobody slows him down, so he glides forever!
+                </p>
+              </div>
+
+              <div class="bg-slate-900 p-2.5 rounded-xl border border-emerald-400/30">
+                <div class="font-bold text-emerald-300 flex items-center gap-1">
+                  <span>🪂</span> 2. The Gravity Monster
+                </div>
+                <p class="text-[11px] text-slate-300 mt-1">
+                  He is standing at the bottom pulling down by <b>10 speed points</b> every second until the ball reaches the top and falls down!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drag Hint Card -->
+          <div class="bg-blue-950/30 border border-blue-500/30 p-3 rounded-2xl text-xs space-y-1">
+            <div class="font-bold text-sky-300 flex items-center gap-1">
+              <span>🖐️</span> Play with the Ball Yourself!
+            </div>
+            <p class="text-[11px] text-blue-100/90 leading-relaxed">
+              Grab the glowing ball with your finger or mouse and drag it along the flying curve! Watch how the yellow arrow (sideways) never changes, while the green arrow (up-down) gets pulled down!
+            </p>
+          </div>
+
+          <!-- Where is it right now? -->
+          <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl space-y-1.5">
+            <div class="font-bold text-amber-300 text-xs flex items-center gap-1.5">
+              <span>👀</span> What is the ball doing right now?
+            </div>
+            <div class="text-xs text-slate-300 space-y-1">
+              ${
+                curT < 0.05
+                  ? `🚀 <b>Ready for Blastoff!</b> The ball is waiting at the launcher with speed <b>${state.u} m/s</b>. Tap ▶ or drag it forward!`
+                  : curT < kin.tApex
+                  ? `🧗 <b>Climbing Upwards!</b> The ball reached <b>${pt.y.toFixed(1)} meters high</b>. Gravity is slowing down its upward climb to <b>${pt.vy.toFixed(1)} m/s</b>.`
+                  : curT < kin.flightTime
+                  ? `🦅 <b>Falling Down to Grass!</b> The ball crossed the highest point and is now plunging faster toward the ground!`
+                  : `💥 <b>Touchdown!</b> The ball reached the ground <b>${kin.rangeX.toFixed(1)} meters away</b>!`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    let lastFrameTime = null;
+
+    function animate(now) {
+      if (!lastFrameTime) lastFrameTime = now;
+      const dt = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+
+      if (state.isPlaying) {
+        const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+        state.currentTime += dt * state.speedMultiplier;
+
+        if (state.currentTime >= kin.flightTime) {
+          state.currentTime = kin.flightTime;
+          state.isPlaying = false;
+          document.getElementById('btnPlayPause').textContent = '▶';
+          playSound('hit');
+
+          if (state.target) {
+            const dist = Math.hypot(kin.rangeX - state.target.x, 0 - state.target.y);
+            if (dist < 2.5) {
+              playSound('targetHit');
+            }
+          }
+        }
+        draw();
+        renderExplanations();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function setupUI() {
+      // Sliders
+      const sliderU = document.getElementById('sliderU');
+      const sliderAngle = document.getElementById('sliderAngle');
+      const sliderH = document.getElementById('sliderH');
+      const sliderCarrier = document.getElementById('sliderCarrier');
+      const timeScrubber = document.getElementById('timeScrubber');
+
+      sliderU.addEventListener('input', (e) => {
+        state.u = parseFloat(e.target.value);
+        document.getElementById('labelU').textContent = `${state.u.toFixed(1)} m/s`;
+        recalcAndRefresh();
+      });
+
+      sliderAngle.addEventListener('input', (e) => {
+        state.angleDeg = parseFloat(e.target.value);
+        const desc = state.angleDeg >= 0 ? `${state.angleDeg.toFixed(1)}° (Elevation)` : `${Math.abs(state.angleDeg).toFixed(1)}° (Depression)`;
+        document.getElementById('labelAngle').textContent = desc;
+        recalcAndRefresh();
+      });
+
+      sliderH.addEventListener('input', (e) => {
+        state.h = parseFloat(e.target.value);
+        document.getElementById('labelH').textContent = state.h === 0 ? '0.0 m (Ground level)' : `${state.h.toFixed(1)} m (Cliff)`;
+        recalcAndRefresh();
+      });
+
+      sliderCarrier.addEventListener('input', (e) => {
+        state.carrierVx = parseFloat(e.target.value);
+        document.getElementById('labelCarrier').textContent = `${state.carrierVx.toFixed(1)} m/s`;
+        recalcAndRefresh();
+      });
+
+      timeScrubber.addEventListener('input', (e) => {
+        state.currentTime = parseFloat(e.target.value);
+        state.isPlaying = false;
+        document.getElementById('btnPlayPause').textContent = '▶';
+        draw();
+        renderExplanations();
+      });
+
+      // Play / Pause
+      const btnPlayPause = document.getElementById('btnPlayPause');
+      btnPlayPause.addEventListener('click', () => {
+        const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+        if (state.currentTime >= kin.flightTime) {
+          state.currentTime = 0;
+        }
+        state.isPlaying = !state.isPlaying;
+        btnPlayPause.textContent = state.isPlaying ? '⏸' : '▶';
+        if (state.isPlaying && state.currentTime === 0) {
+          playSound('launch');
+        }
+      });
+
+      // Reset
+      document.getElementById('btnReset').addEventListener('click', () => {
+        state.currentTime = 0;
+        state.isPlaying = false;
+        btnPlayPause.textContent = '▶';
+        draw();
+        renderExplanations();
+      });
+
+      // Sim Speed
+      document.getElementById('simSpeedSelect').addEventListener('change', (e) => {
+        state.speedMultiplier = parseFloat(e.target.value);
+      });
+
+      // Checkboxes
+      ['checkVectors', 'checkGhost', 'checkKeyPoints', 'checkSightLine'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('change', () => {
+            draw();
+          });
+        }
+      });
+
+      // Mode Toggles
+      document.getElementById('btnExamMode').addEventListener('click', () => setMode('exam'));
+      document.getElementById('btnEli6Mode').addEventListener('click', () => setMode('eli6'));
+
+      // Mute Audio
+      const btnMute = document.getElementById('btnMute');
+      btnMute.addEventListener('click', () => {
+        isMuted = !isMuted;
+        btnMute.textContent = isMuted ? '🔇' : '🔊';
+      });
+
+      // Interactive direct ball dragging along trajectory
+      setupCanvasInteractions();
+    }
+
+    function setupCanvasInteractions() {
+      // Find closest flight time t along trajectory given mouse/touch coordinates
+      function getClosestTimeToPixel(px, py) {
+        const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+        if (kin.flightTime <= 0) return { bestT: 0, minDist: 9999 };
+
+        let bestT = 0;
+        let minDistSq = Infinity;
+        const steps = 180;
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * kin.flightTime;
+          const pt = getParticleAtTime(t, state.u, state.angleDeg, state.h, state.carrierVx);
+          const scr = worldToScreen(pt.x, pt.y);
+          const distSq = (scr.px - px) * (scr.px - px) + (scr.py - py) * (scr.py - py);
+          if (distSq < minDistSq) {
+            minDistSq = distSq;
+            bestT = t;
+          }
+        }
+        return { bestT, minDist: Math.sqrt(minDistSq) };
+      }
+
+      // Pointer Down
+      canvas.addEventListener('pointerdown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+
+        if (state.clickModeTarget) {
+          const world = screenToWorld(px, py);
+          if (world.x > 1 && world.y >= 0) {
+            setTarget(world.x, world.y);
+            playSound('click');
+          }
+          return;
+        }
+
+        const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+        const curT = Math.min(state.currentTime, kin.flightTime);
+        const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+        const ballScr = worldToScreen(pt.x, pt.y);
+        const distToBall = Math.hypot(ballScr.px - px, ballScr.py - py);
+        const match = getClosestTimeToPixel(px, py);
+
+        // If clicking ball or anywhere near the trajectory line
+        if (distToBall < 26 || match.minDist < 20) {
+          state.isDraggingBall = true;
+          state.isPlaying = false;
+          document.getElementById('btnPlayPause').textContent = '▶';
+          canvas.setPointerCapture(e.pointerId);
+
+          state.currentTime = distToBall < 26 ? curT : match.bestT;
+          draw();
+          renderExplanations();
+          canvas.style.cursor = 'grabbing';
+        }
+      });
+
+      // Pointer Move
+      canvas.addEventListener('pointermove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+
+        if (state.isDraggingBall) {
+          const match = getClosestTimeToPixel(px, py);
+          state.currentTime = match.bestT;
+          draw();
+          renderExplanations();
+          return;
+        }
+
+        // Hover test
+        const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
+        const curT = Math.min(state.currentTime, kin.flightTime);
+        const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+        const ballScr = worldToScreen(pt.x, pt.y);
+        const distToBall = Math.hypot(ballScr.px - px, ballScr.py - py);
+        const match = getClosestTimeToPixel(px, py);
+
+        const wasHovering = state.isHoveringBall;
+        state.isHoveringBall = distToBall < 22 || match.minDist < 16;
+
+        if (state.clickModeTarget) {
+          canvas.style.cursor = 'crosshair';
+        } else if (state.isHoveringBall) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+
+        if (wasHovering !== state.isHoveringBall) {
+          draw();
+        }
+      });
+
+      // Pointer Up / Cancel
+      const handlePointerUp = (e) => {
+        if (state.isDraggingBall) {
+          state.isDraggingBall = false;
+          canvas.style.cursor = 'grab';
+          draw();
+          renderExplanations();
+        }
+      };
+      canvas.addEventListener('pointerup', handlePointerUp);
+      canvas.addEventListener('pointercancel', handlePointerUp);
+    }
+
+    function selectTopic(topicKey) {
+      state.currentTopic = topicKey;
+      document.querySelectorAll('.topic-tab').forEach(tab => {
+        tab.className = 'topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition';
+      });
+      const activeTab = document.getElementById(`tab-${topicKey}`);
+      if (activeTab) {
+        activeTab.className = 'topic-tab px-2.5 py-1 rounded-lg bg-blue-600/30 border border-blue-500 text-blue-200 whitespace-nowrap font-medium transition';
+      }
+      draw();
+      renderExplanations();
+    }
+
+    function setMode(newMode) {
+      state.mode = newMode;
+      const btnExam = document.getElementById('btnExamMode');
+      const btnEli6 = document.getElementById('btnEli6Mode');
+      const root = document.getElementById('bodyRoot');
+      const badgeIcon = document.getElementById('badgeIcon');
+
+      if (newMode === 'exam') {
+        btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-blue-600 text-white shadow';
+        btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-amber-300 transition-all';
+        root.classList.remove('eli6-mode');
+        badgeIcon.textContent = '🚀';
+        badgeIcon.className = 'w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xl shadow-inner';
+        document.getElementById('appTitle').textContent = 'CAIE 9231 / 9709 Projectiles Laboratory';
+        document.getElementById('subBadge').textContent = 'Ch 13: Projectiles & Trajectories';
+      } else {
+        btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 font-bold shadow';
+        btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-blue-300 transition-all';
+        root.classList.add('eli6-mode');
+        badgeIcon.textContent = '🧸';
+        badgeIcon.className = 'w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-xl shadow-inner';
+        document.getElementById('appTitle').textContent = 'The Flying Ball Adventure!';
+        document.getElementById('subBadge').textContent = 'Kids Science Lab';
+      }
+      draw();
+      renderExplanations();
+    }
+
+    function toggleClickTarget() {
+      state.clickModeTarget = !state.clickModeTarget;
+      const btn = document.getElementById('btnClickMode');
+      if (state.clickModeTarget) {
+        btn.className = 'bg-pink-600 text-white text-xs px-2.5 py-1.5 rounded-lg border border-pink-400 flex items-center gap-1.5 shadow animate-pulse';
+        btn.innerHTML = '🎯 <span>Click Anywhere on Grid!</span>';
+      } else {
+        btn.className = 'bg-slate-900/90 hover:bg-slate-800 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 flex items-center gap-1.5 shadow transition';
+        btn.innerHTML = '🎯 <span>Click to Set Target</span>';
+      }
+    }
+
+    function setTarget(x, y) {
+      state.target = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+      document.getElementById('targetBadge').classList.remove('hidden');
+      document.getElementById('targetPosText').textContent = `x=${state.target.x.toFixed(1)}m, y=${state.target.y.toFixed(1)}m`;
+
+      state.targetPaths = solveTwoTrajectories(state.target.x, state.target.y, state.u, state.h);
+      if (state.targetPaths) {
+        state.angleDeg = Math.round(state.targetPaths.low.thetaDeg * 10) / 10;
+        document.getElementById('sliderAngle').value = state.angleDeg;
+        document.getElementById('labelAngle').textContent = `${state.angleDeg}° (Direct Target Path)`;
+      }
+      recalcAndRefresh();
+    }
+
+    function clearTarget() {
+      state.target = null;
+      state.targetPaths = null;
+      document.getElementById('targetBadge').classList.add('hidden');
+      recalcAndRefresh();
+    }
+
+    function recalcAndRefresh() {
+      if (state.target) {
+        state.targetPaths = solveTwoTrajectories(state.target.x, state.target.y, state.u, state.h);
+      }
+      adjustScaleToFit();
+      draw();
+      renderExplanations();
+    }
+
+    function loadPreset(key) {
+      playSound('click');
+      state.carrierVx = 0;
+      state.currentTime = 0;
+      state.isPlaying = false;
+      document.getElementById('btnPlayPause').textContent = '▶';
+
+      if (key === 'standard') {
+        state.u = 20.0;
+        state.angleDeg = 25.0;
+        state.h = 0.0;
+        selectTopic('cartesian');
+        clearTarget();
+      } else if (key === 'platform') {
+        state.u = 25.0;
+        state.angleDeg = 45.0;
+        state.h = 15.0;
+        selectTopic('platform');
+        clearTarget();
+      } else if (key === 'airplane') {
+        state.u = 10.0;
+        state.angleDeg = -25.0;
+        state.h = 30.0;
+        state.carrierVx = 25.0;
+        selectTopic('platform');
+        clearTarget();
+      } else if (key === 'targetTwoPath') {
+        state.u = 20.0;
+        state.angleDeg = 36.9;
+        state.h = 0.0;
+        selectTopic('cartesian');
+        setTarget(16.0, 7.0);
+      } else if (key === 'depression') {
+        state.u = 5.0;
+        state.angleDeg = -18.4;
+        state.h = 10.0;
+        selectTopic('platform');
+        clearTarget();
+      } else if (key === 'sight30') {
+        state.u = 10.0;
+        state.angleDeg = 45.0;
+        state.h = 0.0;
+        selectTopic('elevation');
+        clearTarget();
+        state.currentTime = 0.59;
+      } else if (key === 'examStyle') {
+        state.u = 19.8;
+        state.angleDeg = 36.9;
+        state.h = 0.0;
+        selectTopic('curvefit');
+        clearTarget();
+      }
+
+      // Sync slider controls
+      document.getElementById('sliderU').value = state.u;
+      document.getElementById('labelU').textContent = `${state.u.toFixed(1)} m/s`;
+      document.getElementById('sliderAngle').value = state.angleDeg;
+      document.getElementById('labelAngle').textContent = `${state.angleDeg.toFixed(1)}°`;
+      document.getElementById('sliderH').value = state.h;
+      document.getElementById('labelH').textContent = state.h === 0 ? '0.0 m (Ground level)' : `${state.h.toFixed(1)} m (Cliff)`;
+      document.getElementById('sliderCarrier').value = state.carrierVx;
+      document.getElementById('labelCarrier').textContent = `${state.carrierVx.toFixed(1)} m/s`;
+
+      recalcAndRefresh();
+    }
+
+    window.addEventListener('load', () => {
+      setupUI();
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      loadPreset('standard');
+      requestAnimationFrame(animate);
+    });
+  </script>
+</body>
+<!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</html>

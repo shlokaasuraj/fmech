@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hooke's Law & Elasticity Visual Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- KaTeX for high-performance LaTeX rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .font-kid {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-mono-math {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Compact KaTeX displays for side panels */
+    .katex-display {
+      margin: 0.35em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px 0;
+    }
+    .katex {
+      font-size: 1.05em;
+    }
+    /* Smooth canvas rendering */
+    canvas {
+      image-rendering: auto;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <header class="bg-slate-800/90 border-b border-slate-700/80 backdrop-blur sticky top-0 z-50 px-4 py-3 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20 text-2xl">
+          🌀
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Hooke's Law & Elasticity Lab
+            <span class="text-xs bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full font-semibold">Cambridge Mechanics</span>
+          </h1>
+          <p class="text-xs text-slate-400">From 6-Year-Old Intuition to A-Level "Twisted" Exam Mastery</p>
+        </div>
+      </div>
+
+      <!-- Explanatory Perspective Switcher -->
+      <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-700">
+        <button id="btn-mode-kid" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md">
+          <span>🧸</span>
+          <span>6-Year-Old Mode</span>
+        </button>
+        <button id="btn-mode-math" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+          <span>🎓</span>
+          <span>A-Level Mechanics Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-slate-800 border-b border-slate-700 px-4 py-2">
+    <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto text-xs pb-1 sm:pb-0">
+      <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap mr-1">Simulations:</span>
+      <button data-sim="hanging" class="sim-tab-btn active px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🪢</span> 1. Hanging String vs Spring
+      </button>
+      <button data-sim="upright" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>📦</span> 2. Upright Spring (Thrust)
+      </button>
+      <button data-sim="opposing" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>↔️</span> 3. Dual Spring Tug-of-War
+      </button>
+      <button data-sim="vsling" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>⛺</span> 4. Midpoint V-Sling (Past Papers)
+      </button>
+      <button data-sim="energy" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>⚡</span> 5. Bungee & Energy Conservation
+      </button>
+      <button data-sim="circle" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🛸</span> 6. Whirling Disc & Circles
+      </button>
+      <button data-sim="twisted" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 text-white font-medium whitespace-nowrap transition-transform hover:scale-105 flex items-center gap-1.5">
+        <span>🧠</span> "Twisted Problems" Solver
+      </button>
+    </div>
+  </div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+    
+    <!-- LEFT / MAIN: Interactive Canvas & Visual Simulation (7 Cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-4">
+      <div class="relative bg-slate-950 rounded-2xl border border-slate-700/80 shadow-2xl overflow-hidden flex flex-col flex-1 min-h-[460px] md:min-h-[520px]">
+        
+        <!-- Canvas Top Bar Status -->
+        <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="bg-slate-900/85 backdrop-blur border border-slate-700 px-3 py-1 rounded-xl text-xs flex items-center gap-2 shadow-lg">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="canvas-status-title" class="font-semibold text-white">Vertical Elastic String</span>
+          </div>
+
+          <div class="flex items-center gap-2 pointer-events-auto">
+            <button id="btn-sound-toggle" title="Toggle Sound FX" class="bg-slate-800/90 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-600 transition shadow">
+              🔊
+            </button>
+            <button id="btn-slow-mo" title="Slow Motion" class="bg-slate-800/90 hover:bg-slate-700 text-slate-300 px-2.5 py-1 text-xs rounded-xl border border-slate-600 transition shadow">
+              🐢 Slow
+            </button>
+            <button id="btn-reset-sim" title="Reset Simulation" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 text-xs font-semibold rounded-xl shadow transition">
+              ↺ Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Dynamic Physics Canvas -->
+        <canvas id="simCanvas" class="w-full h-full flex-1 cursor-grab active:cursor-grabbing touch-none"></canvas>
+
+        <!-- Canvas Bottom Visual Legends & Live Readouts -->
+        <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-4 flex-wrap">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> <span id="lbl-tension">Tension / Thrust: 0 N</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> <span id="lbl-extension">Extension x: 0 m</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> <span id="lbl-energy">EPE: 0 J</span></span>
+          </div>
+          <div class="text-[11px] text-slate-400 italic">
+            💡 Tip: Click & drag mass or anchors!
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
+          <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+            <span>⚙️</span> Interactive Physics Controls
+          </h3>
+          <span class="text-[11px] text-slate-400 font-mono-math">g = 10 m/s² (Cambridge Standard)</span>
+        </div>
+
+        <div id="dynamic-controls-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <!-- Populated dynamically per simulation mode -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Pedagogical Explanations & Twisted Problem Solver (5 Cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-4">
+      
+      <!-- Perspective Explanation Card (Switches between Kid & Cambridge A-Level) -->
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-5 shadow-xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+          <div class="flex items-center gap-2">
+            <span id="perspective-badge-icon" class="text-xl">🧸</span>
+            <div>
+              <h2 id="perspective-badge-title" class="text-sm font-bold text-amber-400 font-kid tracking-wide">
+                6-Year-Old "Gummy Worm" Intuition
+              </h2>
+              <p id="perspective-badge-sub" class="text-[11px] text-slate-400">
+                Simple physical analogies that make the math stick forever
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Explanation Text Area -->
+        <div id="explanation-body" class="text-xs leading-relaxed text-slate-200 space-y-3">
+          <!-- Injected via JavaScript -->
+        </div>
+
+        <!-- Key Formula Spotlight Box -->
+        <div id="formula-spotlight" class="mt-2 p-3 bg-slate-900/90 border border-slate-700 rounded-xl">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- "Why Students Get Twisted" Exam Trap Alert -->
+      <div class="bg-rose-950/40 border border-rose-700/60 rounded-2xl p-4 text-xs shadow-lg">
+        <div class="flex items-center gap-2 text-rose-400 font-bold mb-1.5">
+          <span>⚠️</span>
+          <span>The Cambridge "Twisted Trap" in this scenario:</span>
+        </div>
+        <p id="trap-explanation" class="text-rose-200/90 leading-relaxed text-[11.5px]">
+          Watch out for confusing string length with extension! The extension is only the extra bit: x = length - natural length.
+        </p>
+      </div>
+
+      <!-- Live Step-by-Step Mathematical Derivation Box -->
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-4 shadow-xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between border-b border-slate-700 pb-2 mb-3">
+          <span class="font-bold text-xs text-indigo-300 flex items-center gap-1.5">
+            <span>📐</span> Live Step-by-Step Math Board
+          </span>
+          <span class="text-[10px] text-slate-400 font-mono">Updates automatically</span>
+        </div>
+        <div id="live-math-derivation" class="text-xs font-mono-math space-y-2 text-slate-300 overflow-y-auto max-h-56 pr-1">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="solver-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-600 rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🧠</span>
+          <div>
+            <h3 class="font-bold text-white text-base">Cambridge Exam Twisted Problems Decoder</h3>
+            <p class="text-xs text-slate-400">Pick any classic textbook problem to see the deep logic</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg">✕</button>
+      </div>
+
+      <div class="overflow-y-auto mt-4 space-y-4 text-xs pr-1">
+        <div class="space-y-2">
+          <label class="font-semibold text-slate-300">Choose a Classic Problem from Chapter 16:</label>
+          <select id="preset-problem-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-slate-200">
+            <option value="p1">Worked Example 16.2: Particle suspended between Floor Spring & Ceiling Spring</option>
+            <option value="p2">Worked Example 16.4 / Review Ex 1: Midpoint V-Sling with angle θ</option>
+            <option value="p3">Past Paper 2007 (Page 16): Two opposing strings on table, find max speed</option>
+            <option value="p4">Worked Example 16.9: Elastic string on rough table with friction μ = 0.4</option>
+            <option value="p5">Worked Example 16.12 / 16.13: Conical pendulum / horizontal circular motion</option>
+            <option value="p6">Dynamic Bungee: Max drop distance (GPE converted completely to EPE)</option>
+          </select>
+        </div>
+
+        <div id="problem-solution-card" class="bg-slate-900 border border-slate-700/80 rounded-xl p-4 space-y-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-700 flex justify-end">
+        <button id="btn-load-into-sim" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-xl text-xs shadow-lg transition">
+          Load this setup into Visual Simulator 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Safe Web Audio API synthesizer for spring/elasticity effects without external files
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playBoing(freq = 240, duration = 0.25) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          
+          const now = this.ctx.currentTime;
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 2.2, now + 0.08);
+          osc.frequency.exponentialRampToValueAtTime(freq * 0.8, now + duration);
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + duration);
+        } catch (e) {}
+      }
+      playSnap() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          const now = this.ctx.currentTime;
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } catch (e) {}
+      }
+    }
+    const sfx = new SoundFX();
+  </script>
+
+  <script>
+    // Primary Global Simulation State
+    const state = {
+      simType: 'hanging', // hanging, upright, opposing, vsling, energy, circle
+      viewMode: 'kid',    // 'kid' or 'math'
+      slowMo: false,
+      g: 10.0,            // Cambridge Standard g = 10 m/s²
+      
+      // Hanging single string/spring parameters
+      hanging: {
+        isSpring: false,  // false = String (goes slack if compressed), true = Spring (has thrust)
+        l: 1.5,           // Natural length in meters
+        lambda: 50,       // Modulus of elasticity in Newtons
+        m: 2.0,           // Mass in kg
+        y: 2.1,           // Current vertical position (m below ceiling)
+        vy: 0.0,          // Velocity m/s
+        damping: 0.985,   // Drag damping
+        dragged: false,
+        offsetY: 0
+      },
+
+      // Upright spring parameters (compression / thrust)
+      upright: {
+        l: 1.2,
+        lambda: 45,
+        m: 4.0,
+        y: 0.13,          // Current height above ground (m)
+        vy: 0.0,
+        damping: 0.985,
+        dragged: false
+      },
+
+      // Opposing strings / springs (e.g. floor & ceiling or 2 walls)
+      opposing: {
+        totalDist: 4.5,   // distance AB
+        l1: 1.2,          // top/left spring
+        lambda1: 25,
+        l2: 1.6,          // bottom/right spring
+        lambda2: 40,
+        m: 2.0,
+        isVertical: true, // floor to ceiling
+        pos: 1.94,        // distance from floor
+        v: 0.0,
+        damping: 0.99,
+        dragged: false
+      },
+
+      // Midpoint V-Sling (Past paper trampoline / midpoint string)
+      vsling: {
+        width: 4.8,       // AB distance
+        naturalLen: 4.0,  // Total natural length of string
+        lambda: 25,       // Modulus of elasticity
+        m: 0.35,          // Mass of particle at midpoint
+        dropY: 0.7,       // Vertical distance below midpoint of AB
+        vy: 0.0,
+        damping: 0.992,
+        dragged: false
+      },
+
+      // Dynamic Bungee with Real-time Energy Bars
+      energy: {
+        l: 2.0,
+        lambda: 60,
+        m: 3.0,
+        y: 2.0,
+        vy: 0.0,
+        damping: 0.998,   // very low damping to see energy conservation!
+        dragged: false,
+        energyHistory: []
+      },
+
+      // Whirling Disc / Conical Motion
+      circle: {
+        l: 0.8,
+        lambda: 100,
+        m: 0.5,
+        r: 1.2,           // current radius
+        omega: 9.13,      // angular speed rad/s
+        angle: 0.0
+      }
+    };
+  </script>
+
+  <script>
+    const explanations = {
+      hanging: {
+        title: "Hanging String / Spring",
+        kid: {
+          concept: "Imagine a giant Gummy Snake hanging from the ceiling! 🐍",
+          body: `
+            <p><strong>1. The Natural Length ($l$):</strong> This is how long the gummy snake rests when nobody is pulling on it. It’s totally chill and cozy.</p>
+            <p><strong>2. The Stretch ($x$):</strong> If a cheeky monkey hangs on the bottom, gravity pulls the monkey down with force $mg$. The snake stretches by an extra amount $x$.</p>
+            <p><strong>3. The Stiff vs Soft Magic ($\lambda$):</strong> A thick, tough rubber band has a HUGE $\\lambda$. A soft limp noodle has a tiny $\\lambda$.</p>
+            <p><strong>4. String vs Spring:</strong> If you try to push a cooked spaghetti upward, it goes totally limp! That's an <em>elastic string</em> (it only pulls with $T > 0$). But if you have a metal slinky, it can push right back! That's a <em>spring</em>.</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 6-Year-Old Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Pulling Force } T = \\frac{\\lambda \\times \\text{Extra Stretch } x}{\\text{Resting Length } l}$$</div>
+          `,
+          trap: "Textbooks love to give you the total length (like 1.8m) when the original was 1.2m. The extension $x$ is ONLY the extra $0.6\\text{ m}$! Never use the total length in Hooke's Law."
+        },
+        math: {
+          concept: "Vertical Equilibrium & Modulus of Elasticity",
+          body: `
+            <p><strong>Hooke's Law:</strong> $$T = \\frac{\\lambda x}{l} = kx \\quad \\text{where} \\quad k = \\frac{\\lambda}{l}$$</p>
+            <p>In Cambridge Further Mechanics, we use modulus $\\lambda$ (in Newtons) rather than stiffness $k$, because $\\lambda$ is an intrinsic property of the material regardless of length $l$.</p>
+            <p><strong>Equilibrium Condition:</strong> When hanging at rest, the upward tension balances the downward weight:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$R(\\uparrow): T - mg = 0 \\implies \\frac{\\lambda x}{l} = mg \\implies x = \\frac{m g l}{\\lambda}$$
+            </div>
+            <p><strong>String vs Spring:</strong> For an elastic string, $T = 0$ whenever $x \\le 0$ (string goes slack). For a spring, when compressed ($x < 0$), the force becomes a compressive <strong>thrust</strong>.</p>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Key Points 16.1 & 16.2:</div>
+            <div class="text-emerald-400">$$T = \\frac{\\lambda x}{l} \\qquad \\mathrm{EPE} = \\frac{\\lambda x^2}{2l}$$</div>
+          `,
+          trap: "Always verify whether the problem specifies an 'elastic string' or 'spring'. If a particle moves above the natural length, a string exerts zero force ($T = 0$), whereas a spring exerts downward thrust!"
+        }
+      },
+
+      upright: {
+        title: "Upright Spring & Thrust",
+        kid: {
+          concept: "Standing on a Pogo Stick! 🦘",
+          body: `
+            <p>Imagine a giant bouncy spring standing upright on the floor like a jack-in-the-box.</p>
+            <p>When you drop a heavy bowling ball of mass $m$ on top of it, the spring gets squished down by distance $x$!</p>
+            <p>The spring gets angry because it hates being squished. It pushes back UP against the ball. In physics, we call this push <strong>THRUST</strong> ($T$).</p>
+            <p>The more you squish it down ($x$), the harder it tries to shoot the ball into outer space!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 The Jack-in-the-Box Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Upward Push } T = \\frac{\\lambda \\times x}{l}$$</div>
+          `,
+          trap: "Because the spring is compressed by $x$, the new height of the mass is $h = l - x$. Don't accidentally add $x$!"
+        },
+        math: {
+          concept: "Compression and Compressive Thrust",
+          body: `
+            <p>When a spring of natural length $l$ stands vertically on a horizontal floor and a mass $m$ rests on it, the spring is compressed by distance $x$.</p>
+            <p>The upward restoring force is called <strong>Thrust</strong> ($T$):</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$R(\\uparrow): T - mg = 0 \\implies \\frac{\\lambda x}{l} = mg \\implies x = \\frac{m g l}{\\lambda}$$
+            </div>
+            <p>Height of the particle above floor: $$h = l - x$$</p>
+            <p><strong>Worked Example 16.1 (Page 3):</strong> Natural length $l = 1.2\\text{ m}$, $m = 4\\text{ kg}$, $\\lambda = 45\\text{ N}$, $g = 10\\text{ m/s}^2$:</p>
+            <p>$$4(10) = \\frac{45 x}{1.2} \\implies x = \\frac{40 \\times 1.2}{45} = 1.067\\text{ m}$$</p>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Cambridge Standard:</div>
+            <div class="text-emerald-400">$$\\text{Thrust } T = \\frac{\\lambda x}{l} \\quad (x = \\text{compression})$$</div>
+          `,
+          trap: "Elastic strings CANNOT sustain compression ($T = 0$ when $x \\le 0$). Only light elastic springs exert thrust when compressed."
+        }
+      },
+
+      opposing: {
+        title: "Dual Spring Tug-of-War (Floor & Ceiling)",
+        kid: {
+          concept: "Two Friends Pulling You in Opposite Directions! 👫",
+          body: `
+            <p>Imagine you are holding hands with two friends. Friend #1 is pulling you toward the ceiling with $T_1$, and Friend #2 is pushing you up from the floor with thrust $T_2$!</p>
+            <p>Where will you end up stopping? At the sweet spot where all upward pulls balance your weight $mg$!</p>
+            <p>If you pull yourself away from that sweet spot and let go, you wobble back and forth like a funky trampoline!</p>
+            <p><strong>Fastest point:</strong> You zip the fastest right as you fly through that exact equilibrium sweet spot!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Tug-of-War Rule:</div>
+            <div class="text-sm font-semibold text-white">$$T_1 + T_2 = mg$$</div>
+          `,
+          trap: "The total distance between anchors $AB$ is fixed (e.g. $4.5\\text{ m}$). As the mass moves by $\\Delta x$, one spring stretches while the other relaxes by the exact same amount!"
+        },
+        math: {
+          concept: "Connected Systems in Equilibrium (Worked Example 16.2)",
+          body: `
+            <p>A mass $m$ is suspended between points $A$ and $B$ separated by distance $D$.</p>
+            <p>Let $x$ be the compression of the bottom spring (natural length $l_2$). Then $AC = l_2 - x$.</p>
+            <p>The top spring (natural length $l_1$) has length $D - AC$, giving extension $e_1 = (D - AC) - l_1$.</p>
+            <p><strong>Vertical Equilibrium:</strong></p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$R(\\uparrow): T_1 = T_2 + mg \\implies \\frac{\\lambda_1 e_1}{l_1} = \\frac{\\lambda_2 x}{l_2} + mg$$
+            </div>
+            <p><strong>Max Speed Location:</strong> In any release problem, maximum speed occurs when acceleration $a = 0$, which is identically the <em>equilibrium position</em>!</p>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Equilibrium & Max Speed:</div>
+            <div class="text-emerald-400">$$\\sum F = m a = 0 \\implies T_1 - T_2 - mg = 0 \\quad (v = v_{\\max})$$</div>
+          `,
+          trap: "Students often think max speed occurs at the natural length of one string. FALSE! Maximum speed occurs strictly where net force $\\sum F = 0$ (zero acceleration)."
+        }
+      },
+
+      vsling: {
+        title: "Midpoint V-Sling / Trampoline (Past Paper Classic)",
+        kid: {
+          concept: "The Super Slingshot / Trampoline! ⛺",
+          body: `
+            <p>Imagine two trees with a giant stretchy rope tied between them. You sit right in the middle and pull it down like an angry bird slingshot!</p>
+            <p>Both halves of the rope pull up and sideways with tension $T$ at angle $\\theta$.</p>
+            <p>The sideways pulls cancel each other out ($T\\cos\\theta = T\\cos\\theta$). But BOTH upward pulls combine to hoist your weight: $2T\\sin\\theta = mg$!</p>
+            <p>As you sink lower, the ropes make a steeper angle $\\theta$, so they direct more of their tension upwards!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Slingshot Rule:</div>
+            <div class="text-sm font-semibold text-white">$$mg = 2 \\times T \\times \\sin\\theta$$</div>
+          `,
+          trap: "Remember to calculate the hypotenuse length for EACH half of the string! The total string length is $2 \\times \\sqrt{d^2 + h^2}$."
+        },
+        math: {
+          concept: "Symmetrical Splayed Strings & Trigonometric Equilibrium",
+          body: `
+            <p>A string of natural length $l$ is tied to anchors $A$ and $B$ separated by distance $2d$. A particle of mass $m$ hangs at midpoint $P$, at depth $h$ below $AB$.</p>
+            <p>Length of each half: $$L_{\\text{half}} = \\sqrt{d^2 + h^2}$$</p>
+            <p>Extension of each half: $$x = \\sqrt{d^2 + h^2} - \\frac{l}{2}$$</p>
+            <p>Tension in each half: $$T = \\frac{\\lambda x}{l / 2} = \\frac{2\\lambda x}{l}$$</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$R(\\uparrow): 2 T \\sin\\theta = mg \\implies 2 T \\left( \\frac{h}{\\sqrt{d^2 + h^2}} \\right) = mg$$
+            </div>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Resolving Geometry:</div>
+            <div class="text-emerald-400">$$\\sin\\theta = \\frac{h}{\\sqrt{d^2 + h^2}} \\qquad 2T\\sin\\theta = mg$$</div>
+          `,
+          trap: "Cambridge Question June 2010 (Page 18): Always distinguish between $\\lambda$ for the whole string vs half strings. Using $T = \\frac{\\lambda x_{\\text{half}}}{l/2}$ correctly preserves the physical modulus."
+        }
+      },
+
+      energy: {
+        title: "Bungee Jump & Work-Energy Principle",
+        kid: {
+          concept: "The Bungee Jumper's Rollercoaster! 🎢",
+          body: `
+            <p>Think of Energy like Magic Bouncy Tokens that never disappear:</p>
+            <p><strong>1. Tallness Tokens (Gravitational PE):</strong> When you stand high on a crane, you have lots of height energy: $mgh$!</p>
+            <p><strong>2. Zoom Tokens (Kinetic Energy):</strong> As you drop, height turns into speed: $\\frac{1}{2}mv^2$.</p>
+            <p><strong>3. Stretch Tokens (Elastic PE):</strong> When the bungee cord tightens, speed turns into stretch tokens: $\\frac{\\lambda x^2}{2l}$. You stop smoothly right before the water!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Magic Token Rule:</div>
+            <div class="text-sm font-semibold text-white">$$E_{\\text{total}} = \\mathrm{KE} + \\mathrm{GPE} + \\mathrm{EPE} = \\text{Constant}$$</div>
+          `,
+          trap: "The bungee cord does NOT start stretching immediately! It falls freely for the first natural length $l$ before Hooke's Law kicks in."
+        },
+        math: {
+          concept: "Conservation of Energy & Elastic Potential Energy (EPE)",
+          body: `
+            <p>Elastic Potential Energy is derived from the work done by the variable tension:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$\\mathrm{EPE} = \\int_{0}^{x} \\frac{\\lambda s}{l}\\,ds = \\left[ \\frac{\\lambda s^2}{2l} \\right]_0^x = \\frac{\\lambda x^2}{2l}$$
+            </div>
+            <p><strong>Work-Energy Theorem (Section 16.3):</strong></p>
+            <p>$$\\Delta \\mathrm{KE} + \\Delta \\mathrm{GPE} + \\Delta \\mathrm{EPE} = W_{\\text{friction}}$$</p>
+            <p>For a vertical drop from rest to instantaneous stop ($v = 0$):</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$mg(l + x) = \\frac{\\lambda x^2}{2l} \\implies \\lambda x^2 - 2mglx - 2mgl^2 = 0$$
+            </div>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Core Energy Formula:</div>
+            <div class="text-cyan-300">$$\\mathrm{EPE} = \\frac{\\lambda x^2}{2l} \\qquad \\Delta E = 0$$</div>
+          `,
+          trap: "Notice that $\\mathrm{EPE} \\propto x^2$! If extension doubles, the energy stored quadruples ($2^2 = 4$)."
+        }
+      },
+
+      circle: {
+        title: "Whirling Cosmic Disc (Horizontal Circles)",
+        kid: {
+          concept: "Spinning on the Playground Merry-Go-Round! 🛸",
+          body: `
+            <p>Have you ever held hands with a friend and spun around super fast in circles until your feet lifted off the ground?</p>
+            <p>Your arms feel pulled tight! That's tension $T$ providing centripetal acceleration.</p>
+            <p>If you tie a toy car to a rubber band and spin it on a smooth table, the faster you spin (higher $\\omega$), the further out the car flies, stretching the rubber band longer and longer.</p>
+            <p>The rubber band pulls inward to keep the car from flying off in a straight line!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Merry-Go-Round Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Inward Pull } T = m \\times r \\times \\omega^2$$</div>
+          `,
+          trap: "The radius of the circle is the STRETCHED length $r = l + x$, NOT the natural length $l$!"
+        },
+        math: {
+          concept: "Horizontal Circular Motion with Elastic Constraints",
+          body: `
+            <p>When a particle rotates in a horizontal circle of radius $r$ with angular velocity $\\omega$:</p>
+            <p>Centripetal acceleration is $a_c = r\\omega^2$ directed towards center $O$.</p>
+            <p><strong>Hooke's Law:</strong> $r = l + x \\implies x = r - l$. Tension is $T = \\frac{\\lambda(r - l)}{l}$.</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-2">
+              $$R(\\rightarrow O): T = m r \\omega^2 \\implies \\frac{\\lambda (r - l)}{l} = m r \\omega^2$$
+            </div>
+            <p>Solving for angular speed: $$\\omega = \\sqrt{\\frac{\\lambda(r - l)}{m l r}}$$</p>
+          `,
+          formula: `
+            <div class="text-indigo-300 font-bold mb-1">🎓 Centripetal & Hooke Balance:</div>
+            <div class="text-emerald-400">$$T = \\frac{\\lambda(r - l)}{l} = m r \\omega^2$$</div>
+          `,
+          trap: "Total energy includes BOTH the elastic potential energy $\\frac{\\lambda x^2}{2l}$ in the stretched cord AND the rotational kinetic energy $\\frac{1}{2}m(r\\omega)^2$."
+        }
+      }
+    };
+  </script>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Make canvas sharp on Retina displays
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Helper: Draw Realistic Coiled Spring
+    function drawSpring(ctx, x1, y1, x2, y2, coils = 14, radius = 14, color = '#60a5fa', lineWidth = 3.5) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+
+      ctx.save();
+      ctx.translate(x1, y1);
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const leadIn = 16;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(leadIn, 0);
+
+      const coilDist = Math.max(10, dist - 2 * leadIn);
+      const step = coilDist / coils;
+
+      for (let i = 0; i < coils; i++) {
+        const cx = leadIn + (i + 0.25) * step;
+        const cy = -radius;
+        const cx2 = leadIn + (i + 0.75) * step;
+        const cy2 = radius;
+        ctx.lineTo(cx, cy);
+        ctx.lineTo(cx2, cy2);
+      }
+
+      ctx.lineTo(dist - leadIn, 0);
+      ctx.lineTo(dist, 0);
+      ctx.stroke();
+
+      // Metallic highlight
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = lineWidth * 0.4;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Helper: Draw Elastic String (straight when taut, wavy when slack)
+    function drawElasticString(ctx, x1, y1, x2, y2, isSlack = false, color = '#f59e0b', lineWidth = 3.5) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+
+      if (!isSlack) {
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      } else {
+        // Wavy slack string
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        ctx.translate(x1, y1);
+        ctx.rotate(angle);
+
+        ctx.moveTo(0, 0);
+        const waves = 4;
+        const waveStep = dist / waves;
+        for (let i = 0; i < waves; i++) {
+          const qx = (i + 0.5) * waveStep;
+          const qy = (i % 2 === 0 ? 1 : -1) * 12;
+          ctx.quadraticCurveTo(qx, qy, (i + 1) * waveStep, 0);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Helper: Draw Vector Arrow
+    function drawVectorArrow(ctx, x, y, dx, dy, color = '#ef4444', label = '') {
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 4) return;
+
+      const angle = Math.atan2(dy, dx);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+
+      // Arrowhead
+      const headLen = 10;
+      ctx.beginPath();
+      ctx.moveTo(x + dx, y + dy);
+      ctx.lineTo(x + dx - headLen * Math.cos(angle - Math.PI / 6), y + dy - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x + dx - headLen * Math.cos(angle + Math.PI / 6), y + dy - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.fillStyle = color;
+        ctx.fillText(label, x + dx + 8 * Math.cos(angle), y + dy + 8 * Math.sin(angle));
+      }
+      ctx.restore();
+    }
+  </script>
+
+  <script>
+    let lastTime = performance.now();
+
+    function updateHangingPhysics(dt) {
+      const s = state.hanging;
+      if (s.dragged) return;
+
+      // Current length = y
+      const ext = s.y - s.l; // extension or compression
+      let tension = 0;
+
+      if (!s.isSpring) {
+        // Elastic string: only tensions when ext > 0
+        if (ext > 0) {
+          tension = (s.lambda * ext) / s.l;
+        } else {
+          tension = 0; // slack!
+        }
+      } else {
+        // Elastic spring: both tension and compression
+        tension = (s.lambda * ext) / s.l;
+      }
+
+      // Net force downward: F_net = mg - Tension
+      const netForce = (s.m * state.g) - tension;
+      const ay = netForce / s.m;
+
+      s.vy += ay * dt;
+      s.vy *= s.damping;
+      s.y += s.vy * dt;
+
+      // Ground limit
+      if (s.y > 3.8) {
+        s.y = 3.8;
+        s.vy = -s.vy * 0.4;
+      }
+    }
+
+    function updateUprightPhysics(dt) {
+      const s = state.upright;
+      if (s.dragged) return;
+
+      // y is current height above floor.
+      // compression x = natural length l - y.
+      const compression = s.l - s.y;
+      // Thrust pushes upward: T = (lambda * compression) / l
+      const thrust = (s.lambda * compression) / s.l;
+      
+      // Net force upward: Thrust - mg
+      const netForce = thrust - (s.m * state.g);
+      const ay = netForce / s.m;
+
+      s.vy += ay * dt;
+      s.vy *= s.damping;
+      s.y += s.vy * dt;
+
+      // Floor collision
+      if (s.y < 0.05) {
+        s.y = 0.05;
+        s.vy = -s.vy * 0.2;
+      }
+    }
+
+    function updateOpposingPhysics(dt) {
+      const s = state.opposing;
+      if (s.dragged) return;
+
+      // pos is height from floor (0 to totalDist)
+      // Bottom spring: natural l2, current length = pos.
+      // Top spring: natural l1, current length = totalDist - pos.
+      const lenBottom = s.pos;
+      const lenTop = s.totalDist - s.pos;
+
+      // For Worked Example 16.2:
+      // Top spring is stretched: ext1 = lenTop - l1
+      // Bottom spring is compressed: comp2 = l2 - lenBottom
+      const extTop = lenTop - s.l1;
+      const compBottom = s.l2 - lenBottom;
+
+      const T_top = (s.lambda1 * extTop) / s.l1;        // pulls UP
+      const Thrust_bottom = (s.lambda2 * compBottom) / s.l2; // pushes UP
+
+      // Net force upward: T_top + Thrust_bottom - mg
+      const netForce = T_top + Thrust_bottom - (s.m * state.g);
+      const a = netForce / s.m;
+
+      s.v += a * dt;
+      s.v *= s.damping;
+      s.pos += s.v * dt;
+
+      // Limits
+      if (s.pos < 0.2) { s.pos = 0.2; s.v = 0; }
+      if (s.pos > s.totalDist - 0.2) { s.pos = s.totalDist - 0.2; s.v = 0; }
+    }
+
+    function updateVSlingPhysics(dt) {
+      const s = state.vsling;
+      if (s.dragged) return;
+
+      const halfW = s.width / 2;
+      const currentHalfLen = Math.sqrt(halfW * halfW + s.dropY * s.dropY);
+      const naturalHalfLen = s.naturalLen / 2;
+      const extHalf = Math.max(0, currentHalfLen - naturalHalfLen);
+
+      // Tension in each branch
+      const T = (s.lambda * extHalf) / naturalHalfLen;
+      const sinTheta = s.dropY / currentHalfLen;
+
+      // Total vertical force upward = 2 * T * sinTheta
+      const upwardForce = 2 * T * sinTheta;
+      const netForce = (s.m * state.g) - upwardForce;
+      const a = netForce / s.m;
+
+      s.vy += a * dt;
+      s.vy *= s.damping;
+      s.dropY += s.vy * dt;
+
+      // Limits
+      if (s.dropY < 0.05) { s.dropY = 0.05; s.vy = -s.vy * 0.5; }
+    }
+
+    function updateEnergyBungeePhysics(dt) {
+      const s = state.energy;
+      if (s.dragged) return;
+
+      const ext = Math.max(0, s.y - s.l);
+      const T = (s.lambda * ext) / s.l;
+      const netForce = (s.m * state.g) - T;
+      const a = netForce / s.m;
+
+      s.vy += a * dt;
+      s.vy *= s.damping;
+      s.y += s.vy * dt;
+
+      if (s.y > 4.5) { s.y = 4.5; s.vy = -s.vy * 0.4; }
+    }
+
+    function updateCirclePhysics(dt) {
+      const s = state.circle;
+      s.angle += s.omega * dt;
+      if (s.angle > Math.PI * 2) s.angle -= Math.PI * 2;
+    }
+  </script>
+
+  <script>
+    function renderHanging(rect) {
+      const s = state.hanging;
+      const scale = rect.height / 4.2; // pixels per meter
+      const ceilingY = 50;
+      const centerX = rect.width / 2;
+      const massY = ceilingY + s.y * scale;
+      const naturalY = ceilingY + s.l * scale;
+      const ext = s.y - s.l;
+      const isSlack = !s.isSpring && ext < 0;
+
+      // Ceiling fixture
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(centerX - 100, ceilingY - 12, 200, 12);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      for (let i = -90; i < 90; i += 15) {
+        ctx.beginPath();
+        ctx.moveTo(centerX + i, ceilingY - 12);
+        ctx.lineTo(centerX + i + 10, ceilingY);
+        ctx.stroke();
+      }
+
+      // Natural length marker line
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 90, naturalY);
+      ctx.lineTo(centerX + 90, naturalY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText(`Natural Length l = ${s.l.toFixed(2)}m`, centerX + 95, naturalY + 4);
+
+      // Draw string or spring
+      if (s.isSpring) {
+        drawSpring(ctx, centerX, ceilingY, centerX, massY, 14, 16, '#38bdf8', 4);
+      } else {
+        drawElasticString(ctx, centerX, ceilingY, centerX, massY, isSlack, '#fbbf24', 4);
+      }
+
+      // Draw hanging mass
+      const massRadius = 18 + s.m * 3;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = s.dragged ? '#ec4899' : '#a855f7';
+      ctx.beginPath();
+      ctx.arc(centerX, massY, massRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${s.m}kg`, centerX, massY);
+
+      // Vector arrows (FBD)
+      const tension = (!s.isSpring && ext < 0) ? 0 : (s.lambda * ext) / s.l;
+      const weight = s.m * state.g;
+
+      // Tension vector (upward)
+      if (tension > 0.5) {
+        drawVectorArrow(ctx, centerX, massY - massRadius, 0, -Math.min(100, tension * 1.6), '#38bdf8', `T = ${tension.toFixed(1)}N`);
+      }
+      // Weight vector (downward)
+      drawVectorArrow(ctx, centerX, massY + massRadius, 0, Math.min(100, weight * 1.6), '#f43f5e', `mg = ${weight.toFixed(1)}N`);
+
+      // Extension measurement ruler
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 60, naturalY);
+      ctx.lineTo(centerX - 60, massY);
+      ctx.stroke();
+      // Tick marks
+      ctx.beginPath();
+      ctx.moveTo(centerX - 65, naturalY); ctx.lineTo(centerX - 55, naturalY);
+      ctx.moveTo(centerX - 65, massY); ctx.lineTo(centerX - 55, massY);
+      ctx.stroke();
+      ctx.fillStyle = '#10b981';
+      ctx.textAlign = 'right';
+      ctx.fillText(`x = ${ext.toFixed(2)}m`, centerX - 70, (naturalY + massY) / 2);
+
+      // Status labels update
+      document.getElementById('lbl-tension').innerText = `Tension: ${tension.toFixed(1)} N`;
+      document.getElementById('lbl-extension').innerText = `Extension x: ${ext.toFixed(2)} m`;
+      const epe = (ext > 0 || s.isSpring) ? (s.lambda * ext * ext) / (2 * s.l) : 0;
+      document.getElementById('lbl-energy').innerText = `EPE: ${epe.toFixed(2)} J`;
+    }
+
+    function renderUpright(rect) {
+      const s = state.upright;
+      const scale = rect.height / 2.0;
+      const floorY = rect.height - 40;
+      const centerX = rect.width / 2;
+      const massY = floorY - s.y * scale;
+      const naturalY = floorY - s.l * scale;
+      const compression = s.l - s.y;
+
+      // Floor fixture
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(centerX - 120, floorY, 240, 16);
+
+      // Natural height marker
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 100, naturalY);
+      ctx.lineTo(centerX + 100, naturalY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText(`Natural Height l = ${s.l.toFixed(2)}m`, centerX + 105, naturalY + 4);
+
+      // Upright spring
+      drawSpring(ctx, centerX, floorY, centerX, massY, 14, 18, '#38bdf8', 4);
+
+      // Block on top
+      const blockW = 60;
+      const blockH = 40;
+      ctx.fillStyle = s.dragged ? '#ec4899' : '#6366f1';
+      ctx.fillRect(centerX - blockW / 2, massY - blockH, blockW, blockH);
+      ctx.strokeStyle = '#a5b4fc';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(centerX - blockW / 2, massY - blockH, blockW, blockH);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${s.m}kg`, centerX, massY - blockH / 2 + 4);
+
+      // Thrust and Weight vectors
+      const thrust = (s.lambda * compression) / s.l;
+      const weight = s.m * state.g;
+
+      drawVectorArrow(ctx, centerX, massY - blockH, 0, -Math.min(100, thrust * 1.5), '#38bdf8', `Thrust = ${thrust.toFixed(1)}N`);
+      drawVectorArrow(ctx, centerX, massY, 0, Math.min(100, weight * 1.5), '#f43f5e', `mg = ${weight.toFixed(1)}N`);
+
+      // Readouts
+      document.getElementById('lbl-tension').innerText = `Thrust: ${thrust.toFixed(1)} N`;
+      document.getElementById('lbl-extension').innerText = `Compression: ${compression.toFixed(2)} m`;
+      const epe = (s.lambda * compression * compression) / (2 * s.l);
+      document.getElementById('lbl-energy').innerText = `EPE: ${epe.toFixed(2)} J`;
+    }
+
+    function renderOpposing(rect) {
+      const s = state.opposing;
+      const scale = rect.height / 5.2;
+      const ceilingY = 40;
+      const floorY = ceilingY + s.totalDist * scale;
+      const centerX = rect.width / 2;
+      const massY = floorY - s.pos * scale;
+
+      // Fixtures
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(centerX - 100, ceilingY - 10, 200, 10);
+      ctx.fillRect(centerX - 100, floorY, 200, 10);
+
+      // Springs: Top Spring (Ceiling to Mass), Bottom Spring (Mass to Floor)
+      drawSpring(ctx, centerX, ceilingY, centerX, massY - 20, 10, 14, '#38bdf8', 3.5);
+      drawSpring(ctx, centerX, massY + 20, centerX, floorY, 12, 16, '#34d399', 3.5);
+
+      // Mass
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(centerX - 30, massY - 20, 60, 40);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${s.m}kg`, centerX, massY + 4);
+
+      // Calculations
+      const lenTop = s.totalDist - s.pos;
+      const extTop = lenTop - s.l1;
+      const compBottom = s.l2 - s.pos;
+      const T1 = (s.lambda1 * extTop) / s.l1;
+      const T2 = (s.lambda2 * compBottom) / s.l2;
+
+      drawVectorArrow(ctx, centerX, massY - 20, 0, -Math.min(90, T1 * 1.5), '#38bdf8', `T₁ = ${T1.toFixed(1)}N`);
+      if (T2 > 0) {
+        drawVectorArrow(ctx, centerX + 15, massY - 20, 0, -Math.min(90, T2 * 1.5), '#34d399', `Thrust T₂ = ${T2.toFixed(1)}N`);
+      }
+      drawVectorArrow(ctx, centerX, massY + 20, 0, Math.min(90, s.m * state.g * 1.5), '#f43f5e', `mg = ${(s.m * state.g).toFixed(1)}N`);
+
+      document.getElementById('lbl-tension').innerText = `T₁ = ${T1.toFixed(1)}N | T₂ = ${T2.toFixed(1)}N`;
+      document.getElementById('lbl-extension').innerText = `AC = ${s.pos.toFixed(2)}m`;
+      const epeTotal = ((s.lambda1 * extTop * extTop) / (2 * s.l1)) + ((s.lambda2 * compBottom * compBottom) / (2 * s.l2));
+      document.getElementById('lbl-energy').innerText = `Total EPE: ${epeTotal.toFixed(2)} J`;
+    }
+
+    function renderVSling(rect) {
+      const s = state.vsling;
+      const scale = rect.width / 5.8;
+      const ceilingY = 70;
+      const centerX = rect.width / 2;
+      const ax = centerX - (s.width / 2) * scale;
+      const bx = centerX + (s.width / 2) * scale;
+      const px = centerX;
+      const py = ceilingY + s.dropY * scale;
+
+      // Ceiling line
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(ax - 20, ceilingY - 10, (s.width * scale) + 40, 10);
+
+      // Anchors A and B
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(ax, ceilingY, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(bx, ceilingY, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Inter';
+      ctx.fillText('A', ax - 14, ceilingY - 5);
+      ctx.fillText('B', bx + 10, ceilingY - 5);
+
+      // Elastic string branches (AP and BP)
+      drawElasticString(ctx, ax, ceilingY, px, py, false, '#fbbf24', 4);
+      drawElasticString(ctx, bx, ceilingY, px, py, false, '#fbbf24', 4);
+
+      // Mass P
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath(); ctx.arc(px, py, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText('P', px, py + 4);
+
+      // Geometry & Vectors
+      const halfW = s.width / 2;
+      const currentHalfLen = Math.sqrt(halfW * halfW + s.dropY * s.dropY);
+      const extHalf = Math.max(0, currentHalfLen - (s.naturalLen / 2));
+      const T = (s.lambda * extHalf) / (s.naturalLen / 2);
+      const thetaDeg = (Math.atan2(s.dropY, halfW) * 180 / Math.PI).toFixed(1);
+
+      // Angle indicator
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(ax, ceilingY); ctx.lineTo(bx, ceilingY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(centerX, ceilingY); ctx.lineTo(px, py); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText(`θ = ${thetaDeg}°`, ax + 40, ceilingY + 18);
+      ctx.fillText(`h = ${s.dropY.toFixed(2)}m`, centerX + 12, (ceilingY + py) / 2);
+
+      // Tension arrows along string
+      const dirAx = (ax - px) / currentHalfLen;
+      const dirAy = (ceilingY - py) / currentHalfLen;
+      drawVectorArrow(ctx, px, py, dirAx * 50, dirAy * 50, '#38bdf8', `T`);
+      drawVectorArrow(ctx, px, py, -dirAx * 50, dirAy * 50, '#38bdf8', `T`);
+      drawVectorArrow(ctx, px, py, 0, 50, '#f43f5e', `mg`);
+
+      document.getElementById('lbl-tension').innerText = `Tension T: ${T.toFixed(2)} N`;
+      document.getElementById('lbl-extension').innerText = `Half Ext: ${extHalf.toFixed(2)} m`;
+      const epe = 2 * ((s.lambda * extHalf * extHalf) / (2 * (s.naturalLen / 2)));
+      document.getElementById('lbl-energy').innerText = `Total EPE: ${epe.toFixed(2)} J`;
+    }
+
+    function renderEnergy(rect) {
+      const s = state.energy;
+      const scale = rect.height / 5.2;
+      const ceilingY = 50;
+      const centerX = rect.width / 3;
+      const massY = ceilingY + s.y * scale;
+      const naturalY = ceilingY + s.l * scale;
+      const ext = Math.max(0, s.y - s.l);
+
+      // Ceiling
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(centerX - 80, ceilingY - 10, 160, 10);
+
+      // Natural length marker
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath(); ctx.moveTo(centerX - 70, naturalY); ctx.lineTo(centerX + 70, naturalY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Bungee cord
+      const isSlack = s.y <= s.l;
+      drawElasticString(ctx, centerX, ceilingY, centerX, massY, isSlack, '#f59e0b', 4);
+
+      // Jumper
+      ctx.fillStyle = '#ec4899';
+      ctx.beginPath(); ctx.arc(centerX, massY, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText('Jumper', centerX, massY + 4);
+
+      // LIVE DYNAMIC ENERGY BARS on the Right Side of Canvas!
+      const barX = rect.width * 0.62;
+      const barW = 32;
+      const barBaseY = rect.height - 60;
+      const maxEnergy = 160; // Joules scale
+
+      const ke = 0.5 * s.m * s.vy * s.vy;
+      // GPE relative to lowest potential datum (e.g. 4.5m)
+      const datumY = 4.5;
+      const gpe = s.m * state.g * (datumY - s.y);
+      const epe = (s.lambda * ext * ext) / (2 * s.l);
+      const totalE = ke + gpe + epe;
+
+      const energyScale = 1.4;
+
+      function drawBar(x, val, color, label) {
+        const h = Math.min(barBaseY - 60, val * energyScale);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, barBaseY - h, barW, h);
+        ctx.strokeStyle = '#1e293b';
+        ctx.strokeRect(x, barBaseY - h, barW, h);
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x + barW / 2, barBaseY + 14);
+        ctx.font = 'bold 11px JetBrains Mono';
+        ctx.fillText(`${Math.round(val)}J`, x + barW / 2, barBaseY - h - 6);
+      }
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(barX - 20, 30, 220, rect.height - 70);
+      ctx.strokeStyle = '#334155';
+      ctx.strokeRect(barX - 20, 30, 220, rect.height - 70);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12px Inter';
+      ctx.textAlign = 'left';
+      ctx.fillText('⚡ Energy Conservation', barX - 10, 52);
+
+      drawBar(barX, ke, '#38bdf8', 'KE');
+      drawBar(barX + 45, gpe, '#34d399', 'GPE');
+      drawBar(barX + 90, epe, '#f59e0b', 'EPE');
+      drawBar(barX + 135, totalE, '#a855f7', 'Total');
+
+      document.getElementById('lbl-tension').innerText = `Speed: ${Math.abs(s.vy).toFixed(2)} m/s`;
+      document.getElementById('lbl-extension').innerText = `Drop: ${s.y.toFixed(2)} m`;
+      document.getElementById('lbl-energy').innerText = `Total Energy: ${totalE.toFixed(1)} J`;
+    }
+
+    function renderCircle(rect) {
+      const s = state.circle;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const discR = 170;
+
+      // Rotating Disc Surface (Isometric perspective)
+      ctx.save();
+      ctx.translate(centerX, centerY);
+
+      // Draw disc boundary
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(0, 0, discR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Center point O
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Inter';
+      ctx.fillText('O', 10, -10);
+
+      // Rotating particle position
+      const px = Math.cos(s.angle) * (s.r * 120);
+      const py = Math.sin(s.angle) * (s.r * 120);
+
+      // Circular path trail
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, s.r * 120, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Elastic string from O to Particle
+      drawElasticString(ctx, 0, 0, px, py, false, '#f59e0b', 3.5);
+
+      // Particle
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${s.m}kg`, px, py + 4);
+
+      // Inward tension arrow
+      const angle = Math.atan2(py, px);
+      const T = (s.lambda * (s.r - s.l)) / s.l;
+      drawVectorArrow(ctx, px, py, -Math.cos(angle) * 50, -Math.sin(angle) * 50, '#f43f5e', `T = ${T.toFixed(1)}N`);
+
+      ctx.restore();
+
+      document.getElementById('lbl-tension').innerText = `Centripetal Tension: ${T.toFixed(1)} N`;
+      document.getElementById('lbl-extension').innerText = `Radius: ${s.r.toFixed(2)} m (ext: ${(s.r - s.l).toFixed(2)}m)`;
+      const ke = 0.5 * s.m * Math.pow(s.r * s.omega, 2);
+      const epe = (s.lambda * Math.pow(s.r - s.l, 2)) / (2 * s.l);
+      document.getElementById('lbl-energy').innerText = `Total Energy: ${(ke + epe).toFixed(1)} J`;
+    }
+  </script>
+
+  <script>
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+      const dtReal = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      const dt = Math.min(0.04, dtReal) * (state.slowMo ? 0.3 : 1.0);
+
+      const rect = canvas.getBoundingClientRect();
+
+      // Clear Canvas
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      // Update active physics engine
+      switch (state.simType) {
+        case 'hanging':
+          updateHangingPhysics(dt);
+          renderHanging(rect);
+          break;
+        case 'upright':
+          updateUprightPhysics(dt);
+          renderUpright(rect);
+          break;
+        case 'opposing':
+          updateOpposingPhysics(dt);
+          renderOpposing(rect);
+          break;
+        case 'vsling':
+          updateVSlingPhysics(dt);
+          renderVSling(rect);
+          break;
+        case 'energy':
+          updateEnergyBungeePhysics(dt);
+          renderEnergy(rect);
+          break;
+        case 'circle':
+          updateCirclePhysics(dt);
+          renderCircle(rect);
+          break;
+      }
+    }
+    requestAnimationFrame(animate);
+  </script>
+
+  <script>
+    let isPointerDown = false;
+
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+        height: rect.height,
+        width: rect.width
+      };
+    }
+
+    function onPointerStart(e) {
+      const { x, y, height } = getCanvasCoords(e);
+      isPointerDown = true;
+
+      if (state.simType === 'hanging') {
+        state.hanging.dragged = true;
+        sfx.playBoing(200);
+      } else if (state.simType === 'upright') {
+        state.upright.dragged = true;
+        sfx.playBoing(180);
+      } else if (state.simType === 'opposing') {
+        state.opposing.dragged = true;
+        sfx.playBoing(220);
+      } else if (state.simType === 'vsling') {
+        state.vsling.dragged = true;
+        sfx.playBoing(250);
+      } else if (state.simType === 'energy') {
+        state.energy.dragged = true;
+        sfx.playBoing(170);
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!isPointerDown) return;
+      const { y, height } = getCanvasCoords(e);
+
+      if (state.simType === 'hanging' && state.hanging.dragged) {
+        const ceilingY = 50;
+        const scale = height / 4.2;
+        state.hanging.y = Math.max(0.2, (y - ceilingY) / scale);
+        state.hanging.vy = 0;
+      } else if (state.simType === 'upright' && state.upright.dragged) {
+        const floorY = height - 40;
+        const scale = height / 2.0;
+        state.upright.y = Math.max(0.05, (floorY - y) / scale);
+        state.upright.vy = 0;
+      } else if (state.simType === 'opposing' && state.opposing.dragged) {
+        const ceilingY = 40;
+        const scale = height / 5.2;
+        const floorY = ceilingY + state.opposing.totalDist * scale;
+        state.opposing.pos = Math.max(0.2, Math.min(state.opposing.totalDist - 0.2, (floorY - y) / scale));
+        state.opposing.v = 0;
+      } else if (state.simType === 'vsling' && state.vsling.dragged) {
+        const ceilingY = 70;
+        const scale = canvas.getBoundingClientRect().width / 5.8;
+        state.vsling.dropY = Math.max(0.1, (y - ceilingY) / scale);
+        state.vsling.vy = 0;
+      } else if (state.simType === 'energy' && state.energy.dragged) {
+        const ceilingY = 50;
+        const scale = height / 5.2;
+        state.energy.y = Math.max(0.5, (y - ceilingY) / scale);
+        state.energy.vy = 0;
+      }
+      updateLiveMathBoard();
+    }
+
+    function onPointerEnd() {
+      if (isPointerDown) {
+        sfx.playSnap();
+      }
+      isPointerDown = false;
+      state.hanging.dragged = false;
+      state.upright.dragged = false;
+      state.opposing.dragged = false;
+      state.vsling.dragged = false;
+      state.energy.dragged = false;
+    }
+
+    canvas.addEventListener('mousedown', onPointerStart);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerEnd);
+
+    canvas.addEventListener('touchstart', onPointerStart, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerEnd);
+  </script>
+
+  <script>
+    const controlsContainer = document.getElementById('dynamic-controls-container');
+    const explanationBody = document.getElementById('explanation-body');
+    const formulaSpotlight = document.getElementById('formula-spotlight');
+    const trapExplanation = document.getElementById('trap-explanation');
+    const liveMathBoard = document.getElementById('live-math-derivation');
+    const canvasStatusTitle = document.getElementById('canvas-status-title');
+
+    // Helper function to safely render LaTeX in any DOM element using KaTeX
+    function renderLatex(element) {
+      if (!element || typeof renderMathInElement !== 'function') return;
+      try {
+        renderMathInElement(element, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (err) {
+        console.warn('KaTeX render error:', err);
+      }
+    }
+
+    function createSlider(id, label, min, max, step, val, unit, onChange) {
+      const wrap = document.createElement('div');
+      wrap.className = 'bg-slate-900/70 p-3 rounded-xl border border-slate-700/60 flex flex-col gap-1.5';
+      wrap.innerHTML = `
+        <div class="flex items-center justify-between text-slate-300 font-medium">
+          <span>${label}:</span>
+          <span id="${id}-val" class="font-mono-math text-indigo-400 font-bold">${val} ${unit}</span>
+        </div>
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full accent-indigo-500 cursor-pointer">
+      `;
+      const input = wrap.querySelector('input');
+      input.addEventListener('input', (e) => {
+        const v = parseFloat(e.target.value);
+        wrap.querySelector(`#${id}-val`).innerText = `${v} ${unit}`;
+        onChange(v);
+        updateLiveMathBoard();
+      });
+      return wrap;
+    }
+
+    function createToggle(id, label, stateA, stateB, currentIsB, onToggle) {
+      const wrap = document.createElement('div');
+      wrap.className = 'bg-slate-900/70 p-3 rounded-xl border border-slate-700/60 flex items-center justify-between';
+      wrap.innerHTML = `
+        <span class="text-slate-300 font-medium">${label}:</span>
+        <button id="${id}" class="px-3 py-1 text-xs font-bold rounded-lg border transition ${currentIsB ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-800 text-amber-300 border-amber-500/50'}">
+          ${currentIsB ? stateB : stateA}
+        </button>
+      `;
+      const btn = wrap.querySelector('button');
+      btn.addEventListener('click', () => {
+        currentIsB = !currentIsB;
+        btn.innerText = currentIsB ? stateB : stateA;
+        btn.className = `px-3 py-1 text-xs font-bold rounded-lg border transition ${currentIsB ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-800 text-amber-300 border-amber-500/50'}`;
+        onToggle(currentIsB);
+        updateLiveMathBoard();
+      });
+      return wrap;
+    }
+
+    function buildControlsForMode() {
+      controlsContainer.innerHTML = '';
+      const mode = state.simType;
+
+      if (mode === 'hanging') {
+        controlsContainer.appendChild(createSlider('h-mass', 'Mass (m)', 0.5, 8.0, 0.5, state.hanging.m, 'kg', (v) => { state.hanging.m = v; }));
+        controlsContainer.appendChild(createSlider('h-lambda', 'Modulus (λ)', 10, 150, 5, state.hanging.lambda, 'N', (v) => { state.hanging.lambda = v; }));
+        controlsContainer.appendChild(createSlider('h-natlen', 'Natural Length (l)', 0.5, 2.5, 0.1, state.hanging.l, 'm', (v) => { state.hanging.l = v; }));
+        controlsContainer.appendChild(createToggle('h-type', 'Material Type', '🪢 Elastic String', '🌀 Metal Spring', state.hanging.isSpring, (isSpring) => {
+          state.hanging.isSpring = isSpring;
+        }));
+      } else if (mode === 'upright') {
+        controlsContainer.appendChild(createSlider('u-mass', 'Mass on top (m)', 1.0, 10.0, 0.5, state.upright.m, 'kg', (v) => { state.upright.m = v; }));
+        controlsContainer.appendChild(createSlider('u-lambda', 'Modulus (λ)', 15, 120, 5, state.upright.lambda, 'N', (v) => { state.upright.lambda = v; }));
+        controlsContainer.appendChild(createSlider('u-natlen', 'Natural Height (l)', 0.8, 2.0, 0.1, state.upright.l, 'm', (v) => { state.upright.l = v; }));
+      } else if (mode === 'opposing') {
+        controlsContainer.appendChild(createSlider('op-lambda1', 'Top Modulus (λ₁)', 10, 80, 5, state.opposing.lambda1, 'N', (v) => { state.opposing.lambda1 = v; }));
+        controlsContainer.appendChild(createSlider('op-lambda2', 'Bottom Modulus (λ₂)', 10, 80, 5, state.opposing.lambda2, 'N', (v) => { state.opposing.lambda2 = v; }));
+        controlsContainer.appendChild(createSlider('op-mass', 'Particle Mass (m)', 0.5, 5.0, 0.5, state.opposing.m, 'kg', (v) => { state.opposing.m = v; }));
+      } else if (mode === 'vsling') {
+        controlsContainer.appendChild(createSlider('v-lambda', 'Modulus of Elasticity (λ)', 10, 80, 5, state.vsling.lambda, 'N', (v) => { state.vsling.lambda = v; }));
+        controlsContainer.appendChild(createSlider('v-mass', 'Center Mass (m)', 0.1, 1.5, 0.05, state.vsling.m, 'kg', (v) => { state.vsling.m = v; }));
+        controlsContainer.appendChild(createSlider('v-width', 'Anchor Distance (AB)', 2.0, 6.0, 0.2, state.vsling.width, 'm', (v) => { state.vsling.width = v; }));
+      } else if (mode === 'energy') {
+        controlsContainer.appendChild(createSlider('en-mass', 'Jumper Mass (m)', 1.0, 6.0, 0.5, state.energy.m, 'kg', (v) => { state.energy.m = v; }));
+        controlsContainer.appendChild(createSlider('en-lambda', 'Cord Modulus (λ)', 20, 150, 10, state.energy.lambda, 'N', (v) => { state.energy.lambda = v; }));
+        controlsContainer.appendChild(createSlider('en-natlen', 'Cord Length (l)', 1.0, 3.0, 0.2, state.energy.l, 'm', (v) => { state.energy.l = v; }));
+      } else if (mode === 'circle') {
+        controlsContainer.appendChild(createSlider('cir-omega', 'Angular Speed (ω)', 2.0, 15.0, 0.5, state.circle.omega, 'rad/s', (v) => { state.circle.omega = v; }));
+        controlsContainer.appendChild(createSlider('cir-lambda', 'Modulus (λ)', 40, 200, 10, state.circle.lambda, 'N', (v) => { state.circle.lambda = v; }));
+      }
+      updateExplanationUI();
+      updateLiveMathBoard();
+    }
+
+    function updateExplanationUI() {
+      const info = explanations[state.simType];
+      const isKid = state.viewMode === 'kid';
+
+      canvasStatusTitle.innerText = info.title;
+
+      document.getElementById('perspective-badge-icon').innerText = isKid ? '🧸' : '🎓';
+      document.getElementById('perspective-badge-title').innerText = isKid ? '6-Year-Old "Gummy Worm" Intuition' : 'A-Level Cambridge Rigor';
+      document.getElementById('perspective-badge-sub').innerText = isKid ? 'Simple physical analogies that make the math stick forever' : 'Exact vector resolution, energy integrals & Cambridge exam standards';
+
+      const content = isKid ? info.kid : info.math;
+      explanationBody.innerHTML = `
+        <div class="font-bold text-sm text-white ${isKid ? 'font-kid text-amber-300' : 'text-indigo-300'} mb-1">${content.concept}</div>
+        ${content.body}
+      `;
+      formulaSpotlight.innerHTML = content.formula;
+      trapExplanation.innerHTML = content.trap;
+
+      // Render math expressions in all updated cards
+      renderLatex(explanationBody);
+      renderLatex(formulaSpotlight);
+      renderLatex(trapExplanation);
+    }
+
+    function updateLiveMathBoard() {
+      const mode = state.simType;
+      let html = '';
+
+      if (mode === 'hanging') {
+        const s = state.hanging;
+        const eqExt = (s.m * state.g * s.l) / s.lambda;
+        const currentExt = s.y - s.l;
+        const T = (!s.isSpring && currentExt < 0) ? 0 : (s.lambda * currentExt) / s.l;
+        const epe = (currentExt > 0 || s.isSpring) ? (s.lambda * currentExt * currentExt) / (2 * s.l) : 0;
+        const weight = s.m * state.g;
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Equilibrium State ($$R(\\uparrow) = 0$$):</div>
+          <div class="space-y-1">
+            <div>• Weight: $$mg = (${s.m}\\,\\text{kg})(10\\,\\text{m/s}^2) = ${weight.toFixed(1)}\\,\\text{N}$$</div>
+            <div>• Hooke's Law: $$T = \\frac{\\lambda x_{\\text{eq}}}{l} = mg \\implies x_{\\text{eq}} = \\frac{(${s.m})(10)(${s.l})}{${s.lambda}} = \\mathbf{${eqExt.toFixed(3)}\\,\\text{m}}$$</div>
+            <div>• Total length at rest: $$L_{\\text{eq}} = l + x_{\\text{eq}} = ${(s.l + eqExt).toFixed(3)}\\,\\text{m}$$</div>
+          </div>
+          <div class="mt-2 text-indigo-300 font-bold border-b border-slate-700 pb-1">Dynamic Instantaneous Values:</div>
+          <div class="space-y-1">
+            <div>• Current extension: $$x = ${currentExt.toFixed(3)}\\,\\text{m}$$</div>
+            <div>• Current Tension: $$T = \\frac{\\lambda x}{l} = \\mathbf{${T.toFixed(2)}\\,\\text{N}}$$</div>
+            <div>• Stored EPE: $$\\mathrm{EPE} = \\frac{\\lambda x^2}{2l} = \\mathbf{${epe.toFixed(2)}\\,\\text{J}}$$</div>
+          </div>
+        `;
+      } else if (mode === 'upright') {
+        const s = state.upright;
+        const eqComp = (s.m * state.g * s.l) / s.lambda;
+        const currentComp = s.l - s.y;
+        const thrust = (s.lambda * currentComp) / s.l;
+        const epe = (s.lambda * currentComp * currentComp) / (2 * s.l);
+        const weight = s.m * state.g;
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Upright Equilibrium ($$\\text{Thrust} = mg$$):</div>
+          <div class="space-y-1">
+            <div>• Downward weight: $$mg = ${weight.toFixed(1)}\\,\\text{N}$$</div>
+            <div>• Equilibrium compression: $$x_{\\text{eq}} = \\frac{m g l}{\\lambda} = \\frac{(${s.m})(10)(${s.l})}{${s.lambda}} = \\mathbf{${eqComp.toFixed(3)}\\,\\text{m}}$$</div>
+            <div>• Equilibrium height: $$h_{\\text{eq}} = l - x_{\\text{eq}} = \\mathbf{${(s.l - eqComp).toFixed(3)}\\,\\text{m}}$$</div>
+          </div>
+          <div class="mt-2 text-indigo-300 font-bold border-b border-slate-700 pb-1">Dynamic Instantaneous Values:</div>
+          <div class="space-y-1">
+            <div>• Current compression: $$x = ${currentComp.toFixed(3)}\\,\\text{m}$$</div>
+            <div>• Compressive Thrust: $$T = \\frac{\\lambda x}{l} = \\mathbf{${thrust.toFixed(1)}\\,\\text{N}}$$</div>
+            <div>• Stored EPE: $$\\mathrm{EPE} = \\frac{\\lambda x^2}{2l} = \\mathbf{${epe.toFixed(2)}\\,\\text{J}}$$</div>
+          </div>
+        `;
+      } else if (mode === 'opposing') {
+        const s = state.opposing;
+        const lenTop = s.totalDist - s.pos;
+        const extTop = lenTop - s.l1;
+        const compBottom = s.l2 - s.pos;
+        const T1 = (s.lambda1 * extTop) / s.l1;
+        const T2 = (s.lambda2 * compBottom) / s.l2;
+        const epeTotal = ((s.lambda1 * extTop * extTop) / (2 * s.l1)) + ((s.lambda2 * compBottom * compBottom) / (2 * s.l2));
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Worked Example 16.2 Resolution:</div>
+          <div class="space-y-1">
+            <div>• Span: $$AB = ${s.totalDist}\\,\\text{m}, \\quad AC = ${s.pos.toFixed(2)}\\,\\text{m}$$</div>
+            <div>• Vertical balance: $$R(\\uparrow): T_1 = T_2 + mg$$</div>
+            <div>• Top Spring: $$T_1 = \\frac{${s.lambda1}(${extTop.toFixed(2)})}{${s.l1}} = \\mathbf{${T1.toFixed(1)}\\,\\text{N}}$$</div>
+            <div>• Bottom Spring: $$T_2 = \\frac{${s.lambda2}(${compBottom.toFixed(2)})}{${s.l2}} = \\mathbf{${T2.toFixed(1)}\\,\\text{N}}$$</div>
+            <div>• Total Stored EPE: $$\\mathrm{EPE} = \\mathbf{${epeTotal.toFixed(2)}\\,\\text{J}}$$</div>
+          </div>
+        `;
+      } else if (mode === 'vsling') {
+        const s = state.vsling;
+        const halfW = s.width / 2;
+        const currentHalf = Math.sqrt(halfW * halfW + s.dropY * s.dropY);
+        const naturalHalf = s.naturalLen / 2;
+        const ext = Math.max(0, currentHalf - naturalHalf);
+        const T = (s.lambda * ext) / naturalHalf;
+        const sinTheta = s.dropY / currentHalf;
+        const upward2T = 2 * T * sinTheta;
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Midpoint V-Sling Geometry:</div>
+          <div class="space-y-1">
+            <div>• Half-span $$d = ${halfW.toFixed(2)}\\,\\text{m}$$, Sag $$h = ${s.dropY.toFixed(2)}\\,\\text{m}$$</div>
+            <div>• Stretched length: $$L_{\\text{half}} = \\sqrt{d^2 + h^2} = \\mathbf{${currentHalf.toFixed(3)}\\,\\text{m}}$$</div>
+            <div>• Extension: $$x = L_{\\text{half}} - \\frac{l}{2} = \\mathbf{${ext.toFixed(3)}\\,\\text{m}}$$</div>
+            <div>• Tension: $$T = \\frac{\\lambda x}{l/2} = \\mathbf{${T.toFixed(2)}\\,\\text{N}}$$</div>
+            <div>• Upward lift: $$2T\\sin\\theta = 2(${T.toFixed(1)})\\left(${sinTheta.toFixed(3)}\\right) = \\mathbf{${upward2T.toFixed(2)}\\,\\text{N}}$$</div>
+          </div>
+        `;
+      } else if (mode === 'energy') {
+        const s = state.energy;
+        const ext = Math.max(0, s.y - s.l);
+        const ke = 0.5 * s.m * s.vy * s.vy;
+        const gpe = s.m * state.g * (4.5 - s.y);
+        const epe = (s.lambda * ext * ext) / (2 * s.l);
+        const total = ke + gpe + epe;
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Work-Energy Balance:</div>
+          <div class="space-y-1">
+            <div>• $$\\mathrm{KE} = \\frac{1}{2} m v^2 = \\mathbf{${ke.toFixed(1)}\\,\\text{J}}$$</div>
+            <div>• $$\\mathrm{GPE} = mgh = \\mathbf{${gpe.toFixed(1)}\\,\\text{J}}$$</div>
+            <div>• $$\\mathrm{EPE} = \\frac{\\lambda x^2}{2l} = \\mathbf{${epe.toFixed(1)}\\,\\text{J}}$$</div>
+            <div class="pt-1 border-t border-slate-700">• Total Energy: $$E_{\\text{total}} = \\mathbf{${total.toFixed(1)}\\,\\text{J}}$$ (Conserved!)</div>
+          </div>
+        `;
+      } else if (mode === 'circle') {
+        const s = state.circle;
+        const ext = s.r - s.l;
+        const T = (s.lambda * ext) / s.l;
+        const reqT = s.m * s.r * s.omega * s.omega;
+
+        html = `
+          <div class="text-indigo-300 font-bold border-b border-slate-700 pb-1">Worked Example 16.10 Centripetal Balance:</div>
+          <div class="space-y-1">
+            <div>• Path Radius: $$r = ${s.r}\\,\\text{m}, \\quad x = r - l = ${ext.toFixed(2)}\\,\\text{m}$$</div>
+            <div>• Hooke Tension: $$T = \\frac{\\lambda(r - l)}{l} = \\mathbf{${T.toFixed(1)}\\,\\text{N}}$$</div>
+            <div>• Required Centripetal: $$F_c = m r \\omega^2 = (${s.m})(${s.r})(${s.omega.toFixed(1)})^2 = \\mathbf{${reqT.toFixed(1)}\\,\\text{N}}$$</div>
+          </div>
+        `;
+      }
+      liveMathBoard.innerHTML = html;
+      renderLatex(liveMathBoard);
+    }
+  </script>
+
+  <script>
+    document.querySelectorAll('.sim-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.sim;
+        if (target === 'twisted') {
+          openSolverModal();
+          return;
+        }
+
+        document.querySelectorAll('.sim-tab-btn').forEach(b => {
+          b.classList.remove('active', 'bg-indigo-600', 'text-white');
+          b.classList.add('bg-slate-700', 'text-slate-300');
+        });
+        btn.classList.add('active', 'bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-slate-700', 'text-slate-300');
+
+        state.simType = target;
+        buildControlsForMode();
+        sfx.playBoing(300);
+      });
+    });
+
+    // 6-Year-Old vs Math Mode Toggles
+    const btnKid = document.getElementById('btn-mode-kid');
+    const btnMath = document.getElementById('btn-mode-math');
+
+    btnKid.addEventListener('click', () => {
+      state.viewMode = 'kid';
+      btnKid.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md';
+      btnMath.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
+      updateExplanationUI();
+      sfx.playBoing(400);
+    });
+
+    btnMath.addEventListener('click', () => {
+      state.viewMode = 'math';
+      btnMath.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md';
+      btnKid.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
+      updateExplanationUI();
+      sfx.playBoing(320);
+    });
+
+    // Sound toggle
+    const btnSound = document.getElementById('btn-sound-toggle');
+    btnSound.addEventListener('click', () => {
+      sfx.enabled = !sfx.enabled;
+      btnSound.innerText = sfx.enabled ? '🔊' : '🔇';
+      btnSound.title = sfx.enabled ? 'Sound FX On' : 'Sound FX Muted';
+    });
+
+    // Slow motion
+    const btnSlowMo = document.getElementById('btn-slow-mo');
+    btnSlowMo.addEventListener('click', () => {
+      state.slowMo = !state.slowMo;
+      btnSlowMo.className = state.slowMo 
+        ? 'bg-amber-500 text-slate-950 font-bold px-2.5 py-1 text-xs rounded-xl border border-amber-400 transition shadow' 
+        : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300 px-2.5 py-1 text-xs rounded-xl border border-slate-600 transition shadow';
+    });
+
+    // Reset button
+    document.getElementById('btn-reset-sim').addEventListener('click', () => {
+      if (state.simType === 'hanging') {
+        state.hanging.y = state.hanging.l + (state.hanging.m * state.g * state.hanging.l) / state.hanging.lambda;
+        state.hanging.vy = 0;
+      } else if (state.simType === 'upright') {
+        state.upright.y = state.upright.l - (state.upright.m * state.g * state.upright.l) / state.upright.lambda;
+        state.upright.vy = 0;
+      } else if (state.simType === 'opposing') {
+        state.opposing.pos = 1.94;
+        state.opposing.v = 0;
+      } else if (state.simType === 'vsling') {
+        state.vsling.dropY = 0.7;
+        state.vsling.vy = 0;
+      } else if (state.simType === 'energy') {
+        state.energy.y = 2.0;
+        state.energy.vy = 0;
+      }
+      sfx.playSnap();
+      updateLiveMathBoard();
+    });
+  </script>
+
+  <script>
+    const presets = {
+      p1: {
+        title: "Worked Example 16.2: Mass Suspended Between Floor & Ceiling Springs",
+        prompt: "A light spring ($l = 1.6\\text{ m}$, $\\lambda = 40\\text{ N}$) is fixed to floor $A$. Another spring ($l = 1.2\\text{ m}$, $\\lambda = 25\\text{ N}$) is fixed to ceiling $B$. Total $AB = 4.5\\text{ m}$. A block of mass $2\\text{ kg}$ is attached between them. Find $AC$.",
+        kidView: "Imagine two friends: one pushes you up from the floor, and one pulls you up toward the ceiling. Your heavy body pulls down. You stop right where both upward pushes together balance gravity!",
+        cambridgeSteps: [
+          "1. Sketch diagram showing ceiling $B$, floor $A$, and particle $C$ between them.",
+          "2. Distance $AB = 4.5\\text{ m}$. Let compression of bottom spring be $x$. Then $AC = 1.6 - x$.",
+          "3. Extension of top spring: $e_1 = (4.5 - AC) - 1.2 = (4.5 - (1.6 - x)) - 1.2 = 1.7 + x$.",
+          "4. Resolve vertically: $$R(\\uparrow): T_1 = T_2 + mg \\implies T_1 = T_2 + 2g$$",
+          "5. Hooke's Law: $$T_1 = \\frac{25(1.7 - x)}{1.2}, \\qquad T_2 = \\frac{40x}{1.6}$$",
+          "6. Equating gives $x = 0.336\\text{ m}$, so $$AC = 1.94\\text{ m}$$"
+        ],
+        targetMode: 'opposing'
+      },
+      p2: {
+        title: "Worked Example 16.4 & Past Paper 2010: Midpoint V-Sling with Angle θ",
+        prompt: "Particle $P$ of mass $0.35\\text{ kg}$ is at midpoint of elastic string ($l = 4\\text{ m}$). Ends $A$ and $B$ are $4.8\\text{ m}$ apart on horizontal ceiling. $P$ hangs in equilibrium at $0.7\\text{ m}$ below midpoint. Find $\\lambda$.",
+        kidView: "You're sitting in the middle of a giant hammock! The hammock makes a V-shape. Each side pulls with tension $T$ at an angle. The sideways pulls cancel, but the two upward parts carry your weight.",
+        cambridgeSteps: [
+          "1. Geometry: Half distance $AM = \\frac{4.8}{2} = 2.4\\text{ m}$. Depth $MP = 0.7\\text{ m}$.",
+          "2. Stretched length: $$AP = \\sqrt{2.4^2 + 0.7^2} = \\sqrt{5.76 + 0.49} = \\sqrt{6.25} = 2.5\\text{ m}$$",
+          "3. Natural length of half string: $l_{\\text{half}} = \\frac{4}{2} = 2.0\\text{ m}$.",
+          "4. Extension of half string: $$x = 2.5 - 2.0 = 0.5\\text{ m}$$",
+          "5. Resolve vertically at $P$: $$2 T \\sin\\theta = mg \\implies 2 T \\left(\\frac{0.7}{2.5}\\right) = 0.35(10) = 3.5$$",
+          "6. Solving yields $$T = 6.25\\text{ N}$$",
+          "7. Hooke's Law: $$T = \\frac{\\lambda x}{l_{\\text{half}}} \\implies 6.25 = \\frac{\\lambda \\times 0.5}{2.0} \\implies \\lambda = 25\\text{ N}$$"
+        ],
+        targetMode: 'vsling'
+      },
+      p3: {
+        title: "Cambridge June 2007 Paper 5: Opposing Strings on Table & Max Speed",
+        prompt: "$AB = 2.5\\text{ m}$ on smooth horizontal table. String $AP$: $l = 0.6\\text{ m}$, $\\lambda = 24\\text{ N}$. String $BP$: $l = 0.9\\text{ m}$, $\\lambda = 18\\text{ N}$. Particle $P$ of $0.95\\text{ kg}$ released from midpoint. Find acceleration and max speed point $C$.",
+        kidView: "Two rubber bands pull a hockey puck left and right on ice! Since they are not equal, the stronger one yanks it fast. It speeds up until the two pulls match, which is where it hits MAXIMUM SPEED!",
+        cambridgeSteps: [
+          "1. At midpoint: $AP = 1.25\\text{ m}$, $BP = 1.25\\text{ m}$.",
+          "2. Extension $AP$: $x_1 = 1.25 - 0.6 = 0.65\\text{ m}$. $$T_1 = \\frac{24 \\times 0.65}{0.6} = 26\\text{ N}$$",
+          "3. Extension $BP$: $x_2 = 1.25 - 0.9 = 0.35\\text{ m}$. $$T_2 = \\frac{18 \\times 0.35}{0.9} = 7\\text{ N}$$",
+          "4. Newton's 2nd Law: $$F = ma \\implies T_1 - T_2 = ma \\implies 26 - 7 = 0.95a \\implies a = 20\\text{ m/s}^2$$",
+          "5. Maximum speed occurs strictly when acceleration is ZERO ($a = 0$):",
+          "6. $$T_1 = T_2 \\implies \\frac{24x}{0.6} = \\frac{18(1 - x)}{0.9} \\implies x = \\frac{1}{3}\\text{ m}$$",
+          "7. Distance $$AC = 0.6 + \\frac{1}{3} = \\frac{14}{15}\\text{ m}$$"
+        ],
+        targetMode: 'opposing'
+      },
+      p4: {
+        title: "Worked Example 16.9: Elastic String on Rough Table with Friction μ",
+        prompt: "String of $l = 2\\text{ m}$, $\\lambda = 60\\text{ N}$ attached to $A$ on rough table ($\\mu = 0.4$). Particle of $3\\text{ kg}$ pulled to $4\\text{ m}$ from $A$ and released. Find speed as it passes through $A$.",
+        kidView: "Imagine pulling a block across a scratchy carpet on a giant rubber band. The rubber band's stretch tokens turn into speed, but the carpet steals some tokens as friction heat!",
+        cambridgeSteps: [
+          "1. Maximum friction force: $$F_{\\max} = \\mu R = \\mu mg = 0.4 \\times 3 \\times 10 = 12\\text{ N}$$",
+          "2. Work against friction from $4\\text{ m}$ to $0\\text{ m}$: $$W_f = 12 \\times 4 = 48\\text{ J}$$",
+          "3. Initial EPE stored: $$\\mathrm{EPE} = \\frac{60 \\times 2^2}{2 \\times 2} = 60\\text{ J}$$",
+          "4. Conservation of energy: $$\\mathrm{EPE} = \\mathrm{KE} + W_f \\implies 60 = \\frac{1}{2}(3)v^2 + 48$$",
+          "5. Solving gives: $$\\frac{3}{2}v^2 = 12 \\implies v^2 = 8 \\implies v = 2\\sqrt{2} \\approx 2.83\\text{ m/s}$$"
+        ],
+        targetMode: 'energy'
+      },
+      p5: {
+        title: "Worked Example 16.12 & 16.13: Conical Pendulum / Horizontal Circles",
+        prompt: "Particle of $2\\text{ kg}$ on elastic string ($l = 1.5\\text{ m}$, $\\lambda = 50\\sqrt{3}\\text{ N}$) rotating in horizontal circle at $30^\\circ$ to vertical. Find angular speed $\\omega$.",
+        kidView: "The string swings around like a cone-shaped carousel. The upward pull holds up the weight, and the inward pull keeps the ball from flying out!",
+        cambridgeSteps: [
+          "1. Vertical Equilibrium: $$T \\cos 30^\\circ = mg = 2(10) = 20\\text{ N} \\implies T = \\frac{40}{\\sqrt{3}}\\,\\text{N}$$",
+          "2. Hooke's Law: $$\\frac{40}{\\sqrt{3}} = \\frac{50\\sqrt{3} \\times x}{1.5} \\implies x = 0.4\\text{ m}$$",
+          "3. Total stretched string length: $$L = l + x = 1.5 + 0.4 = 1.9\\text{ m}$$",
+          "4. Circle radius: $$r = 1.9 \\sin 30^\\circ = 0.95\\text{ m}$$",
+          "5. Horizontal centripetal force: $$T \\sin 30^\\circ = m r \\omega^2 \\implies \\left(\\frac{40}{\\sqrt{3}}\\right)(0.5) = 2(0.95)\\omega^2$$",
+          "6. Solving yields $$\\omega = 2.47\\text{ rad/s}$$"
+        ],
+        targetMode: 'circle'
+      },
+      p6: {
+        title: "Dynamic Bungee: Dropped from Rest to Maximum Extension",
+        prompt: "A mass $m$ is dropped from ceiling with elastic cord of natural length $l$ and modulus $\\lambda$. Find the maximum drop distance $h$ before it bounces back.",
+        kidView: "You jump off a bridge! You fall freely for length l with ZERO pull. Then the cord grabs you and stretches until all your height energy turns into cord stretch. Speed becomes zero at the very bottom!",
+        cambridgeSteps: [
+          "1. Choose datum at the lowest point of motion ($v = 0$).",
+          "2. Total drop height: $$h = l + x$$",
+          "3. Conservation of energy: $$mg(l + x) = \\frac{\\lambda x^2}{2l}$$",
+          "4. Rearrange into a quadratic equation in $x$: $$\\lambda x^2 - 2mglx - 2mgl^2 = 0$$",
+          "5. Solve using the quadratic formula: $$x = \\frac{2mgl \\pm \\sqrt{4m^2g^2l^2 + 8\\lambda mgl^2}}{2\\lambda}$$",
+          "6. Maximum drop height is $$h = l + x$$"
+        ],
+        targetMode: 'energy'
+      }
+    };
+
+    const solverModal = document.getElementById('solver-modal');
+    const selectPreset = document.getElementById('preset-problem-select');
+    const solutionCard = document.getElementById('problem-solution-card');
+
+    function openSolverModal() {
+      solverModal.classList.remove('hidden');
+      updatePresetDisplay();
+    }
+
+    function closeSolverModal() {
+      solverModal.classList.add('hidden');
+    }
+
+    function updatePresetDisplay() {
+      const p = presets[selectPreset.value];
+      solutionCard.innerHTML = `
+        <h4 class="font-bold text-sm text-amber-400 font-kid tracking-wide">${p.title}</h4>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-300">
+          <strong>Problem Statement:</strong> ${p.prompt}
+        </div>
+        
+        <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-xl">
+          <div class="font-bold text-amber-300 font-kid mb-1">🧸 How a 6-Year-Old Sees It:</div>
+          <p class="text-amber-100/90 leading-relaxed">${p.kidView}</p>
+        </div>
+
+        <div class="p-3 bg-indigo-950/40 border border-indigo-500/40 rounded-xl space-y-2">
+          <div class="font-bold text-indigo-300 mb-1">🎓 Cambridge Step-by-Step Mark Scheme Solution:</div>
+          ${p.cambridgeSteps.map(step => `<div class="text-[12px] text-slate-200">${step}</div>`).join('')}
+        </div>
+      `;
+      // Render LaTeX inside modal solution card
+      renderLatex(solutionCard);
+    }
+
+    selectPreset.addEventListener('change', updatePresetDisplay);
+    document.getElementById('btn-close-modal').addEventListener('click', closeSolverModal);
+
+    document.getElementById('btn-load-into-sim').addEventListener('click', () => {
+      const p = presets[selectPreset.value];
+      closeSolverModal();
+
+      // Switch to target sim
+      const targetBtn = document.querySelector(`[data-sim="${p.targetMode}"]`);
+      if (targetBtn) {
+        targetBtn.click();
+      }
+    });
+
+    // Initialize Default View
+    window.addEventListener('DOMContentLoaded', () => {
+      buildControlsForMode();
+    });
+  </script>
+  <!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</body>
+</html>

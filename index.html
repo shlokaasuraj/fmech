@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambridge 9231 / 9709 Further Mechanics: Interactive Laboratory Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for formula previews -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .math-font { font-family: 'Fira Code', monospace; }
+    .display-font { font-family: 'Fredoka', cursive, sans-serif; }
+    .hero-bg {
+      background: radial-gradient(circle at 50% 20%, #0c203b 0%, #030712 70%, #020617 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/25 font-black text-white text-lg font-mono">
+          9231
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-wide">Cambridge International Mechanics</h1>
+          <p class="text-xs text-slate-400">Further Mathematics Paper 3 / 9231 Interactive Laboratory Suite</p>
+        </div>
+      </div>
+
+      <!-- Quick Search / Filter Bar -->
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="filterModules()" 
+            placeholder="Search chapter, formula, or concept..." 
+            class="bg-slate-900 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 w-48 sm:w-64 outline-none transition"
+          >
+          <span class="absolute right-2.5 top-2 text-slate-500 text-xs">🔍</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-1 hero-bg">
+    <div class="max-w-7xl mx-auto px-4 py-10 flex flex-col items-center text-center">
+      <span class="px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 font-semibold text-xs tracking-wider uppercase mb-3">
+        Complete A-Level Further Mechanics Syllabus
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-slate-100 via-sky-200 to-slate-400 bg-clip-text text-transparent max-w-2xl leading-tight mb-3">
+        Interactive Explorers & Visual Simulators
+      </h2>
+      <p class="text-sm text-slate-400 max-w-xl mb-8">
+        Self-contained visual simulators covering Chapters 13 through 18 of Cambridge Further Mechanics. Choose a chapter below to launch its intuitive sandbox, formula inspector, and exam trap decoder.
+      </p>
+
+      <!-- Module Grid -->
+      <div id="moduleGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full text-left">
+
+        <!-- 1. Chapter 13: Projectiles -->
+        <a href="Projectiles.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-sky-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-sky-500/10 flex flex-col justify-between" data-tags="chapter 13 projectiles trajectory tan theta quadratic safety envelope angle elevation">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 group-hover:scale-110 transition duration-300">
+                🚀
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 13</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-sky-300 transition">Projectiles & Trajectories</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Cartesian path equation, parabolic safety bounding envelopes, line of sight angles ($\beta$), and dual target trajectories.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-sky-300 mb-4">
+              $y = x\tan\theta - \frac{gx^2}{2u^2}(1+\tan^2\theta)$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-sky-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+        <!-- 2. Chapter 14: Equilibrium of a Rigid Body -->
+        <a href="Equilibrium_Of_A_Rigid_Body.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 flex flex-col justify-between" data-tags="chapter 14 equilibrium rigid body moments center of mass ladder sliding toppling suspended">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 group-hover:scale-110 transition duration-300">
+                ⚖️
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 14</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-amber-300 transition">Equilibrium of a Rigid Body</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Coplanar forces, moments about an axis, center of mass for composite bodies, suspended equilibrium, and sliding vs. toppling criteria.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-amber-300 mb-4">
+              $\sum M = 0, \quad \bar{x} = \frac{\sum m_i x_i}{\sum m_i}$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+        <!-- 3. Chapter 15: Circular Motion -->
+        <a href="Circular_Motion.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between" data-tags="chapter 15 circular motion vertical loops conical pendulum banked curves string slack hollow ring">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 group-hover:scale-110 transition duration-300">
+                ⚛️
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 15</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-indigo-300 transition">Circular Motion & Loops</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Angular speed $\omega$, conical pendulums, banked curve slip thresholds, vertical string loops ($u \ge \sqrt{5gr}$), and hollow ring detachment.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-indigo-300 mb-4">
+              $a = r\omega^2 = \frac{v^2}{r}, \quad T - mg\cos\theta = \frac{mv^2}{r}$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-indigo-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+        <!-- 4. Chapter 16: Hooke's Law -->
+        <a href="Hookes_Law.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-rose-500/10 flex flex-col justify-between" data-tags="chapter 16 hookes law elasticity tension thrust modulus epe bungee energy">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 group-hover:scale-110 transition duration-300">
+                🌀
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 16</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-rose-300 transition">Hooke's Law & Elasticity</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Tension and thrust in elastic strings and springs ($T = \frac{\lambda x}{l}$), elastic potential energy, and vertical bungee energy conservation.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-rose-300 mb-4">
+              $T = \frac{\lambda x}{l}, \quad \mathrm{EPE} = \frac{\lambda x^2}{2l}$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-rose-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+        <!-- 5. Chapter 17: Linear Motion Under a Variable Force -->
+        <a href="Linear_Motion_Under_ A_Variable_Force.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-teal-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/10 flex flex-col justify-between" data-tags="chapter 17 variable force differential equations dv/dt v dv/dx drag terminal speed sandbox">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 group-hover:scale-110 transition duration-300 font-mono">
+                ∫a
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 17</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-teal-300 transition">Linear Motion Under Variable Force</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Differential equations with $a = f(t)$ and $a = v\frac{dv}{dx}$, velocity-dependent resistance, terminal speed, and custom formula sandbox.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-teal-300 mb-4">
+              $a = \frac{dv}{dt} = f(t), \quad a = v\frac{dv}{dx} = g(x)$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-teal-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+        <!-- 6. Chapter 18: Momentum & Collisions -->
+        <a href="Momentum.html" class="module-card group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/60 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 flex flex-col justify-between" data-tags="chapter 18 momentum collisions impulse restitution e oblique wall line of centres">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-2xl p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 group-hover:scale-110 transition duration-300">
+                💥
+              </span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Chapter 18</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 group-hover:text-cyan-300 transition">Momentum & Collisions</h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">
+              Conservation of linear momentum, impulse $I = Ft$, Newton's experimental law of restitution ($e$), oblique impacts, and multi-stage collision races.
+            </p>
+            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs math-font text-cyan-300 mb-4">
+              $\sum mu = \sum mv, \quad e = \frac{v_2 - v_1}{u_1 - u_2}$
+            </div>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition">
+            Launch Simulator →
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    Designed for Cambridge Assessment International Education (CAIE) Further Mathematics 9231 / 9709 Further Mechanics
+  </footer>
+
+  <script>
+    function filterModules() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.module-card');
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const tags = card.getAttribute('data-tags') || '';
+        if (text.includes(q) || tags.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    window.onload = function() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    };
+  </script>
+<!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</body>
+</html>

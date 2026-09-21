@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circular Motion & Vertical Loops — Interactive Mechanics Lab</title>
+
+  <!-- KaTeX for crisp mathematical typography -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-alt: #1a2234;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --accent-sec: #f43f5e;
+      --accent-gold: #fbbf24;
+      --accent-emerald: #10b981;
+      --accent-purple: #a855f7;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --panel-border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    header {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .brand-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.6rem; color: #fff; }
+    .brand-title span { background: linear-gradient(135deg, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .nav-tabs { display: flex; gap: 0.4rem; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+    .nav-tab {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-tab:hover { background: rgba(56, 189, 248, 0.15); color: #fff; border-color: var(--accent); }
+    .nav-tab.active { background: var(--accent); color: #000; font-weight: 700; border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+
+    .action-btn {
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.5rem 0.95rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+      transition: transform 0.15s ease;
+    }
+    .action-btn:hover { transform: translateY(-1px); }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      flex: 1;
+      max-width: 1750px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+
+    .viewport-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 520px;
+      min-height: 480px;
+      background: radial-gradient(circle at 50% 50%, #172033 0%, #0a0e1a 100%);
+      overflow: hidden;
+    }
+    canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+    .canvas-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+    .badge { padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.72rem; }
+    .badge-teal { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-sec); border: 1px solid var(--accent-sec); }
+    .badge-gold { background: rgba(251, 191, 36, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid var(--accent-emerald); }
+
+    .sim-controls {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+    .icon-btn {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid var(--panel-border);
+      color: #fff;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+    .icon-btn.active { background: var(--accent-gold); color: #000; }
+
+    .perspective-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #0a0f1d;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .p-tab {
+      padding: 0.8rem 1rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .p-tab.active { color: #fff; border-bottom: 3px solid var(--accent); background: rgba(56, 189, 248, 0.08); }
+    .p-tab.child-tab.active { border-bottom-color: var(--accent-gold); color: var(--accent-gold); background: rgba(251, 191, 36, 0.08); }
+
+    .perspective-content { padding: 1.2rem; font-size: 0.9rem; line-height: 1.6; background: var(--card-bg); flex: 1; }
+    .analogy-box {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.09) 0%, rgba(245, 158, 11, 0.03) 100%);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      padding: 0.9rem 1.15rem;
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      color: #fef08a;
+    }
+    .analogy-box strong { color: #fff; }
+
+    .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .control-panel, .metrics-panel, .exam-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem;
+    }
+    .panel-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.9rem; display: flex; align-items: center; justify-content: space-between; color: #fff; }
+    .param-group { margin-bottom: 0.85rem; }
+    .param-header { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .param-value { color: var(--accent); font-weight: 700; font-family: monospace; }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #1e293b;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    .metric-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .metric-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .metric-val { font-size: 1rem; font-weight: 700; font-family: monospace; color: #fff; margin-top: 2px; }
+
+    .energy-bar-container { margin-top: 0.75rem; background: #0b0f19; border-radius: 8px; padding: 0.6rem; border: 1px solid var(--border); }
+    .energy-label { font-size: 0.72rem; display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 600; }
+    .bar-outer { height: 9px; background: #1e293b; border-radius: 5px; overflow: hidden; display: flex; }
+    .bar-ke { background: var(--accent); height: 100%; transition: width 0.05s linear; }
+    .bar-pe { background: var(--accent-gold); height: 100%; transition: width 0.05s linear; }
+
+    .exam-card {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(225, 29, 72, 0.02) 100%);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      border-left: 4px solid var(--accent-sec);
+    }
+    .exam-card-header { font-size: 0.85rem; font-weight: 800; color: #fda4af; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .exam-card p { font-size: 0.82rem; line-height: 1.5; color: #cbd5e1; }
+
+    /* Modal for Twisted Problems */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      max-width: 920px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+    }
+    .modal-body { padding: 1.4rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; font-size: 0.88rem; line-height: 1.6; }
+    .problem-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+    }
+    .problem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .problem-title { font-weight: 700; color: var(--accent); font-size: 0.92rem; }
+    .load-prob-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .load-prob-btn:hover { background: var(--accent); color: #000; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand-title">
+    <span>⚛️ MECHANICS LAB</span> &bull; Circular Motion & Vertical Loops
+  </div>
+  <div class="nav-tabs" id="simTabs">
+    <button class="nav-tab active" data-sim="horizontal_table">1. Horizontal Table</button>
+    <button class="nav-tab" data-sim="conical_pendulum">2. Conical Pendulum</button>
+    <button class="nav-tab" data-sim="banked_curve">3. Banked Track Slip</button>
+    <button class="nav-tab" data-sim="vertical_string">4. Vertical Loop & Slack</button>
+    <button class="nav-tab" data-sim="inside_ring">5. Smooth Hollow Ring</button>
+    <button class="nav-tab" data-sim="hemisphere">6. Igloo / Hemisphere Drop</button>
+  </div>
+  <button class="action-btn" id="openDecoderBtn">
+    <span>⚡</span> "Twisted Exam Traps" Decoder
+  </button>
+</header>
+
+<main>
+  <div class="viewport-card">
+    <div class="canvas-container" id="canvasWrap">
+      <div class="canvas-overlay">
+        <span class="badge badge-teal" id="overlaySimName">1. Horizontal Table</span>
+        <span class="badge badge-gold" id="overlayState">Status: Orbiting</span>
+        <span class="badge badge-rose" id="overlayRadial">a = rω²</span>
+      </div>
+      <canvas id="simCanvas"></canvas>
+      <div class="sim-controls">
+        <button class="icon-btn" id="slowMoBtn">🐢 0.5x</button>
+        <button class="icon-btn" id="playPauseBtn">⏸ Pause</button>
+        <button class="icon-btn" id="resetBtn">🔄 Reset</button>
+      </div>
+    </div>
+
+    <div class="perspective-tabs">
+      <div class="p-tab child-tab active" id="tabChild" onclick="setPerspective('child')">
+        🧸 6-Year-Old Intuition (Playground View)
+      </div>
+      <div class="p-tab" id="tabRigid" onclick="setPerspective('rigid')">
+        🎓 Cambridge A-Level Rigor (Mark Scheme View)
+      </div>
+    </div>
+
+    <div class="perspective-content" id="perspectiveContent"></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="control-panel">
+      <div class="panel-title">
+        <span>⚙️ Live Parameters</span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">Adjust & Observe</span>
+      </div>
+      <div id="dynamicControls"></div>
+    </div>
+
+    <div class="metrics-panel">
+      <div class="panel-title">
+        <span>📊 Live Dynamics & Resolving</span>
+      </div>
+      <div class="metric-grid" id="metricsDisplay"></div>
+      <div class="energy-bar-container" id="energyBox" style="display: none;">
+        <div class="energy-label">
+          <span style="color: var(--accent);">Kinetic Energy (KE)</span>
+          <span style="color: var(--accent-gold);">Potential Energy (PE)</span>
+        </div>
+        <div class="bar-outer">
+          <div class="bar-ke" id="barKE" style="width: 50%;"></div>
+          <div class="bar-pe" id="barPE" style="width: 50%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exam-card" id="examTrapBox">
+      <div class="exam-card-header">
+        <span>⚠️ Cambridge Exam Trap</span>
+      </div>
+      <p id="examTrapText"></p>
+    </div>
+  </div>
+</main>
+
+<!-- Twisted Problems Modal -->
+<div class="modal-backdrop" id="decoderModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="font-size: 1.1rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="color: #f43f5e;">⚡</span> Cambridge Chapter 15 "Twisted Problems" Decoder
+      </div>
+      <button class="icon-btn" onclick="toggleDecoder(false)">✕ Close</button>
+    </div>
+    <div class="modal-body" id="modalProblemsList"></div>
+  </div>
+</div>
+
+<script>
+// --- CONSTANTS & STATE ---
+const G = 10.0; // Standard Cambridge syllabus g = 10 ms^-2
+let currentSim = 'horizontal_table';
+let currentPerspective = 'child';
+let isRunning = true;
+let simSpeed = 1.0;
+
+const simData = {
+  horizontal_table: {
+    r: 1.3,
+    omega: 3.5,
+    mass: 1.5,
+    angle: 0,
+    isCut: false,
+    cutX: 0, cutY: 0, cutVx: 0, cutVy: 0,
+    trail: []
+  },
+  conical_pendulum: {
+    length: 2.2,
+    thetaDeg: 35,
+    mass: 1.5,
+    rotAngle: 0
+  },
+  banked_curve: {
+    radius: 40.0,
+    bankAngleDeg: 22,
+    speed: 16.0,
+    mu: 0.40,
+    mass: 1000,
+    rotAngle: 0
+  },
+  vertical_string: {
+    radius: 1.5,
+    mass: 1.0,
+    uBottom: 9.2, // Launch speed at bottom
+    theta: 0,     // Angle from downward vertical
+    v: 9.2,
+    isSlacked: false,
+    tProj: 0,
+    projX: 0, projY: 0, projVx: 0, projVy: 0,
+    trail: []
+  },
+  inside_ring: {
+    radius: 1.5,
+    mass: 1.0,
+    uBottom: 6.8,
+    theta: 0,
+    v: 6.8,
+    isDetached: false,
+    tProj: 0,
+    projX: 0, projY: 0, projVx: 0, projVy: 0,
+    trail: []
+  },
+  hemisphere: {
+    radius: 2.0,
+    mass: 1.0,
+    uTop: 1.4,
+    theta: 0.05,
+    v: 1.4,
+    isAirborne: false,
+    tProj: 0,
+    projX: 0, projY: 0, projVx: 0, projVy: 0,
+    trail: []
+  }
+};
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const canvasWrap = document.getElementById('canvasWrap');
+
+// Robust Canvas Resize Guard (Ensures canvas is never 0x0)
+function resizeCanvas() {
+  const rect = canvasWrap.getBoundingClientRect();
+  const width = Math.max(300, rect.width || canvasWrap.clientWidth || 800);
+  const height = Math.max(300, rect.height || canvasWrap.clientHeight || 520);
+  
+  canvas.width = width;
+  canvas.height = height;
+}
+
+if (window.ResizeObserver) {
+  new ResizeObserver(() => resizeCanvas()).observe(canvasWrap);
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('DOMContentLoaded', resizeCanvas);
+resizeCanvas();
+
+// Safe LaTeX rendering helper with fallback
+function renderLatex(element) {
+  if (!element) return;
+  if (window.renderMathInElement) {
+    try {
+      window.renderMathInElement(element, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false
+      });
+    } catch (e) {
+      console.warn("KaTeX render notice:", e);
+    }
+  }
+}
+
+// Ensure KaTeX auto-renders once loaded
+window.addEventListener('load', () => {
+  renderLatex(document.body);
+  resizeCanvas();
+});
+
+// --- TAB SWITCHING ---
+document.querySelectorAll('#simTabs .nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#simTabs .nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    initSimulation(tab.dataset.sim);
+  });
+});
+
+function setPerspective(persp) {
+  currentPerspective = persp;
+  document.getElementById('tabChild').classList.toggle('active', persp === 'child');
+  document.getElementById('tabRigid').classList.toggle('active', persp === 'rigid');
+  updateExplanations();
+}
+
+function toggleDecoder(show) {
+  const modal = document.getElementById('decoderModal');
+  modal.classList.toggle('open', show);
+  if (show) renderDecoderProblems();
+}
+document.getElementById('openDecoderBtn').addEventListener('click', () => toggleDecoder(true));
+
+// --- EXPLANATIONS DATABASE ---
+const explanations = {
+  horizontal_table: {
+    title: "1. Horizontal Circle (Flat Table)",
+    child: `<div class="analogy-box">
+      <strong>🎠 The Leashed Dog & Umbrella Droplet:</strong><br>
+      Imagine spinning round and round holding your puppy's leash! The puppy desperately tries to run straight ahead, but your arms constantly pull inward toward your shoes. The faster you spin, the harder you must pull!
+    </div>
+    <p><strong>Click "Cut String" in controls:</strong> Notice how the ball DOES NOT fly outward like a bicycle spoke! It shoots straight along a <em>tangent line</em>, exactly like a water droplet flying off a twirled wet umbrella!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Section 15.1 Core Formulation:</strong></p>
+      <p>A particle describing a horizontal circle of radius $r$ at angular speed $\omega$ has acceleration directed strictly toward center $O$:</p>
+      $$a = r\omega^2 = \frac{v^2}{r}$$
+      <p>Resolving vertically: $R = mg$. Resolving horizontally toward $O$: By Newton's 2nd Law, $F_{\\text{net}} = ma$, so string tension $T = mr\omega^2 = \frac{mv^2}{r}$. Period $T_p = \frac{2\pi}{\omega}$. If cut, $F_{\\text{net}} = 0$, continuing in uniform rectilinear motion along tangent (Newton's 1st Law).</p>
+    </div>`,
+    trap: `Common Trap: Never write that "inward tension balances centrifugal force". In an inertial frame there is NO centrifugal force. The inward tension T IS the unbalanced resultant force producing acceleration a = v²/r.`
+  },
+  conical_pendulum: {
+    title: "2. Conical Pendulum (3D Cone)",
+    child: `<div class="analogy-box">
+      <strong>🎪 The Carnival Swing Chair:</strong><br>
+      When the giant swing ride stands still, chains hang straight down. As it whizzes in circles, the swings flare outward at an angle! The tilted rope does two jobs at once: its upward pull holds you up against gravity, while its inward tug yanks you around the circle!
+    </div>
+    <p>Notice: Faster spin ($\omega \\uparrow$) means a wider flare ($\theta \\uparrow$). But it can NEVER reach $90^\\circ$ (horizontal), because then the rope would have zero upward force to support the weight!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Section 15.2 Conical Pendulum Equations:</strong></p>
+      <p>String of length $l$ at angle $\theta$ to the downward vertical. Circular orbit radius is $r = l\\sin\\theta$.</p>
+      <p>Resolving vertically in equilibrium:</p>
+      $$R(\\uparrow): \\quad T\\cos\\theta = mg \\implies T = \\frac{mg}{\\cos\\theta}$$
+      <p>Resolving horizontally toward center:</p>
+      $$R(\\leftarrow): \\quad T\\sin\\theta = m(l\\sin\\theta)\\omega^2 \\implies T = ml\\omega^2$$
+      <p>Equating both tensions:</p>
+      $$\\frac{mg}{\\cos\\theta} = ml\\omega^2 \\implies \\omega = \\sqrt{\\frac{g}{l\\cos\\theta}}$$
+    </div>`,
+    trap: `Algebraic Trap: Notice that sinθ cancels ONLY when using angular speed ω (since r = l sinθ). If you use linear speed v, T sinθ = mv²/(l sinθ), so v = √(gl sinθ tanθ) where sinθ does NOT cancel!`
+  },
+  banked_curve: {
+    title: "3. Banked Race Track & Limiting Friction",
+    child: `<div class="analogy-box">
+      <strong>🏎️ Tilted Speedway Bowl:</strong><br>
+      On a flat turn, only tire friction stops a car from skidding into the ditch. But when the road slopes uphill like a bowl, the pavement itself shoves the car toward the inside of the turn!
+    </div>
+    <p>At the "sweet spot" ideal speed, you don't even need tire friction! If you drive faster than ideal, the car tries to drift UP the hill (friction grips downward). Drive too slow, and it slides DOWN into the ditch!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Worked Example 15.9 (Slip Dynamics):</strong></p>
+      <p>When speed $v > \\sqrt{rg\\tan\\theta}$, the car is about to slip <strong>upwards</strong>; limiting friction $F = \\mu R$ acts <strong>down the slope</strong>:</p>
+      $$R(\\uparrow): \\quad R\\cos\\theta - \\mu R\\sin\\theta = mg \\implies R = \\frac{mg}{\\cos\\theta - \\mu\\sin\\theta}$$
+      $$R(\\leftarrow): \\quad R\\sin\\theta + \\mu R\\cos\\theta = \\frac{mv^2}{r}$$
+      <p>Dividing the two equations yields the A-Level maximum speed condition:</p>
+      $$\\frac{v^2}{rg} = \\frac{\\sin\\theta + \\mu\\cos\\theta}{\\cos\\theta - \\mu\\sin\\theta} = \\frac{\\tan\\theta + \\mu}{1 - \\mu\\tan\\theta}$$
+    </div>`,
+    trap: `Sign Trap: Always verify if the car is "about to slip UP" (friction acts down the slope) or "about to slide DOWN because speed is too slow" (friction acts up the slope). The sign of μ reverses in the formula!`
+  },
+  vertical_string: {
+    title: "4. Vertical Circle Loop & String Slack",
+    child: `<div class="analogy-box">
+      <strong>🎢 Rollercoaster Loop-de-Loop:</strong><br>
+      Swinging a bucket of water upside-down without spilling! At the top, gravity pulls down, but if the water is moving fast enough, it is pressed against the bucket.
+    </div>
+    <p>If launch speed is less than the magical threshold $u < \\sqrt{5gr}$, the string suddenly goes completely limp ($T=0$) before reaching the top, and the ball falls through the air like a thrown rock!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Section 15.3 & Key Point 15.4:</strong></p>
+      <p>Projected from lowest point ($\theta = 0^\\circ$) with speed $u$. Conservation of Mechanical Energy:</p>
+      $$v^2 = u^2 - 2gr(1 - \\cos\\theta)$$
+      <p>Newton's 2nd Law radially inward towards center:</p>
+      $$T - mg\\cos\\theta = \\frac{mv^2}{r} \\implies T = \\frac{m}{r}\\left[u^2 - 2gr + 3gr\\cos\\theta\\right]$$
+      <p>At zenith ($\theta = 180^\\circ, \\cos\\theta = -1$): $T_{\\text{top}} = \\frac{m}{r}(u^2 - 5gr) \\ge 0 \\implies u \\ge \\sqrt{5gr}$.</p>
+    </div>`,
+    trap: `Universal Constant: For any complete vertical circle on a string, T_bottom - T_top = 6mg ALWAYS! This result is completely independent of the radius r or the initial speed u.`
+  },
+  inside_ring: {
+    title: "5. Inside Smooth Hollow Ring (Projectile Flight)",
+    child: `<div class="analogy-box">
+      <strong>🛹 Skateboarder Flying Off the Rim:</strong><br>
+      A marble rolling inside a glass salad bowl! If it isn't launched with enough speed to make a full loop, it rides up the glass wall past the equator, then pops off into mid-air and flies in a graceful arc like a basketball shot!
+    </div>
+    <p>The moment the glass wall reaction drops to zero ($R=0$), gravity takes over and the ball becomes a free parabolic projectile!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Worked Example 15.12 & 15.13:</strong></p>
+      <p>Normal reaction $R$ replaces string tension $T$. Radially:</p>
+      $$R = \\frac{m}{a}\\left(u^2 - 2ga + 3ga\\cos\\theta\\right)$$
+      <p>If $\\sqrt{2ga} < u < \\sqrt{5ga}$, $R$ drops to $0$ at angle:</p>
+      $$\\cos\\theta = \\frac{2ga - u^2}{3ga}$$
+      <p>For $u^2 = 3ga$, $\\cos\\theta = -\\frac{1}{3}$. Detachment height is $\\frac{a}{3}$ above center $O$. The subsequent vertical projectile rise is $\\frac{v_y^2}{2g} = \\frac{4}{27}a$, making total apex height $H = \\frac{13}{27}a$.</p>
+    </div>`,
+    trap: `Greatest Height Trap: Do not forget that maximum height above center O is (height where it leaves the hoop) PLUS (the additional projectile vertical rise v_y² / 2g). Both parts must be summed!`
+  },
+  hemisphere: {
+    title: "6. Sliding Down an Igloo (Hemisphere)",
+    child: `<div class="analogy-box">
+      <strong>🧊 Sledding off the North Pole Dome:</strong><br>
+      Sitting on the top of a smooth icy dome! A gentle nudge starts you sliding down faster and faster. Soon the dome curves downward away from you faster than gravity can bend your path, and WHOOSH — your sled leaves the ice and flies into the air!
+    </div>
+    <p>Even with an infinitely tiny nudge ($u \\to 0$), you always leave the dome at exactly the same magic angle: about $48.2^\\circ$ ($\cos\\theta = \\frac{2}{3}$)!</p>`,
+    rigid: `<div>
+      <p><strong>Cambridge Key Point 15.5 & Worked Example 15.15:</strong></p>
+      <p>Let $\\theta$ be measured from the <strong>upward vertical</strong>. By Conservation of Energy from apex:</p>
+      $$v^2 = u^2 + 2gr(1 - \\cos\\theta)$$
+      <p>Resolving radially toward center:</p>
+      $$mg\\cos\\theta - R = \\frac{mv^2}{r} \\implies R = 3mg\\cos\\theta - 2mg - \\frac{mu^2}{r}$$
+      <p>Contact is lost ($R = 0$) when:</p>
+      $$\\cos\\theta = \\frac{2}{3} + \\frac{u^2}{3gr}$$
+      <p>If $u \\to 0$, $\\cos\\theta = \\frac{2}{3} \\implies \\theta = 48.2^\\circ$. If $u = \\sqrt{gr}$, $\\cos\\theta = 1$ (leaves immediately).</p>
+    </div>`,
+    trap: `Angle Orientation Warning: In vertical circles (Sim 4 & 5), θ was measured from the DOWNWARD vertical. On the hemisphere dome, θ is measured from the UPWARD vertical! Confusing them flips the signs in the mark scheme.`
+  }
+};
+
+function updateExplanations() {
+  const data = explanations[currentSim];
+  document.getElementById('overlaySimName').textContent = data.title;
+  document.getElementById('perspectiveContent').innerHTML = currentPerspective === 'child' ? data.child : data.rigid;
+  document.getElementById('examTrapText').textContent = data.trap;
+  renderLatex(document.getElementById('perspectiveContent'));
+  renderLatex(document.getElementById('examTrapBox'));
+}
+
+// --- SETUP CONTROLS & LISTENERS ---
+function initSimulation(simKey) {
+  currentSim = simKey;
+  updateExplanations();
+  const ctrl = document.getElementById('dynamicControls');
+  const energyBox = document.getElementById('energyBox');
+
+  if (simKey === 'horizontal_table') {
+    energyBox.style.display = 'none';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>String Radius (r)</span><span class="param-value" id="val_r">1.3 m</span></div>
+        <input type="range" id="slider_r" min="0.6" max="2.6" step="0.1" value="${simData.horizontal_table.r}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Angular Speed (ω)</span><span class="param-value" id="val_omega">3.5 rad/s</span></div>
+        <input type="range" id="slider_omega" min="0.8" max="7.0" step="0.1" value="${simData.horizontal_table.omega}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Particle Mass (m)</span><span class="param-value" id="val_mass">1.5 kg</span></div>
+        <input type="range" id="slider_mass" min="0.5" max="4.0" step="0.5" value="${simData.horizontal_table.mass}">
+      </div>
+      <button class="icon-btn" id="cutStringBtn" style="width: 100%; justify-content: center; margin-top: 6px; border-color: var(--accent-sec); color: #fda4af;">
+        ✂️ Cut String (Test Newton's 1st Law)
+      </button>
+    `;
+    setupListeners([
+      { id: 'slider_r', valId: 'val_r', unit: ' m', key: 'r', obj: simData.horizontal_table },
+      { id: 'slider_omega', valId: 'val_omega', unit: ' rad/s', key: 'omega', obj: simData.horizontal_table },
+      { id: 'slider_mass', valId: 'val_mass', unit: ' kg', key: 'mass', obj: simData.horizontal_table }
+    ]);
+    document.getElementById('cutStringBtn').addEventListener('click', toggleCutString);
+  } else if (simKey === 'conical_pendulum') {
+    energyBox.style.display = 'none';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>String Length (l)</span><span class="param-value" id="val_l">2.2 m</span></div>
+        <input type="range" id="slider_l" min="1.0" max="3.5" step="0.1" value="${simData.conical_pendulum.length}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Cone Angle (θ)</span><span class="param-value" id="val_theta">35°</span></div>
+        <input type="range" id="slider_theta" min="5" max="80" step="1" value="${simData.conical_pendulum.thetaDeg}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Particle Mass (m)</span><span class="param-value" id="val_m">1.5 kg</span></div>
+        <input type="range" id="slider_m" min="0.5" max="4.0" step="0.5" value="${simData.conical_pendulum.mass}">
+      </div>
+    `;
+    setupListeners([
+      { id: 'slider_l', valId: 'val_l', unit: ' m', key: 'length', obj: simData.conical_pendulum },
+      { id: 'slider_theta', valId: 'val_theta', unit: '°', key: 'thetaDeg', obj: simData.conical_pendulum },
+      { id: 'slider_m', valId: 'val_m', unit: ' kg', key: 'mass', obj: simData.conical_pendulum }
+    ]);
+  } else if (simKey === 'banked_curve') {
+    energyBox.style.display = 'none';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>Bank Angle (θ)</span><span class="param-value" id="val_bank">22°</span></div>
+        <input type="range" id="slider_bank" min="5" max="45" step="1" value="${simData.banked_curve.bankAngleDeg}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Car Speed (v)</span><span class="param-value" id="val_v">16 m/s</span></div>
+        <input type="range" id="slider_v" min="4" max="35" step="0.5" value="${simData.banked_curve.speed}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Friction Coeff (μ)</span><span class="param-value" id="val_mu">0.40</span></div>
+        <input type="range" id="slider_mu" min="0.0" max="0.9" step="0.05" value="${simData.banked_curve.mu}">
+      </div>
+    `;
+    setupListeners([
+      { id: 'slider_bank', valId: 'val_bank', unit: '°', key: 'bankAngleDeg', obj: simData.banked_curve },
+      { id: 'slider_v', valId: 'val_v', unit: ' m/s', key: 'speed', obj: simData.banked_curve },
+      { id: 'slider_mu', valId: 'val_mu', unit: '', key: 'mu', obj: simData.banked_curve }
+    ]);
+  } else if (simKey === 'vertical_string') {
+    energyBox.style.display = 'block';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>Bottom Speed (u)</span><span class="param-value" id="val_u">9.2 m/s</span></div>
+        <input type="range" id="slider_u" min="4.0" max="14.0" step="0.2" value="${simData.vertical_string.uBottom}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Radius (r)</span><span class="param-value" id="val_vr">1.5 m</span></div>
+        <input type="range" id="slider_vr" min="0.8" max="2.5" step="0.1" value="${simData.vertical_string.radius}">
+      </div>
+      <div style="font-size: 0.74rem; color: var(--accent-gold); margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+        Crit speed for full circle: u ≥ √(5gr) = ${(Math.sqrt(5 * G * simData.vertical_string.radius)).toFixed(2)} m/s
+      </div>
+    `;
+    setupListeners([
+      { id: 'slider_u', valId: 'val_u', unit: ' m/s', key: 'uBottom', obj: simData.vertical_string, onchange: resetLoopSim },
+      { id: 'slider_vr', valId: 'val_vr', unit: ' m', key: 'radius', obj: simData.vertical_string, onchange: resetLoopSim }
+    ]);
+    resetLoopSim();
+  } else if (simKey === 'inside_ring') {
+    energyBox.style.display = 'block';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>Launch Speed (u)</span><span class="param-value" id="val_ring_u">6.8 m/s</span></div>
+        <input type="range" id="slider_ring_u" min="4.0" max="11.5" step="0.2" value="${simData.inside_ring.uBottom}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Hoop Radius (a)</span><span class="param-value" id="val_ring_a">1.5 m</span></div>
+        <input type="range" id="slider_ring_a" min="0.8" max="2.4" step="0.1" value="${simData.inside_ring.radius}">
+      </div>
+      <div style="font-size: 0.74rem; color: var(--accent); margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+        Detaches when R = 0 (if √(2ga) &lt; u &lt; √(5ga))
+      </div>
+    `;
+    setupListeners([
+      { id: 'slider_ring_u', valId: 'val_ring_u', unit: ' m/s', key: 'uBottom', obj: simData.inside_ring, onchange: resetRingSim },
+      { id: 'slider_ring_a', valId: 'val_ring_a', unit: ' m', key: 'radius', obj: simData.inside_ring, onchange: resetRingSim }
+    ]);
+    resetRingSim();
+  } else if (simKey === 'hemisphere') {
+    energyBox.style.display = 'block';
+    ctrl.innerHTML = `
+      <div class="param-group">
+        <div class="param-header"><span>Top Nudge Speed (u)</span><span class="param-value" id="val_hemi_u">1.4 m/s</span></div>
+        <input type="range" id="slider_hemi_u" min="0.2" max="4.5" step="0.1" value="${simData.hemisphere.uTop}">
+      </div>
+      <div class="param-group">
+        <div class="param-header"><span>Dome Radius (r)</span><span class="param-value" id="val_hemi_r">2.0 m</span></div>
+        <input type="range" id="slider_hemi_r" min="1.0" max="3.0" step="0.1" value="${simData.hemisphere.radius}">
+      </div>
+      <div style="font-size: 0.74rem; color: var(--accent-sec); margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+        Separation occurs when R = 0 at cosθ = 2/3 + u²/(3gr)
+      </div>
+    `;
+    setupListeners([
+      { id: 'slider_hemi_u', valId: 'val_hemi_u', unit: ' m/s', key: 'uTop', obj: simData.hemisphere, onchange: resetHemiSim },
+      { id: 'slider_hemi_r', valId: 'val_hemi_r', unit: ' m', key: 'radius', obj: simData.hemisphere, onchange: resetHemiSim }
+    ]);
+    resetHemiSim();
+  }
+}
+
+function setupListeners(bindings) {
+  bindings.forEach(b => {
+    const slider = document.getElementById(b.id);
+    const valSpan = document.getElementById(b.valId);
+    if (!slider) return;
+    slider.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      b.obj[b.key] = v;
+      valSpan.textContent = v + b.unit;
+      if (b.onchange) b.onchange();
+    });
+  });
+}
+
+function toggleCutString() {
+  const d = simData.horizontal_table;
+  if (!d.isCut) {
+    d.isCut = true;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const scale = 110;
+    const pixR = d.r * scale;
+    d.cutX = cx + pixR * Math.cos(d.angle);
+    d.cutY = cy + pixR * Math.sin(d.angle);
+    const v = d.r * d.omega;
+    d.cutVx = -v * Math.sin(d.angle) * scale;
+    d.cutVy = v * Math.cos(d.angle) * scale;
+    document.getElementById('cutStringBtn').textContent = "🔄 Re-Attach String";
+  } else {
+    d.isCut = false;
+    d.trail = [];
+    document.getElementById('cutStringBtn').textContent = "✂️ Cut String (Test Newton's 1st Law)";
+  }
+}
+
+function resetLoopSim() {
+  const d = simData.vertical_string;
+  d.theta = 0;
+  d.v = d.uBottom;
+  d.isSlacked = false;
+  d.tProj = 0;
+  d.trail = [];
+}
+
+function resetRingSim() {
+  const d = simData.inside_ring;
+  d.theta = 0;
+  d.v = d.uBottom;
+  d.isDetached = false;
+  d.tProj = 0;
+  d.trail = [];
+}
+
+function resetHemiSim() {
+  const d = simData.hemisphere;
+  d.theta = 0.04;
+  d.v = d.uTop;
+  d.isAirborne = false;
+  d.tProj = 0;
+  d.trail = [];
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (currentSim === 'horizontal_table') {
+    simData.horizontal_table.isCut = false;
+    simData.horizontal_table.trail = [];
+    initSimulation('horizontal_table');
+  } else if (currentSim === 'vertical_string') resetLoopSim();
+  else if (currentSim === 'inside_ring') resetRingSim();
+  else if (currentSim === 'hemisphere') resetHemiSim();
+  else initSimulation(currentSim);
+});
+
+const playPauseBtn = document.getElementById('playPauseBtn');
+playPauseBtn.addEventListener('click', () => {
+  isRunning = !isRunning;
+  playPauseBtn.innerHTML = isRunning ? '⏸ Pause' : '▶ Play';
+});
+
+const slowMoBtn = document.getElementById('slowMoBtn');
+slowMoBtn.addEventListener('click', () => {
+  simSpeed = simSpeed === 1.0 ? 0.4 : 1.0;
+  slowMoBtn.textContent = simSpeed === 1.0 ? '🐢 0.5x' : '⚡ 1.0x';
+  slowMoBtn.classList.toggle('active', simSpeed < 1.0);
+});
+
+// --- RENDER & PHYSICS LOOP ---
+let lastTime = performance.now();
+
+function updateAndRender(now) {
+  if (!now) now = performance.now();
+  const dtRaw = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
+  const dt = dtRaw * simSpeed;
+
+  // Emergency safety check: if canvas has collapsed to zero, restore it
+  if (canvas.width <= 10 || canvas.height <= 10) {
+    resizeCanvas();
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (currentSim === 'horizontal_table') renderHorizontalTable(dt);
+  else if (currentSim === 'conical_pendulum') renderConicalPendulum(dt);
+  else if (currentSim === 'banked_curve') renderBankedCurve(dt);
+  else if (currentSim === 'vertical_string') renderVerticalString(dt);
+  else if (currentSim === 'inside_ring') renderInsideRing(dt);
+  else if (currentSim === 'hemisphere') renderHemisphere(dt);
+
+  requestAnimationFrame(updateAndRender);
+}
+requestAnimationFrame(updateAndRender);
+
+// ==========================================
+// SIM 1: HORIZONTAL TABLE
+// ==========================================
+function renderHorizontalTable(dt) {
+  const d = simData.horizontal_table;
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const scale = 110;
+  const pixR = d.r * scale;
+
+  if (isRunning) {
+    if (!d.isCut) {
+      d.angle += d.omega * dt;
+      const px = cx + pixR * Math.cos(d.angle);
+      const py = cy + pixR * Math.sin(d.angle);
+      d.trail.push({ x: px, y: py });
+      if (d.trail.length > 40) d.trail.shift();
+    } else {
+      d.cutX += d.cutVx * dt;
+      d.cutY += d.cutVy * dt;
+      d.trail.push({ x: d.cutX, y: d.cutY });
+      if (d.trail.length > 50) d.trail.shift();
+      if (Math.hypot(d.cutX - cx, d.cutY - cy) > 550) {
+        d.isCut = false;
+        d.trail = [];
+        const btn = document.getElementById('cutStringBtn');
+        if (btn) btn.textContent = "✂️ Cut String (Test Newton's 1st Law)";
+      }
+    }
+  }
+
+  const v = d.r * d.omega;
+  const a_rad = d.isCut ? 0 : d.r * d.omega * d.omega;
+  const T = d.isCut ? 0 : d.mass * a_rad;
+  const period = (2 * Math.PI) / d.omega;
+
+  document.getElementById('overlayState').textContent = d.isCut ? "STATUS: STRING CUT (T=0, STRAIGHT LINE)" : `Orbiting: ${d.omega.toFixed(1)} rad/s`;
+  document.getElementById('overlayState').className = `badge ${d.isCut ? 'badge-rose' : 'badge-gold'}`;
+  document.getElementById('overlayRadial').textContent = d.isCut ? 'a = 0 (Uniform Motion)' : `a = ${a_rad.toFixed(1)} m/s²`;
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Linear Speed (v)</span><span class="metric-val">${v.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Angular Speed (ω)</span><span class="metric-val">${d.omega.toFixed(2)} rad/s</span></div>
+    <div class="metric-item"><span class="metric-label">Radial Accel (a)</span><span class="metric-val">${a_rad.toFixed(2)} m/s²</span></div>
+    <div class="metric-item"><span class="metric-label">Tension (T)</span><span class="metric-val" style="color:var(--accent);">${T.toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">Period (2π/ω)</span><span class="metric-val">${period.toFixed(2)} s</span></div>
+    <div class="metric-item"><span class="metric-label">Normal (R=mg)</span><span class="metric-val">${(d.mass * G).toFixed(1)} N</span></div>
+  `;
+
+  ctx.save();
+  // Table circular boundary
+  ctx.fillStyle = '#0f172a';
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pixR * 1.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Orbit ring guideline
+  ctx.beginPath();
+  ctx.arc(cx, cy, pixR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+  ctx.setLineDash([5, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Central peg
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+  ctx.fillStyle = '#f43f5e';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Trail
+  if (d.trail.length > 1) {
+    ctx.beginPath();
+    ctx.moveTo(d.trail[0].x, d.trail[0].y);
+    for (let i = 1; i < d.trail.length; i++) {
+      ctx.lineTo(d.trail[i].x, d.trail[i].y);
+    }
+    ctx.strokeStyle = d.isCut ? 'rgba(244, 63, 94, 0.4)' : 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  let px, py;
+  if (!d.isCut) {
+    px = cx + pixR * Math.cos(d.angle);
+    py = cy + pixR * Math.sin(d.angle);
+
+    // String
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Inward Tension Vector
+    drawVector(px, py, cx - px, cy - py, 0.45, '#38bdf8', 'T (Tension)');
+
+    // Tangential Velocity Vector
+    const vxDir = -Math.sin(d.angle);
+    const vyDir = Math.cos(d.angle);
+    drawVector(px, py, vxDir * 80, vyDir * 80, 1.0, '#fbbf24', 'v (Tangent)');
+  } else {
+    px = d.cutX;
+    py = d.cutY;
+    const vMag = Math.hypot(d.cutVx, d.cutVy);
+    drawVector(px, py, (d.cutVx / vMag) * 80, (d.cutVy / vMag) * 80, 1.0, '#fbbf24', 'v (Straight Line)');
+  }
+
+  // Particle Bob
+  ctx.beginPath();
+  ctx.arc(px, py, 14, 0, Math.PI * 2);
+  ctx.fillStyle = d.isCut ? '#f43f5e' : '#38bdf8';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ==========================================
+// SIM 2: CONICAL PENDULUM
+// ==========================================
+function renderConicalPendulum(dt) {
+  const d = simData.conical_pendulum;
+  const thetaRad = (d.thetaDeg * Math.PI) / 180;
+  const l = d.length;
+  const r = l * Math.sin(thetaRad);
+
+  const omega = Math.sqrt(G / (l * Math.cos(thetaRad)));
+  const T = (d.mass * G) / Math.cos(thetaRad);
+  const v = r * omega;
+
+  if (isRunning) {
+    d.rotAngle += omega * dt;
+  }
+
+  document.getElementById('overlayState').textContent = `Cone Angle: ${d.thetaDeg}°`;
+  document.getElementById('overlayState').className = 'badge badge-teal';
+  document.getElementById('overlayRadial').textContent = `ω = ${omega.toFixed(2)} rad/s`;
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Orbit Radius (r)</span><span class="metric-val">${r.toFixed(2)} m</span></div>
+    <div class="metric-item"><span class="metric-label">Angular Speed (ω)</span><span class="metric-val">${omega.toFixed(2)} rad/s</span></div>
+    <div class="metric-item"><span class="metric-label">Linear Speed (v)</span><span class="metric-val">${v.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Tension (T)</span><span class="metric-val" style="color:var(--accent);">${T.toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">T cosθ (Upward)</span><span class="metric-val">${(T * Math.cos(thetaRad)).toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">T sinθ (Centripetal)</span><span class="metric-val">${(T * Math.sin(thetaRad)).toFixed(1)} N</span></div>
+  `;
+
+  const cx = canvas.width / 2;
+  const topY = 75;
+  const scale = 110;
+  const hPix = l * Math.cos(thetaRad) * scale;
+  const rPix = r * scale;
+
+  const orbitCenterY = topY + hPix;
+  const px = cx + rPix * Math.cos(d.rotAngle);
+  const py = orbitCenterY + rPix * 0.35 * Math.sin(d.rotAngle);
+
+  ctx.save();
+
+  // Support Ceiling
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(cx - 120, topY);
+  ctx.lineTo(cx + 120, topY);
+  ctx.stroke();
+
+  // Vertical Centerline
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(cx, topY);
+  ctx.lineTo(cx, orbitCenterY + 40);
+  ctx.stroke();
+
+  // Orbit Ellipse
+  ctx.beginPath();
+  ctx.ellipse(cx, orbitCenterY, rPix, rPix * 0.35, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Radius Line
+  ctx.beginPath();
+  ctx.moveTo(cx, orbitCenterY);
+  ctx.lineTo(px, py);
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+  ctx.stroke();
+
+  // String
+  ctx.beginPath();
+  ctx.moveTo(cx, topY);
+  ctx.lineTo(px, py);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Pivot Pin
+  ctx.beginPath();
+  ctx.arc(cx, topY, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#fbbf24';
+  ctx.fill();
+
+  // Forces from Particle
+  drawVector(px, py, 0, 60, 1.0, '#f43f5e', 'mg');
+  drawVector(px, py, (cx - px) * 0.45, (topY - py) * 0.45, 1.0, '#38bdf8', 'T');
+
+  // Particle
+  ctx.beginPath();
+  ctx.arc(px, py, 13, 0, Math.PI * 2);
+  ctx.fillStyle = '#ec4899';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Angle Arc
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, topY, 45, Math.PI / 2, Math.PI / 2 + (px > cx ? -thetaRad : thetaRad), px <= cx);
+  ctx.stroke();
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '12px sans-serif';
+  ctx.fillText(`θ = ${d.thetaDeg}°`, cx - 35, topY + 60);
+
+  ctx.restore();
+}
+
+// ==========================================
+// SIM 3: BANKED CURVE (ANIMATED 3D & CROSS-SECTION)
+// ==========================================
+function renderBankedCurve(dt) {
+  const d = simData.banked_curve;
+  const theta = (d.bankAngleDeg * Math.PI) / 180;
+  const r = d.radius;
+  const v = d.speed;
+  const m = d.mass;
+  const mu = d.mu;
+
+  // Ideal speed without friction: v_ideal = sqrt(r * g * tan(theta))
+  const v_ideal = Math.sqrt(r * G * Math.tan(theta));
+
+  // Slip forces:
+  // R cosθ - F sinθ = mg
+  // R sinθ + F cosθ = m v² / r
+  // R = mg cosθ + (m v² / r) sinθ
+  // F = (m v² / r) cosθ - mg sinθ
+  const R = m * G * Math.cos(theta) + (m * v * v / r) * Math.sin(theta);
+  const F_req = (m * v * v / r) * Math.cos(theta) - m * G * Math.sin(theta);
+  const F_max = mu * R;
+
+  let slipStatus = "STABLE GRIP (NO SLIP)";
+  let statusBadge = "badge-teal";
+  if (Math.abs(F_req) > F_max) {
+    if (F_req > 0) {
+      slipStatus = "SKIDDING OUT (SLIPPING UP)";
+      statusBadge = "badge-rose";
+    } else {
+      slipStatus = "SLIDING IN (SLIPPING DOWN)";
+      statusBadge = "badge-gold";
+    }
+  } else if (Math.abs(F_req) > 0.85 * F_max) {
+    slipStatus = "NEAR LIMIT OF ADHESION";
+    statusBadge = "badge-gold";
+  }
+
+  document.getElementById('overlayState').textContent = slipStatus;
+  document.getElementById('overlayState').className = `badge ${statusBadge}`;
+  document.getElementById('overlayRadial').textContent = `Ideal v = ${v_ideal.toFixed(1)} m/s`;
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Ideal Speed (No Fric)</span><span class="metric-val">${v_ideal.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Current Speed (v)</span><span class="metric-val">${v.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Normal Reaction (R)</span><span class="metric-val">${(R / 1000).toFixed(2)} kN</span></div>
+    <div class="metric-item"><span class="metric-label">Friction Needed (F)</span><span class="metric-val" style="color:${F_req > 0 ? 'var(--accent-sec)' : 'var(--accent-gold)'};">${(Math.abs(F_req)/1000).toFixed(2)} kN</span></div>
+    <div class="metric-item"><span class="metric-label">Max Available (μR)</span><span class="metric-val">${(F_max / 1000).toFixed(2)} kN</span></div>
+    <div class="metric-item"><span class="metric-label">Friction Direction</span><span class="metric-val">${F_req > 0 ? 'Down Slope' : 'Up Slope'}</span></div>
+  `;
+
+  if (isRunning) {
+    d.rotAngle += (v / r) * dt;
+  }
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2 + 70;
+
+  ctx.save();
+  // Ground
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(cx - 280, cy);
+  ctx.lineTo(cx + 280, cy);
+  ctx.stroke();
+
+  // Banked Incline Wedge
+  const rampLen = 420;
+  const rampEndX = cx - 200 + rampLen * Math.cos(theta);
+  const rampEndY = cy - rampLen * Math.sin(theta);
+
+  ctx.beginPath();
+  ctx.moveTo(cx - 200, cy);
+  ctx.lineTo(rampEndX, rampEndY);
+  ctx.lineTo(rampEndX, cy);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(30, 41, 59, 0.75)';
+  ctx.fill();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+
+  // Angle Arc
+  ctx.beginPath();
+  ctx.arc(cx - 200, cy, 75, 0, -theta, true);
+  ctx.strokeStyle = '#fbbf24';
+  ctx.stroke();
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '14px sans-serif';
+  ctx.fillText(`θ = ${d.bankAngleDeg}°`, cx - 110, cy - 14);
+
+  // Position Car on Slope
+  // Add small visual vibration if skidding
+  const skidJitter = slipStatus.includes('SKIDDING') ? (Math.random() - 0.5) * 4 : 0;
+  const sDist = 220 + skidJitter;
+  const carX = cx - 200 + sDist * Math.cos(theta);
+  const carY = cy - sDist * Math.sin(theta);
+
+  ctx.translate(carX, carY);
+  ctx.rotate(-theta);
+
+  // Car Body
+  ctx.fillStyle = slipStatus.includes('SKIDDING') ? '#f43f5e' : (slipStatus.includes('SLIDING') ? '#fbbf24' : '#38bdf8');
+  ctx.fillRect(-35, -28, 70, 28);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-35, -28, 70, 28);
+
+  // Wheels
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(-28, -4, 16, 8);
+  ctx.fillRect(12, -4, 16, 8);
+
+  // Normal Reaction R (perpendicular to slope)
+  drawVector(0, -14, 0, -85, 1.0, '#10b981', 'R');
+
+  // Friction vector (along surface)
+  if (Math.abs(F_req) > 20) {
+    const fDir = F_req > 0 ? -1 : 1; // Down slope (-x) vs Up slope (+x)
+    drawVector(0, 0, fDir * 65, 0, 1.0, '#f59e0b', 'F (friction)');
+  }
+
+  // Weight mg (strictly straight down)
+  ctx.rotate(theta);
+  drawVector(0, -14, 0, 75, 1.0, '#f43f5e', 'mg');
+
+  ctx.restore();
+}
+
+// ==========================================
+// SIM 4: VERTICAL STRING LOOP & SLACK
+// ==========================================
+function renderVerticalString(dt) {
+  const d = simData.vertical_string;
+  const r = d.radius;
+  const u = d.uBottom;
+  const m = d.mass;
+  const uCrit = Math.sqrt(5 * G * r);
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const scale = 115;
+  const rPix = r * scale;
+
+  if (isRunning) {
+    if (!d.isSlacked) {
+      // Energy conservation: v^2 = u^2 - 2gr(1 - cosθ)
+      const vSq = u * u - 2 * G * r * (1 - Math.cos(d.theta));
+      const T = (m / r) * (u * u - 2 * G * r + 3 * G * r * Math.cos(d.theta));
+
+      if (vSq <= 0) {
+        // Pendulum turnaround: reverse direction
+        d.v = 0;
+        d.theta = Math.max(0, d.theta - 0.02);
+      } else if (T <= 0 && d.theta > Math.PI / 2) {
+        // ROPE SLACKS! Becomes a projectile
+        d.isSlacked = true;
+        d.v = Math.sqrt(Math.max(0, vSq));
+        d.projX = cx + rPix * Math.sin(d.theta);
+        d.projY = cy + rPix * Math.cos(d.theta);
+        // Tangential launch velocity
+        d.projVx = d.v * Math.cos(d.theta) * scale;
+        d.projVy = -d.v * Math.sin(d.theta) * scale;
+        d.tProj = 0;
+      } else {
+        d.v = Math.sqrt(vSq);
+        const omega = d.v / r;
+        d.theta += omega * dt;
+        if (d.theta >= 2 * Math.PI) d.theta -= 2 * Math.PI;
+
+        const curX = cx + rPix * Math.sin(d.theta);
+        const curY = cy + rPix * Math.cos(d.theta);
+        d.trail.push({ x: curX, y: curY });
+        if (d.trail.length > 35) d.trail.shift();
+      }
+    } else {
+      // Free projectile motion under gravity
+      d.tProj += dt;
+      d.projX += d.projVx * dt;
+      d.projY += d.projVy * dt + 0.5 * (G * scale) * dt * dt;
+      d.projVy += (G * scale) * dt;
+
+      d.trail.push({ x: d.projX, y: d.projY });
+      if (d.trail.length > 50) d.trail.shift();
+
+      // Check when rope pulls taut again
+      const distFromCenter = Math.hypot(d.projX - cx, d.projY - cy);
+      if (distFromCenter >= rPix && d.tProj > 0.15) {
+        // Catch and smoothly swing again from that point
+        d.isSlacked = false;
+        d.theta = Math.atan2(d.projX - cx, d.projY - cy);
+        if (d.theta < 0) d.theta += 2 * Math.PI;
+      }
+    }
+  }
+
+  const vNow = d.isSlacked ? Math.hypot(d.projVx, d.projVy) / scale : d.v;
+  const ke = 0.5 * m * vNow * vNow;
+  const currentHeight = d.isSlacked ? (cy + rPix - d.projY) / scale : r * (1 - Math.cos(d.theta));
+  const pe = Math.max(0, m * G * currentHeight);
+  const totalE = Math.max(0.1, ke + pe);
+
+  document.getElementById('barKE').style.width = `${Math.min(100, Math.max(0, (ke / totalE) * 100))}%`;
+  document.getElementById('barPE').style.width = `${Math.min(100, Math.max(0, (pe / totalE) * 100))}%`;
+
+  const statusText = d.isSlacked ? "STRING SLACKED (FREE PROJECTILE)" : (u >= uCrit ? "COMPLETE VERTICAL LOOP" : "PENDULUM OSCILLATION");
+  document.getElementById('overlayState').textContent = statusText;
+  document.getElementById('overlayState').className = `badge ${d.isSlacked ? 'badge-rose' : 'badge-teal'}`;
+  document.getElementById('overlayRadial').textContent = `Crit u = ${uCrit.toFixed(2)} m/s`;
+
+  const thetaDeg = ((d.theta * 180) / Math.PI) % 360;
+  const T_live = d.isSlacked ? 0 : Math.max(0, (m / r) * (u * u - 2 * G * r + 3 * G * r * Math.cos(d.theta)));
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Angle (from bottom)</span><span class="metric-val">${thetaDeg.toFixed(1)}°</span></div>
+    <div class="metric-item"><span class="metric-label">Linear Speed (v)</span><span class="metric-val">${vNow.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Tension (T)</span><span class="metric-val" style="color:var(--accent);">${T_live.toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">Kinetic Energy (KE)</span><span class="metric-val">${ke.toFixed(1)} J</span></div>
+    <div class="metric-item"><span class="metric-label">Potential Energy</span><span class="metric-val">${pe.toFixed(1)} J</span></div>
+    <div class="metric-item"><span class="metric-label">Critical Speed</span><span class="metric-val">${uCrit.toFixed(2)} m/s</span></div>
+  `;
+
+  ctx.save();
+  // Circular Track Boundary
+  ctx.beginPath();
+  ctx.arc(cx, cy, rPix, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Center Pivot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#f43f5e';
+  ctx.fill();
+
+  // Trail
+  if (d.trail.length > 1) {
+    ctx.beginPath();
+    ctx.moveTo(d.trail[0].x, d.trail[0].y);
+    for (let i = 1; i < d.trail.length; i++) {
+      ctx.lineTo(d.trail[i].x, d.trail[i].y);
+    }
+    ctx.strokeStyle = d.isSlacked ? 'rgba(244, 63, 94, 0.5)' : 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  let px, py;
+  if (!d.isSlacked) {
+    px = cx + rPix * Math.sin(d.theta);
+    py = cy + rPix * Math.cos(d.theta);
+
+    // Taut String
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    drawVector(px, py, (cx - px) * 0.35, (cy - py) * 0.35, 1.0, '#38bdf8', 'T');
+  } else {
+    px = d.projX;
+    py = d.projY;
+
+    // Slack Loose Line
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    const midX = (cx + px) / 2 + 18;
+    const midY = (cy + py) / 2 + 30;
+    ctx.quadraticCurveTo(midX, midY, px, py);
+    ctx.strokeStyle = 'rgba(244, 63, 94, 0.7)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Weight mg
+  drawVector(px, py, 0, 50, 1.0, '#f43f5e', 'mg');
+
+  // Particle
+  ctx.beginPath();
+  ctx.arc(px, py, 13, 0, Math.PI * 2);
+  ctx.fillStyle = d.isSlacked ? '#f43f5e' : '#10b981';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ==========================================
+// SIM 5: INSIDE HOLLOW RING (CAMBRIDGE EX 15.12/13)
+// ==========================================
+function renderInsideRing(dt) {
+  const d = simData.inside_ring;
+  const a = d.radius;
+  const u = d.uBottom;
+  const m = d.mass;
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const scale = 115;
+  const aPix = a * scale;
+
+  if (isRunning) {
+    if (!d.isDetached) {
+      const vSq = u * u - 2 * G * a * (1 - Math.cos(d.theta));
+      const R = (m / a) * (u * u - 2 * G * a + 3 * G * a * Math.cos(d.theta));
+
+      if (R <= 0 && d.theta > Math.PI / 2) {
+        // DEPARTS FROM HOOP SURFACE
+        d.isDetached = true;
+        d.v = Math.sqrt(Math.max(0, vSq));
+        d.projX = cx + aPix * Math.sin(d.theta);
+        d.projY = cy + aPix * Math.cos(d.theta);
+        d.projVx = d.v * Math.cos(d.theta) * scale;
+        d.projVy = -d.v * Math.sin(d.theta) * scale;
+        d.tProj = 0;
+      } else {
+        d.v = Math.sqrt(Math.max(0.1, vSq));
+        const omega = d.v / a;
+        d.theta += omega * dt;
+        if (d.theta >= 2 * Math.PI) d.theta -= 2 * Math.PI;
+
+        const curX = cx + aPix * Math.sin(d.theta);
+        const curY = cy + aPix * Math.cos(d.theta);
+        d.trail.push({ x: curX, y: curY });
+        if (d.trail.length > 35) d.trail.shift();
+      }
+    } else {
+      // Free parabolic flight inside hoop
+      d.tProj += dt;
+      d.projX += d.projVx * dt;
+      d.projY += d.projVy * dt + 0.5 * (G * scale) * dt * dt;
+      d.projVy += (G * scale) * dt;
+
+      d.trail.push({ x: d.projX, y: d.projY });
+      if (d.trail.length > 50) d.trail.shift();
+
+      const dist = Math.hypot(d.projX - cx, d.projY - cy);
+      if (dist >= aPix && d.tProj > 0.15) {
+        // Lands back onto ring wall
+        d.isDetached = false;
+        d.theta = Math.atan2(d.projX - cx, d.projY - cy);
+        if (d.theta < 0) d.theta += 2 * Math.PI;
+      }
+    }
+  }
+
+  const vNow = d.isDetached ? Math.hypot(d.projVx, d.projVy) / scale : d.v;
+  const ke = 0.5 * m * vNow * vNow;
+  const currentHeight = d.isDetached ? (cy + aPix - d.projY) / scale : a * (1 - Math.cos(d.theta));
+  const pe = Math.max(0, m * G * currentHeight);
+  const totalE = Math.max(0.1, ke + pe);
+
+  document.getElementById('barKE').style.width = `${Math.min(100, Math.max(0, (ke / totalE) * 100))}%`;
+  document.getElementById('barPE').style.width = `${Math.min(100, Math.max(0, (pe / totalE) * 100))}%`;
+
+  const thetaDeg = ((d.theta * 180) / Math.PI) % 360;
+  const R_live = d.isDetached ? 0 : Math.max(0, (m / a) * (u * u - 2 * G * a + 3 * G * a * Math.cos(d.theta)));
+
+  document.getElementById('overlayState').textContent = d.isDetached ? "DETACHED (PROJECTILE ARC)" : "WALL CONTACT (R > 0)";
+  document.getElementById('overlayState').className = `badge ${d.isDetached ? 'badge-rose' : 'badge-teal'}`;
+  document.getElementById('overlayRadial').textContent = `R = ${R_live.toFixed(1)} N`;
+
+  const cosDeparture = Math.max(-1, Math.min(1, (2 * G * a - u * u) / (3 * G * a)));
+  const departureAngle = (Math.acos(cosDeparture) * 180 / Math.PI).toFixed(1);
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Angle θ (from base)</span><span class="metric-val">${thetaDeg.toFixed(1)}°</span></div>
+    <div class="metric-item"><span class="metric-label">Normal Reaction (R)</span><span class="metric-val" style="color:var(--accent);">${R_live.toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">Linear Speed (v)</span><span class="metric-val">${vNow.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Kinetic Energy (KE)</span><span class="metric-val">${ke.toFixed(1)} J</span></div>
+    <div class="metric-item"><span class="metric-label">Potential Energy</span><span class="metric-val">${pe.toFixed(1)} J</span></div>
+    <div class="metric-item"><span class="metric-label">Departure Angle</span><span class="metric-val">${departureAngle}°</span></div>
+  `;
+
+  ctx.save();
+  // Hollow Tube Outer & Inner Ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, aPix + 7, 0, Math.PI * 2);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 14;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, aPix, 0, Math.PI * 2);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Horizontal Equator
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(cx - aPix - 20, cy);
+  ctx.lineTo(cx + aPix + 20, cy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Trail
+  if (d.trail.length > 1) {
+    ctx.beginPath();
+    ctx.moveTo(d.trail[0].x, d.trail[0].y);
+    for (let i = 1; i < d.trail.length; i++) {
+      ctx.lineTo(d.trail[i].x, d.trail[i].y);
+    }
+    ctx.strokeStyle = d.isDetached ? 'rgba(244, 63, 94, 0.5)' : 'rgba(251, 191, 36, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  let px, py;
+  if (!d.isDetached) {
+    px = cx + aPix * Math.sin(d.theta);
+    py = cy + aPix * Math.cos(d.theta);
+    drawVector(px, py, (cx - px) * 0.35, (cy - py) * 0.35, 1.0, '#10b981', 'R');
+  } else {
+    px = d.projX;
+    py = d.projY;
+  }
+
+  drawVector(px, py, 0, 50, 1.0, '#f43f5e', 'mg');
+
+  // Particle
+  ctx.beginPath();
+  ctx.arc(px, py, 11, 0, Math.PI * 2);
+  ctx.fillStyle = d.isDetached ? '#f43f5e' : '#fbbf24';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ==========================================
+// SIM 6: HEMISPHERE DOME DROP
+// ==========================================
+function renderHemisphere(dt) {
+  const d = simData.hemisphere;
+  const r = d.radius;
+  const u = d.uTop;
+  const m = d.mass;
+
+  const cx = canvas.width / 2;
+  const groundY = canvas.height / 2 + 130;
+  const scale = 110;
+  const rPix = r * scale;
+  const domeCenterY = groundY;
+
+  // Separation occurs when R = 0: cosθ_sep = 2/3 + u² / (3gr)
+  const cosSep = Math.min(1.0, (2 / 3) + (u * u) / (3 * G * r));
+  const thetaSepRad = Math.acos(cosSep);
+
+  if (isRunning) {
+    if (!d.isAirborne) {
+      const vSq = u * u + 2 * G * r * (1 - Math.cos(d.theta));
+      d.v = Math.sqrt(vSq);
+      const R = 3 * m * G * Math.cos(d.theta) - 2 * m * G - (m * u * u) / r;
+
+      if (R <= 0 || d.theta >= thetaSepRad) {
+        // Takes off into thin air!
+        d.isAirborne = true;
+        d.theta = thetaSepRad;
+        d.projX = cx + rPix * Math.sin(d.theta);
+        d.projY = domeCenterY - rPix * Math.cos(d.theta);
+        d.projVx = d.v * Math.cos(d.theta) * scale;
+        d.projVy = d.v * Math.sin(d.theta) * scale;
+        d.tProj = 0;
+      } else {
+        const omega = d.v / r;
+        d.theta += omega * dt;
+
+        const curX = cx + rPix * Math.sin(d.theta);
+        const curY = domeCenterY - rPix * Math.cos(d.theta);
+        d.trail.push({ x: curX, y: curY });
+        if (d.trail.length > 35) d.trail.shift();
+      }
+    } else {
+      // Free parabolic flight in air
+      d.tProj += dt;
+      d.projX += d.projVx * dt;
+      d.projY += d.projVy * dt + 0.5 * (G * scale) * dt * dt;
+      d.projVy += (G * scale) * dt;
+
+      d.trail.push({ x: d.projX, y: d.projY });
+      if (d.trail.length > 50) d.trail.shift();
+
+      if (d.projY >= groundY) {
+        // Hits ground: pause briefly then re-slide
+        d.isAirborne = false;
+        d.theta = 0.04;
+        d.trail = [];
+      }
+    }
+  }
+
+  const vNow = d.isAirborne ? Math.hypot(d.projVx, d.projVy) / scale : d.v;
+  const ke = 0.5 * m * vNow * vNow;
+  const currentHeight = d.isAirborne ? Math.max(0, (groundY - d.projY) / scale) : r * Math.cos(d.theta);
+  const pe = Math.max(0, m * G * currentHeight);
+  const totalE = Math.max(0.1, ke + pe);
+
+  document.getElementById('barKE').style.width = `${Math.min(100, Math.max(0, (ke / totalE) * 100))}%`;
+  document.getElementById('barPE').style.width = `${Math.min(100, Math.max(0, (pe / totalE) * 100))}%`;
+
+  const thetaDeg = (d.theta * 180 / Math.PI);
+  const R_live = d.isAirborne ? 0 : Math.max(0, 3 * m * G * Math.cos(d.theta) - 2 * m * G - (m * u * u) / r);
+
+  document.getElementById('overlayState').textContent = d.isAirborne ? "AIRBORNE FLIGHT (R = 0)" : "SLIDING ON DOME (R > 0)";
+  document.getElementById('overlayState').className = `badge ${d.isAirborne ? 'badge-rose' : 'badge-teal'}`;
+  document.getElementById('overlayRadial').textContent = `Sep Angle = ${(thetaSepRad * 180 / Math.PI).toFixed(1)}°`;
+
+  document.getElementById('metricsDisplay').innerHTML = `
+    <div class="metric-item"><span class="metric-label">Zenith Angle (θ)</span><span class="metric-val">${thetaDeg.toFixed(1)}°</span></div>
+    <div class="metric-item"><span class="metric-label">Normal Reaction (R)</span><span class="metric-val" style="color:var(--accent);">${R_live.toFixed(1)} N</span></div>
+    <div class="metric-item"><span class="metric-label">Linear Speed (v)</span><span class="metric-val">${vNow.toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Separation Angle</span><span class="metric-val">${(thetaSepRad * 180 / Math.PI).toFixed(1)}°</span></div>
+    <div class="metric-item"><span class="metric-label">Departure Speed</span><span class="metric-val">${(Math.sqrt(u * u + 2 * G * r * (1 - cosSep))).toFixed(2)} m/s</span></div>
+    <div class="metric-item"><span class="metric-label">Instant Flyoff Limit</span><span class="metric-val">${Math.sqrt(G * r).toFixed(2)} m/s</span></div>
+  `;
+
+  ctx.save();
+  // Ground Line
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(cx - 320, groundY);
+  ctx.lineTo(cx + 320, groundY);
+  ctx.stroke();
+
+  // Solid Smooth Hemisphere
+  ctx.beginPath();
+  ctx.arc(cx, domeCenterY, rPix, Math.PI, 0, false);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+  ctx.fill();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Vertical Zenith Line
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(cx, domeCenterY);
+  ctx.lineTo(cx, domeCenterY - rPix - 25);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Separation Boundary Angle Ray
+  const sepX = cx + rPix * Math.sin(thetaSepRad);
+  const sepY = domeCenterY - rPix * Math.cos(thetaSepRad);
+  ctx.beginPath();
+  ctx.moveTo(cx, domeCenterY);
+  ctx.lineTo(sepX, sepY);
+  ctx.strokeStyle = 'rgba(244, 63, 94, 0.45)';
+  ctx.stroke();
+
+  // Trail
+  if (d.trail.length > 1) {
+    ctx.beginPath();
+    ctx.moveTo(d.trail[0].x, d.trail[0].y);
+    for (let i = 1; i < d.trail.length; i++) {
+      ctx.lineTo(d.trail[i].x, d.trail[i].y);
+    }
+    ctx.strokeStyle = d.isAirborne ? 'rgba(244, 63, 94, 0.5)' : 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  let px, py;
+  if (!d.isAirborne) {
+    px = cx + rPix * Math.sin(d.theta);
+    py = domeCenterY - rPix * Math.cos(d.theta);
+    drawVector(px, py, (px - cx) * 0.35, (py - domeCenterY) * 0.35, 1.0, '#10b981', 'R');
+  } else {
+    px = d.projX;
+    py = d.projY;
+  }
+
+  drawVector(px, py, 0, 50, 1.0, '#f43f5e', 'mg');
+
+  // Particle
+  ctx.beginPath();
+  ctx.arc(px, py, 12, 0, Math.PI * 2);
+  ctx.fillStyle = d.isAirborne ? '#f43f5e' : '#38bdf8';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// Vector Drawing Helper
+function drawVector(x, y, dx, dy, scale, color, label) {
+  const targetX = x + dx * scale;
+  const targetY = y + dy * scale;
+  const headlen = 8;
+  const angle = Math.atan2(dy, dx);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2.5;
+
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(targetX, targetY);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(targetX, targetY);
+  ctx.lineTo(targetX - headlen * Math.cos(angle - Math.PI / 6), targetY - headlen * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(targetX - headlen * Math.cos(angle + Math.PI / 6), targetY - headlen * Math.sin(angle + Math.PI / 6));
+  ctx.closePath();
+  ctx.fill();
+
+  if (label) {
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText(label, targetX + 8 * Math.cos(angle), targetY + 8 * Math.sin(angle));
+  }
+  ctx.restore();
+}
+
+// --- CAMBRIDGE EXAM DECODER PROBLEMS ---
+const examProblems = [
+  {
+    title: "Worked Example 15.6: Spinning Disc with Hanging Mass Q",
+    text: "A particle P of mass 3 kg sits on a rough disc at $r = 1.6\\text{ m}$ ($\\mu = 0.5$). It is tied through a central hole to hanging particle Q of mass 6 kg. If Q does not move, find the range of allowed angular speeds $\\omega$.",
+    intuition: "Q is pulling inward with 60 N of tension. P desperately wants to be yanked into the hole! If it spins too slowly, it slides INWARD, so friction helps Q out. If it spins too fast, it tries to fly OUTWARD, so friction helps the string pull it IN!",
+    steps: [
+      "Hanging mass equilibrium: $T = 6g = 60\\text{ N}$.",
+      "Limiting friction on table: $F_{\\text{lim}} = \\mu R = 0.5 \\times 3g = 15\\text{ N}$.",
+      "Minimum speed (slipping inward): $T - F_{\\text{lim}} = m r \\omega_{\\min}^2 \\implies 60 - 15 = 3(1.6)\\omega^2 \\implies \\omega_{\\min} = \\frac{5\\sqrt{6}}{4} \\approx 3.06\\text{ rad/s}$.",
+      "Maximum speed (slipping outward): $T + F_{\\text{lim}} = m r \\omega_{\\max}^2 \\implies 60 + 15 = 3(1.6)\\omega^2 \\implies \\omega_{\\max} = \\frac{5\\sqrt{10}}{4} \\approx 3.95\\text{ rad/s}$.",
+      "Allowed range: $\\frac{5\\sqrt{6}}{4} \\le \\omega \\le \\frac{5\\sqrt{10}}{4}$."
+    ],
+    targetSim: 'horizontal_table'
+  },
+  {
+    title: "Worked Example 15.10: Equilateral Split String on Vertical Pole",
+    text: "A light string of length $2a$ is attached to a pole at points A and B (distance $a$ apart). A mass $2m$ is attached to midpoint of string. Both parts are taut, speed $v = \\sqrt{\\frac{9}{4}ga}$. Find tensions $T_1$ and $T_2$.",
+    intuition: "The top rope must hold the gymnast's heavy body UP against gravity, PLUS pull them around the circle. The lower rope only helps with the circle. Hence the top rope ALWAYS bears much more tension than the bottom rope!",
+    steps: [
+      "Triangle geometry: sides $a, a, a$, forms equilateral triangle $\\implies$ angles with pole are $60^\\circ$.",
+      "Radius of orbit: $r = a\\sin 60^\\circ = \\frac{a\\sqrt{3}}{2}$.",
+      "Resolving vertically: $T_1\\cos 60^\\circ = T_2\\cos 60^\\circ + 2mg \\implies T_1 - T_2 = 4mg$.",
+      "Resolving towards pole: $(T_1 + T_2)\\sin 60^\\circ = \\frac{2m v^2}{r} \\implies T_1 + T_2 = 6mg$.",
+      "Solving simultaneous equations: $T_1 = 5mg$ and $T_2 = mg$."
+    ],
+    targetSim: 'conical_pendulum'
+  },
+  {
+    title: "Worked Example 15.13: Greatest Apex Height Above Center Inside Hollow Ring",
+    text: "A particle P of mass $m$ rests on the inside of a smooth ring of radius $a$. Projected from the bottom with $u^2 = 3ga$. Find the greatest height above center O achieved by the particle.",
+    intuition: "It loops past the equator, but runs out of steam before reaching the ceiling! It pops off the wall into thin air like a basketball toss. To find its peak, add the height where it detached PLUS its vertical jump height!",
+    steps: [
+      "Energy conservation: $\\frac{1}{2}m v^2 = \\frac{1}{2}m u^2 - mga(1 - \\cos\\theta) \\implies \\frac{mv^2}{a} = mg(1 + 2\\cos\\theta)$.",
+      "Radial contact equation: $R - mg\\cos\\theta = \\frac{mv^2}{a} \\implies R = mg(1 + 3\\cos\\theta)$.",
+      "Leaves ring when $R = 0 \\implies \\cos\\theta = -\\frac{1}{3}$.",
+      "Speed at detachment: $v^2 = 3ga - 2ga\\left(1 - (-\\frac{1}{3})\\right) = \\frac{1}{3}ga$.",
+      "Vertical rise in air: $s_y = \\frac{v_y^2}{2g} = \\frac{4}{27}a$. Detachment height above center: $h_1 = \\frac{a}{3} = \\frac{9}{27}a$.",
+      "Total height above O: $H = \\frac{9}{27}a + \\frac{4}{27}a = \\frac{13}{27}a$."
+    ],
+    targetSim: 'inside_ring'
+  },
+  {
+    title: "Worked Example 15.15: Landing Range From Smooth Hemisphere",
+    text: "A particle is placed at the zenith of a smooth hemisphere of radius $2a$ and given horizontal speed $\\sqrt{\\frac{2}{3}ga}$. Find distance OB where it hits the floor.",
+    intuition: "Slide down the igloo, fly off the curved ice halfway down, and land on the snow! The total distance is the horizontal distance slid before flying off, PLUS how far it sailed through the air!",
+    steps: [
+      "Separation condition: $R = 0 \\implies \\cos\\theta = \\frac{2}{3} + \\frac{u^2}{3g(2a)} = \\frac{7}{9}$.",
+      "Speed at separation: $v = \\sqrt{\\frac{14}{9}ga}$.",
+      "Horizontal distance before separation: $x_1 = 2a\\sin\\theta = 2a\\left(\\frac{4\\sqrt{2}}{9}\\right) \\approx 1.257a$.",
+      "Vertical fall to floor: $s_y = 2a\\cos\\theta = \\frac{14}{9}a$. Time of flight: $t = 1.146\\sqrt{\\frac{a}{g}}$.",
+      "Air flight distance: $x_2 = v_x t = 1.112a$.",
+      "Total landing distance: $OB = x_1 + x_2 = 1.257a + 1.112a = 2.37a$."
+    ],
+    targetSim: 'hemisphere'
+  }
+];
+
+function renderDecoderProblems() {
+  const container = document.getElementById('modalProblemsList');
+  container.innerHTML = examProblems.map((p, idx) => `
+    <div class="problem-card">
+      <div class="problem-header">
+        <span class="problem-title">${p.title}</span>
+        <button class="load-prob-btn" onclick="loadExamProblem(${idx})">Load in Lab ↗</button>
+      </div>
+      <p style="color:#e2e8f0; margin-bottom:0.6rem;">${p.text}</p>
+      <div class="analogy-box" style="padding:0.75rem; font-size:0.85rem; margin-bottom:0.75rem;">
+        <strong>🧸 Intuitive Picture:</strong> ${p.intuition}
+      </div>
+      <div style="background:#090d16; border-radius:8px; padding:0.85rem; border:1px solid var(--border);">
+        <strong style="color:var(--accent); font-size:0.78rem; text-transform:uppercase;">Cambridge Step-by-Step Mark Scheme:</strong>
+        <ol style="margin-left:1.2rem; margin-top:0.4rem; font-size:0.85rem; color:#cbd5e1; line-height:1.6;">
+          ${p.steps.map(s => `<li>${s}</li>`).join('')}
+        </ol>
+      </div>
+    </div>
+  `).join('');
+  renderLatex(container);
+}
+
+function loadExamProblem(idx) {
+  const p = examProblems[idx];
+  toggleDecoder(false);
+  const targetTab = document.querySelector(`[data-sim="${p.targetSim}"]`);
+  if (targetTab) targetTab.click();
+}
+
+// Initial Boot
+initSimulation('horizontal_table');
+</script>
+<!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</body>
+</html>

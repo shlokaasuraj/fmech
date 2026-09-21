@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAIE 9231 Further Mechanics - Chapter 14: Equilibrium of a Rigid Body</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono-code { font-family: 'Fira Code', monospace; }
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: #334155;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      border: 2px solid #0f172a;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-amber-500/20 font-black text-white text-lg tracking-wider">
+          FM
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            CAIE 9231 <span class="text-amber-400 font-mono text-xs sm:text-sm">Ch 14: Equilibrium of a Rigid Body</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Cambridge International A-Level Further Mathematics (Paper 32)</p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Pill -->
+      <div class="flex items-center bg-slate-800 p-1 rounded-full border border-slate-700 shadow-inner">
+        <button id="btn-mode-eli6" onclick="setMode('eli6')" 
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white">
+          <span>👶</span> <span>Like I'm 6</span>
+        </button>
+        <button id="btn-mode-exam" onclick="setMode('exam')" 
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 bg-amber-500 text-slate-950 shadow-md">
+          <span>🎓</span> <span>CAIE Exam Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chapter 14 Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 sm:space-x-3 overflow-x-auto no-scrollbar py-2 border-t border-slate-800/80 text-xs sm:text-sm font-medium">
+      <button onclick="switchModule('overhang')" id="tab-overhang" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap transition bg-slate-800 text-amber-400 border border-slate-700 font-semibold">
+        1. Cliff Plank & Levers (Ex 14.3)
+      </button>
+      <button onclick="switchModule('comExplorer')" id="tab-comExplorer" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap transition text-slate-400 hover:text-slate-200">
+        2. Centre of Mass Explorer (2D/3D)
+      </button>
+      <button onclick="switchModule('suspended')" id="tab-suspended" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap transition text-slate-400 hover:text-slate-200">
+        3. Freely Suspended Bodies
+      </button>
+      <button onclick="switchModule('slideVsTopple')" id="tab-slideVsTopple" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap transition text-slate-400 hover:text-slate-200">
+        4. Sliding vs Toppling (Ex 14.21/22)
+      </button>
+      <button onclick="switchModule('ladder')" id="tab-ladder" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap transition text-slate-400 hover:text-slate-200">
+        5. Leaning Ladder & Wall (Ex 14.15)
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full flex flex-col gap-6">
+
+    <!-- Top Mode Summary Card -->
+    <div id="mode-banner" class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
+      <!-- Injected by updateExplanations() -->
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Canvas + Interactive Controls Column (7 Cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+          
+          <!-- Status Tag -->
+          <div class="absolute top-3 left-3 z-10 flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-slate-800 text-xs font-mono text-amber-300">
+            <span id="canvas-status-dot" class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="canvas-status-tag">Rigid Body Equilibrium</span>
+          </div>
+
+          <!-- Vectors Legend Checkbox -->
+          <div class="absolute top-3 right-3 z-10 flex items-center gap-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded-full border border-slate-800 text-xs text-slate-300">
+            <label class="flex items-center gap-1.5 cursor-pointer select-none">
+              <input type="checkbox" id="chk-show-vectors" checked class="rounded accent-amber-400 cursor-pointer">
+              <span>Show Vectors (<span class="text-rose-400">Forces</span>, <span class="text-sky-400">Reactions</span>, <span class="text-amber-400">CoM</span>)</span>
+            </label>
+          </div>
+
+          <canvas id="sim-canvas" width="700" height="420" class="w-full h-auto block bg-slate-950"></canvas>
+
+          <!-- Timeline & Action Bar -->
+          <div class="p-3 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div class="flex items-center gap-2">
+              <button id="btn-play-pause" onclick="togglePlay()" class="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 font-bold text-slate-950 transition flex items-center gap-1 shadow">
+                <span id="play-icon">⏸ Pause</span>
+              </button>
+              <button onclick="resetModuleSim()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition font-semibold">
+                🔄 Reset State
+              </button>
+              <button id="btn-action-special" onclick="triggerSpecialAction()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition font-medium">
+                ⚡ Test Equilibrium
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5 text-slate-400">
+              <span class="font-medium">Gravity:</span>
+              <span class="font-mono text-cyan-300">g = 10 m/s² (CAIE 9231)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parameter Controls Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold tracking-wide uppercase text-slate-300 flex items-center gap-2">
+              <span>⚙️ Interactive Parameters</span>
+            </h3>
+            <div id="quick-preset-container" class="flex gap-1.5 flex-wrap">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+          <div id="module-sliders-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Telemetry & Step-by-Step Readouts Column (5 Cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        
+        <!-- Live Telemetry Panel -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2.5 flex items-center justify-between">
+            <span>📊 Live Telemetry (Moments & Equilibrium)</span>
+            <span id="state-pill" class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">In Equilibrium</span>
+          </h3>
+          <div id="telemetry-readouts" class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Dual Explanation Card (ELI6 vs CAIE Exam Mode) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 id="expl-title" class="text-base font-bold text-white flex items-center gap-2">
+              <!-- Title -->
+            </h3>
+            <span id="expl-badge" class="text-xs font-medium px-2.5 py-0.5 rounded-full">
+              <!-- Badge -->
+            </span>
+          </div>
+
+          <!-- Narrative Text -->
+          <div id="expl-content" class="text-sm text-slate-300 leading-relaxed space-y-2.5">
+            <!-- Content -->
+          </div>
+
+          <!-- Exact Formulas and Algebraic Steps -->
+          <div id="expl-math-box" class="bg-slate-950/90 border border-slate-800 rounded-xl p-4 font-mono-code text-xs text-amber-200 overflow-x-auto space-y-2">
+            <!-- Equations -->
+          </div>
+
+          <!-- Examiner's Tip / Playground Takeaway -->
+          <div id="expl-tip-box" class="p-3.5 rounded-xl text-xs flex items-start gap-2.5 border">
+            <!-- Tips -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="mt-auto border-t border-slate-900 bg-slate-950 py-3 text-center text-xs text-slate-500">
+    Designed for Cambridge Assessment International Education (CAIE) Further Mathematics 9231 • Chapter 14: Equilibrium of a Rigid Body.
+  </footer>
+
+  <script>
+    let currentMode = 'exam'; // 'eli6' or 'exam'
+    let currentModule = 'overhang';
+    let isRunning = true;
+    let showVectors = true;
+    let animId = null;
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function fixCanvasDPI() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = (rect.width * 0.6) * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', fixCanvasDPI);
+
+    // Master Simulation State Data for Chapter 14
+    const simData = {
+      // Module 1: Overhanging Cliff Plank & Levers (Worked Example 14.3)
+      overhang: {
+        rodLen: 5.0,        // meters
+        rodMass: 10.0,      // kg
+        overhangLen: 3.5,   // meters over edge
+        manMass: 80.0,      // kg (cliff side stabilizer)
+        manDist: 1.0,       // distance on cliff side from edge
+        walkerMass: 35.0,   // kg (boy walking toward edge/overhang)
+        walkerDist: 2.0,    // distance from cliff edge toward B
+        isTipping: false,
+        tipAngle: 0,        // in radians when tipping
+        clockMoment: 0,
+        anticlockMoment: 0,
+        netMoment: 0,
+        reaction: 0
+      },
+
+      // Module 2: Center of Mass Explorer (2D Laminas & 3D Solids)
+      comExplorer: {
+        shapeType: 'hemisphere_cone_toy', // 'triangle', 'sector', 'cone', 'hemisphere', 'hemisphere_cone_toy', 'L_shape'
+        r: 2.0,              // meters
+        h: 3.0,              // meters
+        alphaDeg: 45.0,      // half angle in deg for sector
+        densityRatio: 2.0,   // rho2 / rho1
+        calcX: 0,
+        calcY: 0,
+        totalMass: 0
+      },
+
+      // Module 3: Freely Suspended Bodies (Worked Example 14.19 & 14.20)
+      suspended: {
+        objectType: 'letter_d_wire', // 'letter_d_wire', 'L_shape', 'cone_hemi'
+        angle: 0,                    // tilt angle relative to vertical
+        targetAngle: 0,
+        currentAngle: 0,
+        angularVel: 0,
+        xBar: 0,
+        yBar: 0
+      },
+
+      // Module 4: Sliding vs Toppling on an Inclined Plane (Worked Examples 14.17, 14.18, 14.22)
+      slideVsTopple: {
+        shape: 'cone',      // 'block', 'cone', 'hemisphere'
+        thetaDeg: 25.0,     // inclination angle
+        mu: 0.5,            // friction coefficient
+        coneHeight: 4.0,    // height = 4r
+        coneRadius: 1.0,    // r
+        blockWidth: 1.0,    // a
+        blockHeight: 2.0,   // 2a
+        dReaction: 0,       // reaction shift along contact line
+        status: 'stable',   // 'stable', 'sliding', 'toppling'
+        animOffset: 0,
+        animTumble: 0
+      },
+
+      // Module 5: Leaning Ladder & Wall Friction (Worked Examples 14.15 & 14.16)
+      ladder: {
+        len: 4.0,           // 2a length
+        mass: 20.0,         // mass m
+        thetaDeg: 30.0,     // angle with vertical wall
+        wallSmooth: true,   // true = smooth wall (S normal only), false = rough
+        muFloor: 0.45,      // friction coefficient with ground
+        climberMass: 50.0,  // painter mass
+        climberFrac: 0.35,  // fraction up ladder (0 = bottom, 1 = top)
+        normalFloor: 0,     // R
+        frictionFloor: 0,   // F
+        normalWall: 0,      // S
+        muMin: 0,           // minimum friction needed
+        isSlipping: false,
+        slipProgress: 0
+      }
+    };
+
+    function calcOverhang() {
+      const d = simData.overhang;
+      const g = 10;
+      // Cliff edge is pivot at x = 0.
+      // Left side is cliff (negative x), right side is overhanging drop (positive x).
+      // Rod center of mass:
+      // Total length = d.rodLen, cliff part = d.rodLen - d.overhangLen, drop part = d.overhangLen.
+      // Center of uniform rod is at distance d.rodLen/2 from end A.
+      // Position of center relative to cliff edge:
+      const rodCenterCliffDist = (d.rodLen / 2) - (d.rodLen - d.overhangLen);
+      // If rodCenterCliffDist > 0, rod weight acts on overhanging side (clockwise).
+      // Man is on cliff side at distance -d.manDist (anticlockwise moment).
+      // Walker is at distance +d.walkerDist (clockwise moment).
+
+      d.anticlockMoment = d.manMass * g * d.manDist;
+      let cwRod = 0;
+      let acwRod = 0;
+      if (rodCenterCliffDist > 0) {
+        cwRod = d.rodMass * g * rodCenterCliffDist;
+      } else {
+        acwRod = d.rodMass * g * Math.abs(rodCenterCliffDist);
+      }
+      d.anticlockMoment += acwRod;
+
+      const cwWalker = d.walkerMass * g * d.walkerDist;
+      d.clockMoment = cwRod + cwWalker;
+
+      d.netMoment = d.clockMoment - d.anticlockMoment;
+      d.reaction = (d.rodMass + d.manMass + d.walkerMass) * g;
+      d.isTipping = d.netMoment > 0;
+    }
+
+    function calcComExplorer() {
+      const c = simData.comExplorer;
+      if (c.shapeType === 'triangle') {
+        // Scalene/Right triangle vertices: (0,0), (3a, 0), (0, 3a) or user defined
+        c.calcX = 3 * c.r / 3;
+        c.calcY = 2 * c.h / 3;
+      } else if (c.shapeType === 'sector') {
+        // Sector with angle 2*alpha: x_bar = 2*r*sin(alpha) / (3*alpha)
+        const aRad = (c.alphaDeg * Math.PI) / 180;
+        c.calcX = (2 * c.r * Math.sin(aRad)) / (3 * aRad);
+        c.calcY = 0;
+      } else if (c.shapeType === 'cone') {
+        // Right circular cone from vertex: 3h/4
+        c.calcX = 0.75 * c.h;
+        c.calcY = 0;
+      } else if (c.shapeType === 'hemisphere') {
+        // Solid hemisphere from plane face: 3r/8
+        c.calcX = (3 / 8) * c.r;
+        c.calcY = 0;
+      } else if (c.shapeType === 'hemisphere_cone_toy') {
+        // Worked Example 14.14 / 14.18: Hemisphere (radius r) joined to cone (radius r, height h)
+        // Mass hemi: (2/3)*pi*r^3 * rho
+        // Mass cone: (1/3)*pi*r^2 * h * (k * rho)
+        const massHemi = (2 / 3) * Math.PI * Math.pow(c.r, 3);
+        const massCone = (1 / 3) * Math.PI * Math.pow(c.r, 2) * c.h * c.densityRatio;
+        c.totalMass = massHemi + massCone;
+        // From join: hemi CoM is at -3r/8, cone CoM is at +h/4
+        const moment = massCone * (c.h / 4) - massHemi * (3 * c.r / 8);
+        c.calcX = moment / c.totalMass; // distance from join
+      } else if (c.shapeType === 'L_shape') {
+        // Worked Example 14.19: 2r x 5r rectangle joined to 2r x 2r rectangle
+        // Total area = 10r^2 + 4r^2 = 14r^2
+        // x_bar = (10*1 + 4*3)/14 = 22/14 = 11/7 r
+        // y_bar = (10*2.5 + 4*1)/14 = 29/14 r
+        c.calcX = (11 / 7) * c.r;
+        c.calcY = (29 / 14) * c.r;
+      }
+    }
+
+    function calcSuspended() {
+      const s = simData.suspended;
+      if (s.objectType === 'letter_d_wire') {
+        // Page 25: Wire D (rod of 2a + semicircle of radius a)
+        // x_bar = 2a / (pi + 2), y_bar = a
+        // tan(theta) = x_bar / a = 2 / (pi + 2) => theta = 21.3 deg
+        s.targetAngle = Math.atan(2 / (Math.PI + 2));
+      } else if (s.objectType === 'L_shape') {
+        // Worked Example 14.19: tan(theta) = y_bar / x_bar = 29 / 22 => 52.8 deg
+        s.targetAngle = Math.atan(29 / 22);
+      } else if (s.objectType === 'cone_hemi') {
+        // Worked Example 14.20: tan(theta) = 33/56 => 30.5 deg
+        s.targetAngle = Math.atan(33 / 56);
+      }
+    }
+
+    function calcSlideVsTopple() {
+      const st = simData.slideVsTopple;
+      const rad = (st.thetaDeg * Math.PI) / 180;
+      const tanTheta = Math.tan(rad);
+
+      let tanTopple = 1.0;
+      let yBar = 1.0;
+      let baseHalf = 1.0;
+
+      if (st.shape === 'block') {
+        // Dimensions a x 2a, topples when tan(theta) > a / (2a) = 0.5 (Worked Example Page 23)
+        baseHalf = st.blockWidth / 2;
+        yBar = st.blockHeight / 2;
+        tanTopple = baseHalf / yBar; // 0.5
+      } else if (st.shape === 'cone') {
+        // Worked Example 14.22: Cone base radius r, height 4r.
+        // CoM is h/4 = r from base.
+        // Topples when tan(theta) > r / r = 1.0 (theta = 45 deg)
+        baseHalf = st.coneRadius;
+        yBar = (1 / 4) * st.coneHeight; // 1.0 r
+        tanTopple = baseHalf / yBar; // 1.0 => 45 deg
+      } else if (st.shape === 'hemisphere') {
+        // Worked Example 14.17: Plane face on slope.
+        // CoM is 3/8 r from plane face.
+        // Topples when d = r => tan(theta) = r / (3/8 r) = 8/3 = 2.667 (theta = 69.4 deg)
+        baseHalf = 1.0;
+        yBar = 3 / 8;
+        tanTopple = baseHalf / yBar; // 8/3 => 69.4 deg
+      }
+
+      // Normal reaction shift d along base:
+      // Taking moments about bottom edge: R*d = mg*cos(theta)*baseHalf - mg*sin(theta)*yBar
+      // d = baseHalf - yBar * tan(theta)
+      st.dReaction = baseHalf - yBar * tanTheta;
+
+      if (st.dReaction <= 0) {
+        st.status = 'toppling';
+      } else if (tanTheta > st.mu) {
+        st.status = 'sliding';
+      } else {
+        st.status = 'stable';
+      }
+    }
+
+    function calcLadder() {
+      const l = simData.ladder;
+      const g = 10;
+      const rad = (l.thetaDeg * Math.PI) / 180;
+      const sinTheta = Math.sin(rad);
+      const cosTheta = Math.cos(rad);
+
+      // Total vertical weight
+      const totalWeight = (l.mass + l.climberMass) * g;
+      l.normalFloor = totalWeight; // R = (M + m)*g
+
+      // Moments about foot of ladder B (anticlockwise positive):
+      // Clockwise moments:
+      // S * (2a * cos(theta))
+      // Anticlockwise moments:
+      // Ladder weight: m*g * (a * sin(theta))
+      // Climber weight: M*g * (2a * climberFrac * sin(theta))
+      // Equating: S * 2 * cos(theta) = [m * 1 + M * 2 * climberFrac] * g * sin(theta)
+      const leverWeight = (l.mass * (l.len / 2) + l.climberMass * (l.len * l.climberFrac)) * g * sinTheta;
+      l.normalWall = leverWeight / (l.len * cosTheta); // S
+      l.frictionFloor = l.normalWall; // F = S (horizontal equilibrium)
+
+      // Limiting friction condition: F <= mu * R => mu >= S / R
+      l.muMin = l.frictionFloor / l.normalFloor;
+      l.isSlipping = l.muFloor < l.muMin;
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const bEli6 = document.getElementById('btn-mode-eli6');
+      const bExam = document.getElementById('btn-mode-exam');
+
+      if (mode === 'eli6') {
+        bEli6.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-pink-500 text-slate-950 shadow-md';
+        bExam.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-white transition-all';
+      } else {
+        bExam.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+        bEli6.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-white transition-all';
+      }
+      updateExplanations();
+    }
+
+    function switchModule(modKey) {
+      currentModule = modKey;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-slate-800', 'text-amber-400', 'border', 'border-slate-700', 'font-semibold');
+        btn.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById('tab-' + modKey);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('bg-slate-800', 'text-amber-400', 'border', 'border-slate-700', 'font-semibold');
+      }
+
+      resetModuleSim();
+      buildSliders();
+      updateExplanations();
+    }
+
+    function togglePlay() {
+      isRunning = !isRunning;
+      document.getElementById('play-icon').textContent = isRunning ? '⏸ Pause' : '▶ Play';
+    }
+
+    function triggerSpecialAction() {
+      if (currentModule === 'overhang') {
+        // Walk person forward until tipping or end
+        simData.overhang.walkerDist = Math.min(simData.overhang.overhangLen, simData.overhang.walkerDist + 0.3);
+      } else if (currentModule === 'slideVsTopple') {
+        // Tilt slope incrementally
+        simData.slideVsTopple.thetaDeg = Math.min(75, simData.slideVsTopple.thetaDeg + 3);
+      } else if (currentModule === 'ladder') {
+        // Step painter up ladder
+        simData.ladder.climberFrac = Math.min(1.0, simData.ladder.climberFrac + 0.1);
+      } else if (currentModule === 'suspended') {
+        // Give suspension a gentle wobble
+        simData.suspended.angularVel += 0.2;
+      }
+      buildSliders();
+    }
+
+    function resetModuleSim() {
+      if (currentModule === 'overhang') {
+        simData.overhang.rodLen = 5.0;
+        simData.overhang.rodMass = 10.0;
+        simData.overhang.overhangLen = 3.5;
+        simData.overhang.manMass = 80.0;
+        simData.overhang.manDist = 1.0;
+        simData.overhang.walkerMass = 35.0;
+        simData.overhang.walkerDist = 1.2;
+        simData.overhang.tipAngle = 0;
+        calcOverhang();
+      } else if (currentModule === 'comExplorer') {
+        simData.comExplorer.r = 2.0;
+        simData.comExplorer.h = 3.0;
+        calcComExplorer();
+      } else if (currentModule === 'suspended') {
+        simData.suspended.currentAngle = 0;
+        simData.suspended.angularVel = 0;
+        calcSuspended();
+      } else if (currentModule === 'slideVsTopple') {
+        simData.slideVsTopple.thetaDeg = 25.0;
+        simData.slideVsTopple.mu = 0.5;
+        simData.slideVsTopple.animOffset = 0;
+        simData.slideVsTopple.animTumble = 0;
+        calcSlideVsTopple();
+      } else if (currentModule === 'ladder') {
+        simData.ladder.thetaDeg = 30.0;
+        simData.ladder.climberFrac = 0.25;
+        simData.ladder.slipProgress = 0;
+        calcLadder();
+      }
+    }
+
+    function buildSliders() {
+      const container = document.getElementById('module-sliders-container');
+      const presets = document.getElementById('quick-preset-container');
+      container.innerHTML = '';
+      presets.innerHTML = '';
+
+      if (currentModule === 'overhang') {
+        presets.innerHTML = `
+          <button onclick="setOverhangPreset(80, 1.0, 35, 1.5)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-amber-300">Worked Ex 14.3 Case</button>
+          <button onclick="setOverhangPreset(50, 0.5, 45, 2.5)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-rose-300">Danger Tipping Point</button>
+        `;
+        createSlider(container, 'Walker Position on Drop (m)', 0, simData.overhang.overhangLen, 0.1, simData.overhang.walkerDist, v => {
+          simData.overhang.walkerDist = parseFloat(v);
+          calcOverhang();
+        }, ' m');
+        createSlider(container, 'Walker Mass (kg)', 10, 100, 5, simData.overhang.walkerMass, v => {
+          simData.overhang.walkerMass = parseFloat(v);
+          calcOverhang();
+        }, ' kg');
+        createSlider(container, 'Man Distance on Cliff (m)', 0.1, 2.5, 0.1, simData.overhang.manDist, v => {
+          simData.overhang.manDist = parseFloat(v);
+          calcOverhang();
+        }, ' m');
+        createSlider(container, 'Overhang Length (m)', 1.0, 4.0, 0.1, simData.overhang.overhangLen, v => {
+          simData.overhang.overhangLen = parseFloat(v);
+          calcOverhang();
+        }, ' m');
+      }
+      else if (currentModule === 'comExplorer') {
+        presets.innerHTML = `
+          <button onclick="setComShape('triangle')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-cyan-300">Triangle (h/3)</button>
+          <button onclick="setComShape('hemisphere')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-emerald-300">Hemisphere (3r/8)</button>
+          <button onclick="setComShape('cone')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-amber-300">Cone (3h/4)</button>
+          <button onclick="setComShape('sector')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-rose-300">Sector (2r·sinα/3α)</button>
+          <button onclick="setComShape('hemisphere_cone_toy')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-indigo-300">Toy (Hemi+Cone)</button>
+        `;
+        createSlider(container, 'Radius / Base Dimension r', 0.5, 4.0, 0.1, simData.comExplorer.r, v => {
+          simData.comExplorer.r = parseFloat(v);
+          calcComExplorer();
+        }, ' m');
+        createSlider(container, 'Height / Length Dimension h', 1.0, 6.0, 0.2, simData.comExplorer.h, v => {
+          simData.comExplorer.h = parseFloat(v);
+          calcComExplorer();
+        }, ' m');
+        if (simData.comExplorer.shapeType === 'sector') {
+          createSlider(container, 'Sector Half Angle α (°)', 10, 90, 5, simData.comExplorer.alphaDeg, v => {
+            simData.comExplorer.alphaDeg = parseFloat(v);
+            calcComExplorer();
+          }, '°');
+        }
+        if (simData.comExplorer.shapeType === 'hemisphere_cone_toy') {
+          createSlider(container, 'Cone Density Multiplier (k·ρ)', 0.5, 4.0, 0.5, simData.comExplorer.densityRatio, v => {
+            simData.comExplorer.densityRatio = parseFloat(v);
+            calcComExplorer();
+          }, 'x');
+        }
+      }
+      else if (currentModule === 'suspended') {
+        presets.innerHTML = `
+          <button onclick="setSuspendedType('letter_d_wire')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-cyan-300">Wire Letter 'D' (21.3°)</button>
+          <button onclick="setSuspendedType('L_shape')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-amber-300">L-Shaped Lamina (52.8°)</button>
+          <button onclick="setSuspendedType('cone_hemi')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-indigo-300">Cone + Hemisphere (30.5°)</button>
+        `;
+      }
+      else if (currentModule === 'slideVsTopple') {
+        presets.innerHTML = `
+          <button onclick="setSlideShape('cone', 0.5)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-amber-300">Worked Ex 14.22 (Cone)</button>
+          <button onclick="setSlideShape('hemisphere', 0.85)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-emerald-300">Worked Ex 14.17 (Hemi)</button>
+          <button onclick="setSlideShape('block', 0.6)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-cyan-300">Worked Ex 14.21 (Block)</button>
+        `;
+        createSlider(container, 'Incline Angle θ (°)', 0, 75, 1, simData.slideVsTopple.thetaDeg, v => {
+          simData.slideVsTopple.thetaDeg = parseFloat(v);
+          calcSlideVsTopple();
+        }, '°');
+        createSlider(container, 'Coefficient of Friction μ', 0.05, 1.2, 0.05, simData.slideVsTopple.mu, v => {
+          simData.slideVsTopple.mu = parseFloat(v);
+          calcSlideVsTopple();
+        }, '');
+      }
+      else if (currentModule === 'ladder') {
+        presets.innerHTML = `
+          <button onclick="setLadderPreset(30, 0.25, 0.45)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-amber-300">Worked Ex 14.15</button>
+          <button onclick="setLadderPreset(45, 0.8, 0.3)" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] hover:bg-slate-700 text-rose-300">Dangerous Slip</button>
+        `;
+        createSlider(container, 'Ladder Angle with Wall θ (°)', 15, 60, 1, simData.ladder.thetaDeg, v => {
+          simData.ladder.thetaDeg = parseFloat(v);
+          calcLadder();
+        }, '°');
+        createSlider(container, 'Painter Position (x / L)', 0, 1.0, 0.05, simData.ladder.climberFrac, v => {
+          simData.ladder.climberFrac = parseFloat(v);
+          calcLadder();
+        }, '');
+        createSlider(container, 'Floor Friction μ', 0.05, 1.0, 0.05, simData.ladder.muFloor, v => {
+          simData.ladder.muFloor = parseFloat(v);
+          calcLadder();
+        }, '');
+        createSlider(container, 'Painter Mass (kg)', 30, 100, 5, simData.ladder.climberMass, v => {
+          simData.ladder.climberMass = parseFloat(v);
+          calcLadder();
+        }, ' kg');
+      }
+    }
+
+    function createSlider(parent, label, min, max, step, currentVal, onChange, unit) {
+      const div = document.createElement('div');
+      div.className = 'flex flex-col gap-1 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800';
+      const id = 'sld-' + Math.random().toString(36).substring(4);
+      div.innerHTML = `
+        <div class="flex items-center justify-between text-xs">
+          <label for="${id}" class="text-slate-300 font-medium">${label}</label>
+          <span id="${id}-val" class="text-amber-400 font-mono font-bold">${currentVal}${unit}</span>
+        </div>
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${currentVal}" class="w-full mt-1 cursor-pointer">
+      `;
+      parent.appendChild(div);
+      const input = div.querySelector('input');
+      input.addEventListener('input', (e) => {
+        div.querySelector(`#${id}-val`).textContent = `${parseFloat(e.target.value).toFixed(2)}${unit}`;
+        onChange(e.target.value);
+      });
+    }
+
+    function setOverhangPreset(mM, mD, wM, wD) {
+      simData.overhang.manMass = mM;
+      simData.overhang.manDist = mD;
+      simData.overhang.walkerMass = wM;
+      simData.overhang.walkerDist = wD;
+      calcOverhang();
+      buildSliders();
+    }
+
+    function setComShape(shape) {
+      simData.comExplorer.shapeType = shape;
+      calcComExplorer();
+      buildSliders();
+      updateExplanations();
+    }
+
+    function setSuspendedType(t) {
+      simData.suspended.objectType = t;
+      calcSuspended();
+      buildSliders();
+      updateExplanations();
+    }
+
+    function setSlideShape(shape, mu) {
+      simData.slideVsTopple.shape = shape;
+      simData.slideVsTopple.mu = mu;
+      calcSlideVsTopple();
+      buildSliders();
+      updateExplanations();
+    }
+
+    function setLadderPreset(ang, frac, mu) {
+      simData.ladder.thetaDeg = ang;
+      simData.ladder.climberFrac = frac;
+      simData.ladder.muFloor = mu;
+      calcLadder();
+      buildSliders();
+    }
+
+    function drawArrow(fromX, fromY, toX, toY, color, label) {
+      const headlen = 8;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      const len = Math.hypot(toX - fromX, toY - fromY);
+      if (len < 3) return;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = 'bold 11px Fira Code, monospace';
+        ctx.fillText(label, toX + 6, toY - 4);
+      }
+      ctx.restore();
+    }
+
+    function drawGrid(w, h) {
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 0.5;
+      const step = 35;
+      for (let x = 0; x < w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+    }
+
+    function renderOverhang(w, h) {
+      const o = simData.overhang;
+      const cliffX = 260;
+      const groundY = 280;
+      const plankY = 270;
+      const scale = 50; // pixels per meter
+
+      // Cliff Edge Structure
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(40, groundY, cliffX - 40, h - groundY - 20);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(40, groundY, cliffX - 40, h - groundY - 20);
+
+      // Deep drop chasm
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(cliffX, groundY + 10, w - cliffX - 30, h - groundY - 30);
+
+      // Pivot marker at cliff edge
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(cliffX, groundY);
+      ctx.lineTo(cliffX - 10, groundY + 18);
+      ctx.lineTo(cliffX + 10, groundY + 18);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(cliffX, groundY);
+      ctx.rotate(o.tipAngle);
+
+      // Plank coordinates
+      const cliffSideLen = (o.rodLen - o.overhangLen) * scale;
+      const dropSideLen = o.overhangLen * scale;
+
+      // Wooden Plank
+      const plankGrad = ctx.createLinearGradient(-cliffSideLen, -14, dropSideLen, -14);
+      plankGrad.addColorStop(0, '#b45309');
+      plankGrad.addColorStop(1, '#d97706');
+      ctx.fillStyle = plankGrad;
+      ctx.fillRect(-cliffSideLen, -14, cliffSideLen + dropSideLen, 14);
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-cliffSideLen, -14, cliffSideLen + dropSideLen, 14);
+
+      // Plank Center of Mass
+      const rodCenterOffset = ((o.rodLen / 2) - (o.rodLen - o.overhangLen)) * scale;
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(rodCenterOffset, -7, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Man (Anchor) on Cliff Side
+      const manPixelX = -o.manDist * scale;
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(manPixelX, -30, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(manPixelX - 6, -20, 12, 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px Inter';
+      ctx.fillText(`Anchor (${o.manMass}kg)`, manPixelX - 30, -44);
+
+      // Walker (Boy) on Overhang Side
+      const walkerPixelX = o.walkerDist * scale;
+      ctx.fillStyle = o.isTipping ? '#ef4444' : '#10b981';
+      ctx.beginPath();
+      ctx.arc(walkerPixelX, -26, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(walkerPixelX - 5, -18, 10, 16);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`Walker (${o.walkerMass}kg)`, walkerPixelX - 30, -38);
+
+      // Vectors
+      if (showVectors) {
+        // Man weight
+        drawArrow(manPixelX, -5, manPixelX, 45, '#38bdf8', `${o.manMass * 10}N`);
+        // Rod weight
+        drawArrow(rodCenterOffset, -5, rodCenterOffset, 35, '#fbbf24', `${o.rodMass * 10}N`);
+        // Walker weight
+        drawArrow(walkerPixelX, -5, walkerPixelX, 45, '#ef4444', `${o.walkerMass * 10}N`);
+        // Pivot Reaction
+        drawArrow(0, 35, 0, -20, '#a855f7', `R=${o.reaction}N`);
+      }
+
+      ctx.restore();
+
+      if (o.isTipping) {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 15px Inter';
+        ctx.fillText('⚠️ WARNING: PLANK IS TOPPLING OVER THE CLIFF!', 180, 70);
+      }
+    }
+
+    function renderComExplorer(w, h) {
+      const c = simData.comExplorer;
+      const originX = 180;
+      const originY = 280;
+      const pxPerM = 50;
+
+      // Coordinate axes
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(originX - 20, originY);
+      ctx.lineTo(originX + 380, originY);
+      ctx.moveTo(originX, originY + 20);
+      ctx.lineTo(originX, originY - 220);
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Fira Code';
+      ctx.fillText('x', originX + 370, originY - 8);
+      ctx.fillText('y', originX + 8, originY - 210);
+      ctx.fillText('O (0,0)', originX - 35, originY + 16);
+
+      ctx.save();
+      if (c.shapeType === 'triangle') {
+        const base = c.r * pxPerM * 2;
+        const height = c.h * pxPerM;
+
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(originX, originY);
+        ctx.lineTo(originX + base, originY);
+        ctx.lineTo(originX, originY - height);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Centroid marker G
+        const gx = originX + base / 3;
+        const gy = originY - height / 3;
+        drawComPoint(gx, gy, `G (${(c.r * 2 / 3).toFixed(2)}, ${(c.h / 3).toFixed(2)})`);
+      }
+      else if (c.shapeType === 'hemisphere') {
+        const rad = c.r * pxPerM;
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.arc(originX, originY, rad, -Math.PI / 2, Math.PI / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // CoM: 3r/8 from plane face along line of symmetry
+        const gx = originX + (3 / 8) * rad;
+        drawComPoint(gx, originY, `G (${((3 / 8) * c.r).toFixed(2)}m) [3r/8]`);
+      }
+      else if (c.shapeType === 'cone') {
+        const coneH = c.h * pxPerM;
+        const coneR = c.r * pxPerM;
+
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(originX, originY); // vertex
+        ctx.lineTo(originX + coneH, originY - coneR);
+        ctx.lineTo(originX + coneH, originY + coneR);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // CoM: 3h/4 from vertex
+        const gx = originX + 0.75 * coneH;
+        drawComPoint(gx, originY, `G (${(0.75 * c.h).toFixed(2)}m) [3h/4]`);
+      }
+      else if (c.shapeType === 'sector') {
+        const rad = c.r * pxPerM * 1.5;
+        const aRad = (c.alphaDeg * Math.PI) / 180;
+
+        ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
+        ctx.strokeStyle = '#ec4899';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(originX, originY);
+        ctx.arc(originX, originY, rad, -aRad, aRad);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const xbarPx = ((2 * rad * Math.sin(aRad)) / (3 * aRad));
+        drawComPoint(originX + xbarPx, originY, `G (${c.calcX.toFixed(2)}m)`);
+      }
+      else if (c.shapeType === 'hemisphere_cone_toy') {
+        const rad = c.r * pxPerM;
+        const coneH = c.h * pxPerM;
+
+        // Join plane is at x = originX + rad
+        const joinX = originX + rad;
+
+        // Hemisphere
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(joinX, originY, rad, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Cone
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.3)';
+        ctx.strokeStyle = '#eab308';
+        ctx.beginPath();
+        ctx.moveTo(joinX, originY - rad);
+        ctx.lineTo(joinX + coneH, originY);
+        ctx.lineTo(joinX, originY + rad);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const gPx = joinX + c.calcX * pxPerM;
+        drawComPoint(gPx, originY, `G (${c.calcX >= 0 ? '+' : ''}${c.calcX.toFixed(2)}m from join)`);
+      }
+      ctx.restore();
+    }
+
+    function drawComPoint(x, y, label) {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12px Fira Code';
+      ctx.fillText(label, x + 10, y - 10);
+    }
+
+    function renderSuspended(w, h) {
+      const s = simData.suspended;
+      const pivotX = w / 2;
+      const pivotY = 90;
+
+      // Ceiling and pin
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(pivotX - 50, pivotY - 20, 100, 10);
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(pivotX, pivotY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Plumb Line (True Vertical)
+      ctx.strokeStyle = '#f43f5e';
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pivotX, pivotY - 10);
+      ctx.lineTo(pivotX, pivotY + 260);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#f43f5e';
+      ctx.font = '11px Inter';
+      ctx.fillText('Vertical Plumb Line', pivotX + 8, pivotY + 240);
+
+      ctx.save();
+      ctx.translate(pivotX, pivotY);
+      ctx.rotate(s.currentAngle);
+
+      if (s.objectType === 'letter_d_wire') {
+        const scale = 70;
+        // Wire D: straight rod AB from (0,0) down to (0, 2a)
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, 2 * scale);
+        ctx.stroke();
+
+        // Semicircular arc from (0,0) to (0, 2a) with center at (0, a)
+        ctx.beginPath();
+        ctx.arc(0, scale, scale, -Math.PI / 2, Math.PI / 2);
+        ctx.stroke();
+
+        // Center of mass: x_bar = 2a/(pi+2), y_bar = a
+        const gx = (2 * scale) / (Math.PI + 2);
+        const gy = scale;
+        drawComPoint(gx, gy, 'G');
+      } else if (s.objectType === 'L_shape') {
+        const scale = 30;
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.3)';
+        ctx.strokeStyle = '#a855f7';
+        ctx.lineWidth = 3;
+
+        // L shape: 2r x 5r plus 2r x 2r
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(2 * scale, 0);
+        ctx.lineTo(2 * scale, 3 * scale);
+        ctx.lineTo(4 * scale, 3 * scale);
+        ctx.lineTo(4 * scale, 5 * scale);
+        ctx.lineTo(0, 5 * scale);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const gx = (11 / 7) * scale;
+        const gy = (29 / 14) * scale;
+        drawComPoint(gx, gy, 'G');
+      }
+      ctx.restore();
+
+      const deg = (s.currentAngle * 180 / Math.PI).toFixed(1);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px Inter';
+      ctx.fillText(`Suspended Tilt Angle θ = ${deg}° (Equilibrium: Centre of Mass G on Plumb Line)`, 60, 50);
+    }
+
+    function renderSlideVsTopple(w, h) {
+      const st = simData.slideVsTopple;
+      const slopeStartX = 80;
+      const slopeStartY = 330;
+      const slopeLen = 500;
+      const rad = (st.thetaDeg * Math.PI) / 180;
+
+      // Incline plane
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(slopeStartX, slopeStartY);
+      ctx.lineTo(slopeStartX + slopeLen * Math.cos(rad), slopeStartY - slopeLen * Math.sin(rad));
+      ctx.stroke();
+
+      // Incline wedge ground fill
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.moveTo(slopeStartX, slopeStartY);
+      ctx.lineTo(slopeStartX + slopeLen * Math.cos(rad), slopeStartY - slopeLen * Math.sin(rad));
+      ctx.lineTo(slopeStartX + slopeLen * Math.cos(rad), slopeStartY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Object position along slope
+      const objDist = 220 + st.animOffset;
+      const objBaseX = slopeStartX + objDist * Math.cos(rad);
+      const objBaseY = slopeStartY - objDist * Math.sin(rad);
+
+      ctx.save();
+      ctx.translate(objBaseX, objBaseY);
+      ctx.rotate(-rad + st.animTumble);
+
+      const pxScale = 35;
+      if (st.shape === 'cone') {
+        const coneH = st.coneHeight * pxScale;
+        const coneR = st.coneRadius * pxScale;
+
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, -coneR);
+        ctx.lineTo(-coneH, 0); // apex up
+        ctx.lineTo(0, coneR);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // CoM: 1/4 h from base
+        const gx = -0.25 * coneH;
+        const gy = 0;
+        drawComPoint(gx, gy, 'G');
+
+        // Normal reaction contact line shift d
+        const reactionPx = st.dReaction * pxScale;
+        if (showVectors) {
+          drawArrow(gx, gy, gx, 70, '#ef4444', 'mg');
+          drawArrow(0, reactionPx, -50, reactionPx, '#38bdf8', 'R');
+          drawArrow(0, 0, 45, 0, '#10b981', 'F');
+        }
+      } else if (st.shape === 'block') {
+        const bW = st.blockWidth * pxScale * 1.5;
+        const bH = st.blockHeight * pxScale * 1.5;
+
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.3)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.fillRect(-bH, -bW / 2, bH, bW);
+        ctx.strokeRect(-bH, -bW / 2, bH, bW);
+
+        const gx = -bH / 2;
+        const gy = 0;
+        drawComPoint(gx, gy, 'G');
+
+        if (showVectors) {
+          drawArrow(gx, gy, gx, 70, '#ef4444', 'mg');
+          drawArrow(0, 0, -50, 0, '#38bdf8', 'R');
+        }
+      } else if (st.shape === 'hemisphere') {
+        const rPx = 2.0 * pxScale;
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.arc(0, 0, rPx, -Math.PI / 2, Math.PI / 2, true);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        const gx = -(3 / 8) * rPx;
+        drawComPoint(gx, 0, 'G (3r/8)');
+      }
+      ctx.restore();
+
+      // Status text banner
+      ctx.font = 'bold 13px Inter';
+      if (st.status === 'stable') {
+        ctx.fillStyle = '#10b981';
+        ctx.fillText('✅ STABLE IN EQUILIBRIUM (d > 0 and tan θ ≤ μ)', 60, 50);
+      } else if (st.status === 'toppling') {
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText('💥 TOPPLING! Normal Reaction Reached Pivot Edge (d ≤ 0)', 60, 50);
+      } else if (st.status === 'sliding') {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('⚡ SLIDING! Incline Angle Exceeds Angle of Friction (tan θ > μ)', 60, 50);
+      }
+    }
+
+    function renderLadder(w, h) {
+      const l = simData.ladder;
+      const wallX = 140;
+      const floorY = 320;
+      const scale = 65;
+      const rad = (l.thetaDeg * Math.PI) / 180;
+
+      // Vertical wall
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(wallX - 30, 40, 30, floorY - 40);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(wallX - 30, 40, 30, floorY - 40);
+
+      // Floor
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(wallX - 30, floorY, w - wallX + 10, 40);
+      ctx.beginPath();
+      ctx.moveTo(wallX - 30, floorY);
+      ctx.lineTo(w - 20, floorY);
+      ctx.stroke();
+
+      // Ladder positions:
+      // A (top) against wall at x = wallX
+      // B (foot) on floor at y = floorY
+      const ladderLenPx = l.len * scale;
+      const heightA = ladderLenPx * Math.cos(rad);
+      const spanB = ladderLenPx * Math.sin(rad);
+
+      const topAx = wallX;
+      const topAy = floorY - heightA;
+      const footBx = wallX + spanB + l.slipProgress;
+      const footBy = floorY;
+
+      // Ladder Beam
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(topAx, topAy);
+      ctx.lineTo(footBx, footBy);
+      ctx.stroke();
+
+      // Ladder Rungs
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 2;
+      for (let f = 0.15; f < 0.95; f += 0.12) {
+        const rx = topAx + (footBx - topAx) * f;
+        const ry = topAy + (footBy - topAy) * f;
+        ctx.beginPath();
+        ctx.moveTo(rx - 4, ry - 3);
+        ctx.lineTo(rx + 4, ry + 3);
+        ctx.stroke();
+      }
+
+      // Painter position
+      const px = topAx + (footBx - topAx) * (1 - l.climberFrac);
+      const py = topAy + (footBy - topAy) * (1 - l.climberFrac);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(px, py - 14, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(px - 4, py - 7, 8, 14);
+
+      // Center of mass of ladder
+      const comLx = (topAx + footBx) / 2;
+      const comLy = (topAy + footBy) / 2;
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(comLx, comLy, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Free Body Diagram Vectors
+      if (showVectors) {
+        // Wall normal reaction S
+        drawArrow(topAx, topAy, topAx + 45, topAy, '#38bdf8', `S=${l.normalWall.toFixed(1)}N`);
+        // Floor normal reaction R
+        drawArrow(footBx, footBy, footBx, footBy - 55, '#38bdf8', `R=${l.normalFloor.toFixed(1)}N`);
+        // Floor friction F
+        drawArrow(footBx, footBy, footBx - 45, footBy, '#10b981', `F=${l.frictionFloor.toFixed(1)}N`);
+        // Ladder weight mg
+        drawArrow(comLx, comLy, comLx, comLy + 40, '#f59e0b', `${l.mass * 10}N`);
+        // Climber weight Mg
+        drawArrow(px, py, px, py + 45, '#38bdf8', `${l.climberMass * 10}N`);
+      }
+
+      // Slipping warning banner
+      ctx.font = 'bold 13px Inter';
+      if (l.isSlipping) {
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText(`⚠️ LADDER IS SLIPPING! (Current μ=${l.muFloor.toFixed(2)} < Required μ_min=${l.muMin.toFixed(2)})`, 180, 50);
+      } else {
+        ctx.fillStyle = '#10b981';
+        ctx.fillText(`✅ SAFE IN EQUILIBRIUM (Required μ_min = ${l.muMin.toFixed(2)} ≤ Floor μ = ${l.muFloor.toFixed(2)})`, 180, 50);
+      }
+    }
+
+    function stepPhysics(dt) {
+      if (currentModule === 'overhang') {
+        const o = simData.overhang;
+        calcOverhang();
+        if (o.isTipping) {
+          o.tipAngle = Math.min(Math.PI / 4, o.tipAngle + 0.8 * dt);
+        } else {
+          o.tipAngle = Math.max(0, o.tipAngle - 1.5 * dt);
+        }
+      }
+      else if (currentModule === 'suspended') {
+        const s = simData.suspended;
+        calcSuspended();
+        // Damped harmonic oscillation toward target equilibrium angle
+        const angleDiff = s.targetAngle - s.currentAngle;
+        const springK = 25.0;
+        const damping = 3.5;
+        const accel = springK * angleDiff - damping * s.angularVel;
+        s.angularVel += accel * dt;
+        s.currentAngle += s.angularVel * dt;
+      }
+      else if (currentModule === 'slideVsTopple') {
+        const st = simData.slideVsTopple;
+        calcSlideVsTopple();
+        if (st.status === 'sliding') {
+          st.animOffset += 90 * dt;
+          if (st.animOffset > 250) st.animOffset = 0;
+        } else if (st.status === 'toppling') {
+          st.animTumble = Math.min(Math.PI / 2, st.animTumble + 2.5 * dt);
+        } else {
+          st.animOffset = 0;
+          st.animTumble = Math.max(0, st.animTumble - 3.0 * dt);
+        }
+      }
+      else if (currentModule === 'ladder') {
+        const l = simData.ladder;
+        calcLadder();
+        if (l.isSlipping) {
+          l.slipProgress = Math.min(180, l.slipProgress + 45 * dt);
+        } else {
+          l.slipProgress = Math.max(0, l.slipProgress - 90 * dt);
+        }
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      drawGrid(w, h);
+
+      if (currentModule === 'overhang') {
+        renderOverhang(w, h);
+      } else if (currentModule === 'comExplorer') {
+        renderComExplorer(w, h);
+      } else if (currentModule === 'suspended') {
+        renderSuspended(w, h);
+      } else if (currentModule === 'slideVsTopple') {
+        renderSlideVsTopple(w, h);
+      } else if (currentModule === 'ladder') {
+        renderLadder(w, h);
+      }
+
+      updateTelemetry();
+    }
+
+    function updateTelemetry() {
+      const container = document.getElementById('telemetry-readouts');
+      const statePill = document.getElementById('state-pill');
+      container.innerHTML = '';
+
+      if (currentModule === 'overhang') {
+        const o = simData.overhang;
+        statePill.textContent = o.isTipping ? 'Tipping Over!' : 'Balanced in Equilibrium';
+        statePill.className = o.isTipping ? 'text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800' : 'text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800';
+
+        addReadout(container, 'Clockwise Moment (Tipping)', `${o.clockMoment.toFixed(1)} N·m`);
+        addReadout(container, 'Anticlockwise (Stabilizing)', `${o.anticlockMoment.toFixed(1)} N·m`);
+        addReadout(container, 'Net Moment About Edge', `${o.netMoment.toFixed(1)} N·m`);
+        addReadout(container, 'Pivot Reaction Force R', `${o.reaction.toFixed(1)} N`);
+      }
+      else if (currentModule === 'comExplorer') {
+        const c = simData.comExplorer;
+        statePill.textContent = 'Centroid Located';
+        statePill.className = 'text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800';
+
+        addReadout(container, 'x̄ Position', `${c.calcX.toFixed(3)} m`);
+        addReadout(container, 'ȳ Position', `${c.calcY.toFixed(3)} m`);
+        addReadout(container, 'Shape Formula', c.shapeType === 'cone' ? '3h / 4' : c.shapeType === 'hemisphere' ? '3r / 8' : 'Standard CoM');
+        addReadout(container, 'Uniform Density ρ', 'Constant');
+      }
+      else if (currentModule === 'suspended') {
+        const s = simData.suspended;
+        statePill.textContent = 'Freely Suspended';
+        statePill.className = 'text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800';
+
+        const deg = (s.currentAngle * 180 / Math.PI).toFixed(2);
+        const targetDeg = (s.targetAngle * 180 / Math.PI).toFixed(2);
+        addReadout(container, 'Current Tilt Angle θ', `${deg}°`);
+        addReadout(container, 'Equilibrium Target θ', `${targetDeg}°`);
+        addReadout(container, 'Formula tan(θ)', 'x̄ / ȳ');
+        addReadout(container, 'Center of Mass Alignment', 'On Plumb Line');
+      }
+      else if (currentModule === 'slideVsTopple') {
+        const st = simData.slideVsTopple;
+        statePill.textContent = st.status === 'stable' ? 'Equilibrium Intact' : st.status.toUpperCase();
+        statePill.className = st.status === 'stable' ? 'text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800' : 'text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800';
+
+        addReadout(container, 'Incline Angle θ', `${st.thetaDeg.toFixed(1)}°`);
+        addReadout(container, 'Coefficient of Friction μ', `${st.mu.toFixed(2)}`);
+        addReadout(container, 'Normal Shift d', `${st.dReaction.toFixed(3)} m`);
+        addReadout(container, 'Equilibrium Outcome', st.status.toUpperCase());
+      }
+      else if (currentModule === 'ladder') {
+        const l = simData.ladder;
+        statePill.textContent = l.isSlipping ? 'SLIPPING' : 'SAFE IN EQUILIBRIUM';
+        statePill.className = l.isSlipping ? 'text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800' : 'text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800';
+
+        addReadout(container, 'Required Min μ_min', `${l.muMin.toFixed(3)}`);
+        addReadout(container, 'Actual Floor μ', `${l.muFloor.toFixed(2)}`);
+        addReadout(container, 'Floor Normal Reaction R', `${l.normalFloor.toFixed(1)} N`);
+        addReadout(container, 'Wall Reaction Force S', `${l.normalWall.toFixed(1)} N`);
+      }
+    }
+
+    function addReadout(parent, label, val) {
+      const div = document.createElement('div');
+      div.className = 'bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 flex flex-col justify-between';
+      div.innerHTML = `
+        <span class="text-slate-400 text-[11px]">${label}</span>
+        <span class="text-amber-300 font-bold text-xs mt-0.5">${val}</span>
+      `;
+      parent.appendChild(div);
+    }
+
+    function updateExplanations() {
+      const banner = document.getElementById('mode-banner');
+      const title = document.getElementById('expl-title');
+      const badge = document.getElementById('expl-badge');
+      const content = document.getElementById('expl-content');
+      const mathBox = document.getElementById('expl-math-box');
+      const tipBox = document.getElementById('expl-tip-box');
+
+      if (currentMode === 'eli6') {
+        banner.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🧸</span>
+            <div>
+              <h2 class="text-base sm:text-lg font-black text-pink-400">Playground Physics Mode (Explained for a 6-Year-Old!)</h2>
+              <p class="text-xs text-slate-300">Seesaws, pirate planks over the cliff, wobbly weeble-wobble toys, and leaning ladders! See how balance really works.</p>
+            </div>
+          </div>
+        `;
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-pink-950 text-pink-300 border border-pink-800';
+        badge.textContent = '👶 Like I\'m 6 Active';
+      } else {
+        banner.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📐</span>
+            <div>
+              <h2 class="text-base sm:text-lg font-black text-amber-400">CAIE 9231 Further Mathematics • Paper 32 Syllabus</h2>
+              <p class="text-xs text-slate-300">Rigorous derivations from Chapter 14: Coplanar rigid body equilibrium, standard centers of mass, moments about an axis, suspended equilibrium, and sliding vs. toppling criteria.</p>
+            </div>
+          </div>
+        `;
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800';
+        badge.textContent = '🎓 Cambridge 9231 Mechanics';
+      }
+
+      if (currentModule === 'overhang') {
+        if (currentMode === 'eli6') {
+          title.innerHTML = `<span>🏴‍☠️ Pirate Cliff Plank & The Seesaw Secret</span>`;
+          content.innerHTML = `
+            <p>Imagine walking out on a pirate wooden plank hanging over a deep cliff! 🌊</p>
+            <p>On the safe cliff side, a heavy superhero is sitting down to keep the plank from flipping up. Every footstep you take further out towards the edge gives your weight <strong>more turning muscle (a Moment!)</strong>.</p>
+            <p>If your turning muscle becomes bigger than the superhero's hold, WHOOSH—the plank tips over!</p>
+          `;
+          mathBox.innerHTML = `
+            <div>⚖️ <strong>Seesaw Rule:</strong> Weight × Distance from Edge</div>
+            <div>💪 <strong>Superhero Hold:</strong> Man Weight × Distance on Cliff</div>
+            <div>⚠️ <strong>Splash Zone:</strong> If Clockwise Muscle > Counter-Clockwise Muscle, you tip!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-pink-950/40 text-pink-300 border-pink-800/60';
+          tipBox.innerHTML = `
+            <span>💡</span>
+            <span><strong>Fun Experiment:</strong> Slide the walker further to the right. Notice how the plank stays flat until you cross the danger line and tip!</span>
+          `;
+        } else {
+          title.innerHTML = `<span>Moments About an Edge & Point of Tipping (Worked Example 14.3)</span>`;
+          content.innerHTML = `
+            <p>A rigid body has length, so forces create a <strong>turning effect (Moment = F × perpendicular distance d)</strong> measured in N·m.</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li><strong>Rotational Equilibrium Condition:</strong> <code class="text-amber-300">∑ M = 0</code> about the pivot edge.</li>
+              <li><strong>Point of Tipping Condition:</strong> The normal reaction from the table/cliff concentrates entirely at the pivot edge. When clockwise moment exceeds anticlockwise moment, equilibrium breaks.</li>
+            </ul>
+          `;
+          mathBox.innerHTML = `
+            <div>// Worked Example 14.3 (Mass 10kg rod of length 5m, overhang 4m):</div>
+            <div>Rod center of mass is 1.5m past the cliff edge.</div>
+            <div>Moments about cliff edge:</div>
+            <div>10g × 1.5 + 35g × (1.5 + x) = 80g × 1.0</div>
+            <div>15g + 52.5g + 35g·x = 80g => 35g·x = 12.5g => x = 5/14 m</div>
+            <div class="text-emerald-300">=> Maximum distance x = 5/14 m < 2.5 m (Boy can never reach end B!)</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-950/40 text-amber-300 border-amber-800/60';
+          tipBox.innerHTML = `
+            <span>🎯</span>
+            <span><strong>Exam Tip:</strong> Always take moments about the pivot or edge to immediately eliminate the unknown normal reaction force R.</span>
+          `;
+        }
+      }
+      else if (currentModule === 'comExplorer') {
+        if (currentMode === 'eli6') {
+          title.innerHTML = `<span>🎯 The Magic Balancing Finger Point!</span>`;
+          content.innerHTML = `
+            <p>Every single toy, block, and cone has one special magic dot called the <strong>Center of Mass</strong>! 🎪</p>
+            <p>If you put your finger right under this exact dot, the toy will balance in mid-air without falling!</p>
+            <p>For a fat party cone, the heavy bottom pulls the dot closer to the floor (3/4 of the way from the tip).</p>
+          `;
+          mathBox.innerHTML = `
+            <div>🔺 <strong>Triangle:</strong> 1/3 from the flat bottom edge!</div>
+            <div>🍦 <strong>Solid Cone:</strong> 3/4 from the pointy top tip!</div>
+            <div>🥣 <strong>Half-Ball (Hemisphere):</strong> 3/8 of the radius from the flat side!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-emerald-950/40 text-emerald-300 border-emerald-800/60';
+          tipBox.innerHTML = `
+            <span>🧸</span>
+            <span>Weeble-wobbles stay upright because the heavy hemisphere at the bottom keeps their magic balance dot very low!</span>
+          `;
+        } else {
+          title.innerHTML = `<span>Centres of Mass: Standard Shapes & Composite Bodies</span>`;
+          content.innerHTML = `
+            <p>The centre of mass is the point through which the entire gravitational force (weight) acts. Derived via integration <code class="text-amber-300">M·x̄ = ∫ x dm</code>:</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li><strong>Triangular Lamina:</strong> Centroid at <code class="text-amber-300">((x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3)</code>.</li>
+              <li><strong>Circular Sector Lamina (angle 2α):</strong> <code class="text-amber-300">x̄ = (2r·sin α) / (3α)</code>.</li>
+              <li><strong>Solid Right Circular Cone:</strong> <code class="text-amber-300">x̄ = (3/4)·h</code> from vertex.</li>
+              <li><strong>Solid Uniform Hemisphere:</strong> <code class="text-amber-300">x̄ = (3/8)·r</code> from plane face.</li>
+            </ul>
+          `;
+          mathBox.innerHTML = `
+            <div>// Composite Body Formula (Key Point 14.3):</div>
+            <div>x̄ = (∑ m_i · x_i) / (∑ m_i)</div>
+            <div>ȳ = (∑ m_i · y_i) / (∑ m_i)</div>
+            <div class="text-amber-300">// Toy Stability Condition (Worked Example 14.14):</div>
+            <div>Hemisphere (radius r) + Cone (radius r, height h):</div>
+            <div>Returns to upright whenever h < √(3)·r</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-950/40 text-amber-300 border-amber-800/60';
+          tipBox.innerHTML = `
+            <span>🎓</span>
+            <span><strong>Formula Sheet Note:</strong> Remember that for wire arcs, the formula is <code class="font-mono">(r·sin α)/α</code>, whereas for sector laminas it is <code class="font-mono">(2r·sin α)/(3α)</code>. Angles must be in radians!</span>
+          `;
+        }
+      }
+      else if (currentModule === 'suspended') {
+        if (currentMode === 'eli6') {
+          title.innerHTML = `<span>🪢 Hanging Pictures and Keys</span>`;
+          content.innerHTML = `
+            <p>When you hang a keyring or picture frame on a nail, it swings until it rests peacefully. 🖼️</p>
+            <p>Why does it stop at that exact slant? Because gravity pulls straight down! The magic balance dot <strong>G</strong> ALWAYS hangs straight beneath the nail!</p>
+          `;
+          mathBox.innerHTML = `
+            <div>🧵 <strong>Plumb Line:</strong> A straight string pointing directly to the Earth center.</div>
+            <div>🎯 <strong>Balance Rule:</strong> The pivot pin and magic dot G form one straight vertical line!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-purple-950/40 text-purple-300 border-purple-800/60';
+          tipBox.innerHTML = `
+            <span>💡</span>
+            <span>For an L-shaped puzzle, knowing the coordinates (x̄, ȳ) lets you calculate the exact tilt angle using simple rise-over-run tangent!</span>
+          `;
+        } else {
+          title.innerHTML = `<span>Freely Suspended Rigid Bodies (Sections 14.3 & 14.4)</span>`;
+          content.innerHTML = `
+            <p>When an object is freely suspended from a point <strong>O</strong>, the only forces acting are the reaction at the pivot and the object's weight at its centre of mass <strong>G</strong>.</p>
+            <p>For rotational equilibrium (<code class="text-amber-300">∑ M_O = 0</code>), the line of action of weight must pass directly through <strong>O</strong>. Hence, <strong>OG is vertical</strong>.</p>
+          `;
+          mathBox.innerHTML = `
+            <div>// Worked Example 14.19 (L-shaped lamina suspended from A):</div>
+            <div>Centre of mass: x̄ = 11/7 r,  ȳ = 29/14 r</div>
+            <div>tan(θ) = ȳ / x̄ = (29/14) / (11/7) = 29 / 22</div>
+            <div class="text-emerald-300">=> θ = arctan(29/22) = 52.8° with the vertical edge AB</div>
+            <div class="pt-1 text-slate-400">// Wire Letter 'D' (Page 25):</div>
+            <div>x̄ = 2a / (π + 2) => tan(θ) = 2 / (π + 2) => θ = 21.3°</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-950/40 text-amber-300 border-amber-800/60';
+          tipBox.innerHTML = `
+            <span>🎯</span>
+            <span><strong>Exam Check:</strong> Double check whether the question asks for the angle with the <strong>vertical</strong> or with the <strong>horizontal</strong>!</span>
+          `;
+        }
+      }
+      else if (currentModule === 'slideVsTopple') {
+        if (currentMode === 'eli6') {
+          title.innerHTML = `<span>📦 Leaning Tower of Blocks on a Ramp!</span>`;
+          content.innerHTML = `
+            <p>Put a tall toy block on a board and tilt it up slowly. Two things can happen: 🛹</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li><strong>Slippery Slide:</strong> If the ramp is smooth like ice, the block slides down!</li>
+              <li><strong>Clumsy Tumble (Topple):</strong> If the ramp has rough sandpaper, the block gets stuck and flips head over heels!</li>
+            </ul>
+          `;
+          mathBox.innerHTML = `
+            <div>📐 <strong>Tumble Trigger:</strong> When the magic dot G leans past the front foot edge!</div>
+            <div>⛸️ <strong>Slide Trigger:</strong> When the slope is steeper than the grip number μ!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-pink-950/40 text-pink-300 border-pink-800/60';
+          tipBox.innerHTML = `
+            <span>🔍</span>
+            <span><strong>Try it:</strong> Lower friction μ to 0.1 and tilt the ramp. It slides immediately! Now increase μ to 1.0 and watch it tumble instead!</span>
+          `;
+        } else {
+          title.innerHTML = `<span>Sliding vs. Toppling Criteria (Worked Examples 14.17 & 14.22)</span>`;
+          content.innerHTML = `
+            <p>An object on a rough inclined plane subject to increasing inclination θ breaks equilibrium via either <strong>limiting friction (sliding)</strong> or <strong>moment tipping (toppling)</strong>:</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li><strong>Sliding Condition:</strong> Occurs when <code class="text-amber-300">tan θ = μ</code>.</li>
+              <li><strong>Toppling Condition:</strong> The line of action of normal reaction R shifts toward the lowest contact edge. When <code class="text-amber-300">d = 0</code>, <code class="text-amber-300">tan θ = base_radius / ȳ</code>.</li>
+              <li><strong>Outcome:</strong> Whichever critical angle θ is <strong>smaller</strong> determines how equilibrium is broken!</li>
+            </ul>
+          `;
+          mathBox.innerHTML = `
+            <div>// Worked Example 14.22 (Cone height 4r, base radius r, μ = 0.5):</div>
+            <div>CoM of cone is at ȳ = (1/4)·4r = r above base.</div>
+            <div>Toppling limit: tan(θ_top) = r / r = 1.0 => θ_top = 45.0°</div>
+            <div>Sliding limit: tan(θ_slide) = μ = 0.5 => θ_slide = 26.6°</div>
+            <div class="text-emerald-300">Since 26.6° < 45.0°, the cone SLIDES before it can topple!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-950/40 text-amber-300 border-amber-800/60';
+          tipBox.innerHTML = `
+            <span>📋</span>
+            <span><strong>Examiner's Rule:</strong> You must evaluate both angles explicitly and write a comparative deduction: "Since θ_slide < θ_top, the body slides first."</span>
+          `;
+        }
+      }
+      else if (currentModule === 'ladder') {
+        if (currentMode === 'eli6') {
+          title.innerHTML = `<span>🪜 The Painter on the Leaning Ladder</span>`;
+          content.innerHTML = `
+            <p>Have you ever seen someone climb a ladder to paint a house? 🏠</p>
+            <p>When the painter is near the bottom, the ladder feels super safe and sturdy. But as the painter climbs higher and higher towards the top, the ladder wants to kick backwards and slip on the floor!</p>
+          `;
+          mathBox.innerHTML = `
+            <div>👟 <strong>Floor Grip:</strong> Friction holds the ladder foot in place!</div>
+            <div>⬆️ <strong>Climber Danger:</strong> The higher the painter goes, the harder the wall pushes back (S increases)!</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-pink-950/40 text-pink-300 border-pink-800/60';
+          tipBox.innerHTML = `
+            <span>⚠️</span>
+            <span>If the floor friction is less than the required grip (μ_min), the ladder crashes down!</span>
+          `;
+        } else {
+          title.innerHTML = `<span>Equilibrium of a Leaning Ladder (Worked Examples 14.15 & 14.16)</span>`;
+          content.innerHTML = `
+            <p>Standard coplanar system with a uniform ladder of length 2a and mass m resting against a smooth vertical wall (normal reaction S) and rough floor (reaction R and friction F):</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li><strong>Horizontal Resolution:</strong> <code class="text-amber-300">∑ F_x = 0 => F = S</code>.</li>
+              <li><strong>Vertical Resolution:</strong> <code class="text-amber-300">∑ F_y = 0 => R = (m_ladder + m_climber)·g</code>.</li>
+              <li><strong>Moments about foot B:</strong> <code class="text-amber-300">S·(2a·cos θ) = m·g·(a·sin θ) + M·g·(x·sin θ)</code>.</li>
+              <li><strong>Limiting Friction Inequality:</strong> <code class="text-amber-300">F ≤ μ·R => μ ≥ S / R</code>.</li>
+            </ul>
+          `;
+          mathBox.innerHTML = `
+            <div>// Worked Example 14.15 (Ladder 2m, painter 5m at 1/4 length, θ = 30°):</div>
+            <div>R = 2mg + 5mg = 7mg</div>
+            <div>S·a·cos(30°) = 2mg·(a/2)·sin(30°) + 5mg·(a/4)·sin(30°)</div>
+            <div>S·(√3/2) = mg·(1/2) + (5/4)·mg·(1/2) = (9/8)·mg</div>
+            <div>S = (3√3 / 4)·mg</div>
+            <div class="text-emerald-300">μ_min = S / R = [(3√3/4)·mg] / [7mg] = 3√3 / 28 ≈ 0.186</div>
+          `;
+          tipBox.className = 'p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-950/40 text-amber-300 border-amber-800/60';
+          tipBox.innerHTML = `
+            <span>⭐</span>
+            <span><strong>Exam Shortcut:</strong> Taking moments about the foot B eliminates both unknown floor forces (R and F) in one clean step!</span>
+          `;
+        }
+      }
+    }
+
+    let lastTime = 0;
+    function mainLoop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+      lastTime = timestamp;
+
+      if (isRunning) {
+        stepPhysics(dt);
+      }
+      render();
+
+      animId = requestAnimationFrame(mainLoop);
+    }
+
+    window.addEventListener('load', () => {
+      fixCanvasDPI();
+      switchModule('overhang');
+      requestAnimationFrame(mainLoop);
+    });
+
+  </script>
+  <!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</body>
+</html>

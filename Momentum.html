@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Momentum & Collisions Interactive Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- KaTeX for high-performance LaTeX rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .font-kid {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-mono-math {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .katex-display {
+      margin: 0.35em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px 0;
+    }
+    .katex {
+      font-size: 1.04em;
+    }
+    canvas {
+      image-rendering: auto;
+      touch-action: none;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <header class="bg-slate-800/90 border-b border-slate-700/80 backdrop-blur sticky top-0 z-50 px-4 py-3 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-2xl">
+          💥
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Momentum & Collisions Lab
+            <span class="text-xs bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-semibold">Cambridge Mechanics Ch 18</span>
+          </h1>
+          <p class="text-xs text-slate-400">Interactive Drag, Aim & Slingshot Launch Sandbox with Step-by-Step Rigor</p>
+        </div>
+      </div>
+
+      <!-- Explanatory Perspective Switcher -->
+      <div class="flex items-center bg-slate-950/70 p-1 rounded-xl border border-slate-700">
+        <button id="btn-mode-kid" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md">
+          <span>🚗</span>
+          <span>6-Year-Old Mode</span>
+        </button>
+        <button id="btn-mode-math" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+          <span>🎓</span>
+          <span>A-Level Mechanics Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-slate-800 border-b border-slate-700 px-4 py-2">
+    <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto text-xs pb-1 sm:pb-0">
+      <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap mr-1">Simulations:</span>
+      <button data-sim="direct1d" class="sim-tab-btn active px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🔴🔵</span> 1. Direct 1D Impact & Restitution (e)
+      </button>
+      <button data-sim="impulse" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🔨</span> 2. Impulse & Force-Time (I = Ft)
+      </button>
+      <button data-sim="wallrebound" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🧱</span> 3. Rebound & Second Collision Race
+      </button>
+      <button data-sim="obliquewall" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🎱</span> 4. Oblique Wall Impact (Pool Cushion)
+      </button>
+      <button data-sim="threebodies" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🚂</span> 5. 3-Body Chain Reaction
+      </button>
+      <button data-sim="obliquespheres" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white font-medium whitespace-nowrap transition-colors flex items-center gap-1.5">
+        <span>🎯</span> 6. Oblique Spheres & Line of Centres
+      </button>
+      <button data-sim="twisted" class="sim-tab-btn px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 text-white font-medium whitespace-nowrap transition-transform hover:scale-105 flex items-center gap-1.5 shadow-lg">
+        <span>🧠</span> "Twisted Problems" Solver
+      </button>
+    </div>
+  </div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- LEFT / MAIN: Interactive Canvas & Visual Simulation (7 Cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-4">
+      <div class="relative bg-slate-950 rounded-2xl border border-slate-700/80 shadow-2xl overflow-hidden flex flex-col flex-1 min-h-[480px] md:min-h-[540px]">
+        
+        <!-- Canvas Top Bar Status & Master Controls -->
+        <div class="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-10">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-700 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 shadow-lg">
+            <span id="canvas-status-dot" class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span id="canvas-status-title" class="font-semibold text-white">Direct 1D Collision</span>
+            <span id="canvas-mode-badge" class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">Running</span>
+          </div>
+
+          <!-- Controls: Stop, Play/Pause, Step, Aim, CoM, Sound -->
+          <div class="flex items-center flex-wrap gap-1.5 pointer-events-auto">
+            <button id="btn-stop-all" title="Stop & Freeze all balls to freely reposition and aim" class="bg-rose-600/90 hover:bg-rose-500 text-white px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-rose-500/60 shadow transition flex items-center gap-1 active:scale-95">
+              <span>⏹</span> Stop Balls
+            </button>
+            <button id="btn-play-pause" title="Play / Pause Simulation (Spacebar)" class="bg-slate-800/95 hover:bg-slate-700 text-amber-300 px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-slate-600 shadow transition flex items-center gap-1 active:scale-95">
+              <span id="icon-play-pause">⏸</span> <span id="lbl-play-pause">Pause</span>
+            </button>
+            <button id="btn-step" title="Step forward 1 frame (0.02s)" class="bg-slate-800/95 hover:bg-slate-700 text-cyan-300 px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-slate-600 shadow transition flex items-center gap-1 active:scale-95">
+              <span>⏭</span> Step
+            </button>
+            <button id="btn-slow-mo" title="Slow Motion (0.25x)" class="bg-slate-800/95 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 text-xs rounded-xl border border-slate-600 transition shadow">
+              🐢 Slow
+            </button>
+            <button id="btn-com-toggle" title="Toggle Center of Mass Marker" class="bg-slate-800/95 hover:bg-slate-700 text-emerald-400 px-2.5 py-1.5 text-xs rounded-xl border border-slate-600 transition shadow flex items-center gap-1">
+              <span>🎯</span> CoM
+            </button>
+            <button id="btn-sound-toggle" title="Toggle Sound FX" class="bg-slate-800/95 hover:bg-slate-700 text-slate-300 p-1.5 text-xs rounded-xl border border-slate-600 transition shadow">
+              🔊
+            </button>
+            <button id="btn-fire-sim" title="Launch with Aimed Velocities" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold rounded-xl shadow transition flex items-center gap-1 active:scale-95">
+              <span>🚀</span> Launch
+            </button>
+            <button id="btn-reset-sim" title="Reset to Initial Preset" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 text-xs font-semibold rounded-xl shadow transition active:scale-95">
+              ↺
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Dynamic Physics Canvas -->
+        <canvas id="simCanvas" class="w-full h-full flex-1 cursor-grab active:cursor-grabbing touch-none select-none"></canvas>
+
+        <!-- Canvas Interaction Toast Help Overlay -->
+        <div id="canvas-interaction-hint" class="absolute bottom-14 left-4 right-4 pointer-events-none transition-opacity duration-300 opacity-90">
+          <div class="bg-slate-900/85 backdrop-blur border border-cyan-500/40 text-cyan-200 px-3 py-1.5 rounded-xl text-[11px] flex items-center justify-between shadow-lg">
+            <span class="flex items-center gap-1.5">
+              <span class="text-base">💡</span>
+              <span><strong>Interactive:</strong> Drag any ball to move it • Drag arrow tip to aim launch velocity • Hit <strong>Stop Balls</strong> to freeze!</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">Space: Pause/Play • S: Step</span>
+          </div>
+        </div>
+
+        <!-- Canvas Bottom Visual Legends & Live Readouts -->
+        <div class="bg-slate-900/95 border-t border-slate-800 px-4 py-2.5 text-xs flex flex-col gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-4 flex-wrap">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block shadow-sm"></span> <span id="lbl-momentum" class="font-mono">Total P: 0 Ns</span></span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block shadow-sm"></span> <span id="lbl-velocities" class="font-mono">Velocities: --</span></span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-400 inline-block shadow-sm"></span> <span id="lbl-energy-loss" class="font-mono">KE Loss: 0 J</span></span>
+            </div>
+            <div id="lbl-com-readout" class="text-[11px] text-emerald-400 font-mono font-semibold">
+              $v_{\text{CoM}} = 0.00\text{ m/s}$
+            </div>
+          </div>
+
+          <!-- Kinetic Energy Distribution Bar -->
+          <div class="w-full flex items-center gap-2 pt-1 border-t border-slate-800/80">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold whitespace-nowrap">Energy State:</span>
+            <div class="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden flex border border-slate-700/60">
+              <div id="energy-bar-ke" class="bg-cyan-400 h-full transition-all duration-75" style="width: 100%;" title="Kinetic Energy"></div>
+              <div id="energy-bar-loss" class="bg-rose-500 h-full transition-all duration-75" style="width: 0%;" title="Dissipated Heat/Sound"></div>
+            </div>
+            <span id="energy-bar-pct" class="text-[10px] font-mono text-cyan-300 w-14 text-right">100% KE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physics Control Sliders Panel -->
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
+          <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+            <span>⚙️</span> Interactive Collision Controls
+          </h3>
+          <span class="text-[11px] text-slate-400 font-mono-math">Conservation Law: $\sum P_{\text{before}} = \sum P_{\text{after}}$</span>
+        </div>
+
+        <div id="dynamic-controls-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+          <!-- Populated dynamically per simulation mode -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Pedagogical Explanations & Twisted Problem Solver (5 Cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-4">
+      
+      <!-- Perspective Explanation Card (Switches between Kid & Cambridge A-Level) -->
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-5 shadow-xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+          <div class="flex items-center gap-2">
+            <span id="perspective-badge-icon" class="text-xl">🚗</span>
+            <div>
+              <h2 id="perspective-badge-title" class="text-sm font-bold text-amber-400 font-kid tracking-wide">
+                6-Year-Old "Bumper Cars" Intuition
+              </h2>
+              <p id="perspective-badge-sub" class="text-[11px] text-slate-400">
+                Simple physical analogies that make the math stick forever
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Explanation Text Area -->
+        <div id="explanation-body" class="text-xs leading-relaxed text-slate-200 space-y-3">
+          <!-- Injected via JavaScript -->
+        </div>
+
+        <!-- Key Formula Spotlight Box -->
+        <div id="formula-spotlight" class="mt-2 p-3 bg-slate-900/90 border border-slate-700 rounded-xl">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- "Why Students Get Twisted" Exam Trap Alert -->
+      <div class="bg-rose-950/40 border border-rose-700/60 rounded-2xl p-4 text-xs shadow-lg">
+        <div class="flex items-center gap-2 text-rose-400 font-bold mb-1.5">
+          <span>⚠️</span>
+          <span>The Cambridge "Twisted Trap" in this scenario:</span>
+        </div>
+        <p id="trap-explanation" class="text-rose-200/90 leading-relaxed text-[11.5px]">
+          Watch out for sign conventions! Velocity is a vector. If a particle reverses direction, its new velocity is negative.
+        </p>
+      </div>
+
+      <!-- Live Step-by-Step Mathematical Derivation Box -->
+      <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-4 shadow-xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between border-b border-slate-700 pb-2 mb-3">
+          <span class="font-bold text-xs text-cyan-300 flex items-center gap-1.5">
+            <span>📐</span> Live Step-by-Step Math Board
+          </span>
+          <span class="text-[10px] text-slate-400 font-mono">Updates automatically</span>
+        </div>
+        <div id="live-math-derivation" class="text-xs font-mono-math space-y-2 text-slate-300 overflow-y-auto max-h-60 pr-1">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal: Cambridge Exam Twisted Problems Solver -->
+  <div id="solver-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-600 rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🧠</span>
+          <div>
+            <h3 class="font-bold text-white text-base">Cambridge Exam Twisted Problems Decoder</h3>
+            <p class="text-xs text-slate-400">Chapter 18 Momentum & Restitution Past Papers Broken Down</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg">✕</button>
+      </div>
+
+      <div class="overflow-y-auto mt-4 space-y-4 text-xs pr-1">
+        <div class="space-y-2">
+          <label class="font-semibold text-slate-300">Choose a Classic Problem from Chapter 18:</label>
+          <select id="preset-problem-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-slate-200">
+            <option value="p1">Worked Example 18.5: Two Opposing Spheres (2m & 3m, e = 2/3, find KE loss)</option>
+            <option value="p2">Worked Example 18.6: Condition for Direction Reversal (P mass m, Q mass 2m, e > 1/2)</option>
+            <option value="p3">Worked Example 18.9: Oblique Rebound at Right Angles (90° bounce off wall, e = 1/3)</option>
+            <option value="p4">Worked Example 18.10: Sphere Strikes Q, Q hits Wall and Chases P (2/3 < e < 9/11)</option>
+            <option value="p5">Worked Example 18.12: Oblique Sphere-Sphere Collision with Angle of Deflection (60° impact)</option>
+            <option value="p6">Review Ex 18.1 (Nov 2010 P2 Q3): A brought to rest by B, prove alpha ≥ 2</option>
+            <option value="p7">Review Ex 18.3 (June 2011 P23 Q1): 3 spheres, no further collisions condition e ≤ 1/3</option>
+          </select>
+        </div>
+
+        <div id="problem-solution-card" class="bg-slate-900 border border-slate-700/80 rounded-xl p-4 space-y-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-700 flex justify-end">
+        <button id="btn-load-into-sim" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-4 py-2 rounded-xl text-xs shadow-lg transition">
+          Load this setup into Visual Simulator 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playThud(intensity = 1.0) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+          
+          osc.type = 'sine';
+          const baseFreq = 140 * Math.max(0.6, Math.min(2.0, intensity));
+          osc.frequency.setValueAtTime(baseFreq, now);
+          osc.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } catch (e) {}
+      }
+      playClack(isElastic = true, massWeight = 1.0) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+
+          osc.type = isElastic ? 'triangle' : 'sine';
+          const freq = (isElastic ? 880 : 360) / Math.sqrt(Math.max(0.5, massWeight));
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } catch (e) {}
+      }
+      playWallBounce() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(90, now + 0.09);
+
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } catch (e) {}
+      }
+    }
+    const sfx = new SoundFX();
+
+    const particles = [];
+    function spawnSparks(x, y, count = 16, color = '#38bdf8') {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 140;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1.0,
+          decay: 2.0 + Math.random() * 2.0,
+          color,
+          size: 2 + Math.random() * 2.5
+        });
+      }
+    }
+
+    function updateAndRenderParticles(ctx, dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= p.decay * dt;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+  </script>
+
+  <script>
+    const state = {
+      simType: 'direct1d',
+      viewMode: 'kid',
+      slowMo: false,
+      isRunning: true,
+      showCoM: true,
+
+      direct1d: {
+        m1: 3.0,
+        m2: 1.0,
+        u1: 4.0,
+        u2: 1.0,
+        e: 0.8,
+        x1: 150,
+        x2: 380,
+        v1: 4.0,
+        v2: 1.0,
+        r1: 26,
+        r2: 20,
+        collided: false,
+        coalesced: false
+      },
+
+      impulse: {
+        m: 4.0,
+        u: 3.0,
+        F: 8.0,
+        t_duration: 0.8,
+        current_t: 0,
+        x: 120,
+        v: 3.0,
+        forceActive: false,
+        completed: false
+      },
+
+      wallrebound: {
+        m1: 2.0,
+        m2: 3.0,
+        u1: 4.0,
+        e_spheres: 0.75,
+        e_wall: 0.125,
+        x1: 120,
+        x2: 300,
+        v1: 4.0,
+        v2: 0,
+        wallX: 580,
+        stage: 0,
+        r1: 24,
+        r2: 28
+      },
+
+      obliquewall: {
+        u: 5.0,
+        angleDeg: 60,
+        e: 0.5,
+        x: 100,
+        y: 80,
+        vx: 0,
+        vy: 0,
+        wallX: 550,
+        bounced: false,
+        trail: [],
+        r: 20
+      },
+
+      threebodies: {
+        m1: 2.0,
+        m2: 3.0,
+        m3: 1.0,
+        u1: 5.0,
+        u2: -1.0,
+        u3: 0.0,
+        e: 0.6,
+        x1: 100,
+        x2: 280,
+        x3: 460,
+        v1: 5.0,
+        v2: -1.0,
+        v3: 0.0,
+        r1: 22,
+        r2: 26,
+        r3: 18,
+        phase: 0
+      },
+
+      obliquespheres: {
+        m1: 2.0,
+        m2: 1.0,
+        u1: 4.5,
+        impactAngleDeg: 45,
+        e: 0.5,
+        x1: 140,
+        y1: 190,
+        x2: 360,
+        y2: 250,
+        vx1: 0, vy1: 0,
+        vx2: 0, vy2: 0,
+        collided: false,
+        r1: 26,
+        r2: 22
+      }
+    };
+  </script>
+
+  <script>
+    const explanations = {
+      direct1d: {
+        title: "Direct 1D Collision & Restitution (e)",
+        kid: {
+          concept: "Bumper Cars & Sticky Slime! 🚗💥🚙",
+          body: `
+            <p><strong>1. What is Momentum ($P$)?</strong> It’s your "unstoppable power"! A heavy dump truck rolling slowly has huge momentum. A tiny mosquito flying super fast has tiny momentum.</p>
+            <p><strong>2. The Magic Piggy Bank ($\sum P$ is constant):</strong> When two bumper cars crash, neither car can destroy momentum! They just swap it like trading cards. Whatever push Car 1 loses, Car 2 grabs!</p>
+            <p><strong>3. The Bounciness Meter ($e$):</strong></p>
+            <ul class="list-disc list-inside space-y-1 pl-2">
+              <li><strong>$e = 1$ (Super Bouncy):</strong> Perfect trampoline bounce! Zero energy lost. They fly apart with full springiness.</li>
+              <li><strong>$0 < e < 1$ (Normal Ball):</strong> Tennis or soccer ball. A bit of bounce, but some energy turns into a "thud" sound and warmth.</li>
+              <li><strong>$e = 0$ (Sticky Slime / Play-Doh):</strong> Sppplaaat! They stick together ("coalesce") and slide as one big lump.</li>
+            </ul>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 6-Year-Old Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Bounciness } e = \\frac{\\text{How fast they fly apart}}{\\text{How fast they rushed together}}$$</div>
+          `,
+          trap: "Velocity has a DIRECTION! If Ball 1 bounces backwards, its speed is NEGATIVE. Always pick one direction (like to the right $\\rightarrow$) as positive."
+        },
+        math: {
+          concept: "Conservation of Linear Momentum & Newton's Experimental Law",
+          body: `
+            <p><strong>1. Principle of Conservation of Momentum (PCM):</strong></p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$m_1 u_1 + m_2 u_2 = m_1 v_1 + m_2 v_2$$
+            </div>
+            <p><strong>2. Newton's Experimental Law of Restitution (NEL):</strong></p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$e = \\frac{v_2 - v_1}{u_1 - u_2} = \\frac{\\text{speed of separation}}{\\text{speed of approach}} \\quad (0 \\le e \\le 1)$$
+            </div>
+            <p><strong>3. Kinetic Energy Loss:</strong></p>
+            <p>$$\\Delta \\mathrm{KE} = \\left(\\frac{1}{2}m_1 u_1^2 + \\frac{1}{2}m_2 u_2^2\\right) - \\left(\\frac{1}{2}m_1 v_1^2 + \\frac{1}{2}m_2 v_2^2\\right)$$</p>
+            <p>For $e = 1$, $\\Delta \\mathrm{KE} = 0$ (perfectly elastic). For $e = 0$, maximum kinetic energy is dissipated into heat and deformation.</p>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Key Point 18.3:</div>
+            <div class="text-emerald-400">$$m_1 u_1 + m_2 u_2 = m_1 v_1 + m_2 v_2 \\qquad v_2 - v_1 = e(u_1 - u_2)$$</div>
+          `,
+          trap: "Worked Example 18.6 alert: When solving for velocities algebraically, never assume a particle reverses! Let the sign of $v_1$ tell you: if $v_1 < 0$, it reversed."
+        }
+      },
+
+      impulse: {
+        title: "Impulse & Force-Time Graph (I = Ft)",
+        kid: {
+          concept: "Giving a Swing a Big Push! 🏏",
+          body: `
+            <p>Imagine your friend is sitting on a playground swing.</p>
+            <p>If you tap them gently with your pinky for one millisecond, nothing happens. But if you push them hard with both hands ($F$) for two whole seconds ($t$), WHOOSH! They zoom high into the sky!</p>
+            <p>That big delivery of speed is called <strong>IMPULSE</strong> ($I = F \\times t$).</p>
+            <p>Impulse is just the change in momentum: $$I = \\text{New Momentum} - \\text{Old Momentum}$$</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Push-Time Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Impulse } I = \\text{Push Force } F \\times \\text{Time } t = \\Delta (m v)$$</div>
+          `,
+          trap: "A braking force acts in reverse! If a force slows an object down, $F$ must be negative in your formula: $I = -Ft$."
+        },
+        math: {
+          concept: "Derivation of Impulse from Newton's Second Law",
+          body: `
+            <p>From Newton's second law: $$F = \\frac{dP}{dt} = m \\frac{dv}{dt}$$</p>
+            <p>Integrating both sides over the contact duration $0 \\le \\tau \\le t$:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$I = \\int_{0}^{t} F\\,dt = \\int_{u}^{v} m\\,dv = m(v - u) = \\Delta P$$
+            </div>
+            <p>For a constant force: $$I = F t = m(v - u)$$ Units are Newton-seconds ($\\text{N}\\cdot\\text{s}$) or $\\text{kg}\\cdot\\text{m/s}$.</p>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Key Point 18.2:</div>
+            <div class="text-emerald-400">$$I = Ft = m(v - u) \\implies v = u + \\frac{Ft}{m}$$</div>
+          `,
+          trap: "Exam questions frequently mix signs when reversing direction. If $u = 12\\text{ m/s}$ forward and it reverses to $v$, then $\\Delta v = v - (-12) = v + 12$!"
+        }
+      },
+
+      wallrebound: {
+        title: "Rebound & Second Collision Race",
+        kid: {
+          concept: "Bowling Ball, Tennis Ball & The Wall! 🧱🎾",
+          body: `
+            <p>Here is a classic puzzle: Ball 1 hits Ball 2. Ball 2 zooms ahead and smashes into a brick wall!</p>
+            <p>Ball 2 bounces off the wall and comes running back towards Ball 1.</p>
+            <p>Will Ball 2 catch Ball 1 for a <strong>second collision</strong>? Or will Ball 1 run away too fast?</p>
+            <p>It's an exciting race between Ball 1's retreat speed and Ball 2's rebound speed!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 The Chase Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Second Hit happens if: } \\text{Ball 2 rebound speed} > \\text{Ball 1 escape speed}$$</div>
+          `,
+          trap: "Ball 2 loses speed when it hits the wall! Its return speed is multiplied by the wall's restitution: $v_{\\text{return}} = e_{\\text{wall}} \\times v_2$."
+        },
+        math: {
+          concept: "Multi-Stage Collision Systems (Worked Example 18.10)",
+          body: `
+            <p>Sphere $P$ ($2m$) strikes $Q$ ($3m$) with initial velocity $2u$.</p>
+            <p><strong>Stage 1 (P-Q Impact):</strong></p>
+            <p>$$2v_1 + 3v_2 = 4u \\quad \\text{and} \\quad v_2 - v_1 = 2eu$$</p>
+            <p>Yielding: $$v_2 = \\frac{4}{5}u(1+e), \\qquad v_1 = \\frac{2}{5}u(2-3e)$$</p>
+            <p><strong>Stage 2 (Q Wall Impact):</strong> $Q$ rebounds with speed $$v_Q' = e_{\\text{wall}} v_2 = \\frac{1}{8} v_2 = \\frac{1}{10}u(1+e)$$</p>
+            <p><strong>Stage 3 (Condition for Second Collision):</strong> $P$ must reverse direction ($e > \\frac{2}{3}$), and $Q$ must overtake $P$:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$v_Q' > -v_1 \\implies \\frac{1}{10}u(1+e) > \\frac{2}{5}u(3e - 2) \\implies e < \\frac{9}{11}$$
+            </div>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Exact Exam Range:</div>
+            <div class="text-emerald-400">$$\\frac{2}{3} < e < \\frac{9}{11}$$</div>
+          `,
+          trap: "Students often forget condition #1 ($P$ reversing direction). If $P$ did not reverse direction, $Q$ rebounding off the wall would automatically hit $P$ as they head towards each other!"
+        }
+      },
+
+      obliquewall: {
+        title: "Oblique Wall Impact (Pool Cushion)",
+        kid: {
+          concept: "Bouncing a Tennis Ball Off the Wall at an Angle! 🎾",
+          body: `
+            <p>If you throw a ball diagonally against a smooth wall, it doesn't bounce straight back.</p>
+            <p>Think of the ball having TWO secret velocity arrows:</p>
+            <ul class="list-disc list-inside space-y-1 pl-2">
+              <li><strong>1. Gliding Along the Wall ($u_y$):</strong> The wall is totally smooth (frictionless), so it CANNOT touch this sideways glide. $u_y$ stays 100% UNCHANGED!</li>
+              <li><strong>2. Banging Into the Wall ($u_x$):</strong> The wall smacks it back with bounciness $e$, giving $v_x = e u_x$!</li>
+            </ul>
+            <p>Because the push-away part got weaker, the ball bounces off at a flatter angle!</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Pool Cushion Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\tan(\\text{Rebound Angle } \\alpha) = e \\times \\tan(\\text{Approach Angle } \\theta)$$</div>
+          `,
+          trap: "Pay strict attention to whether the angle $\\theta$ is measured to the WALL or to the NORMAL (perpendicular)! Cambridge questions alternate between both."
+        },
+        math: {
+          concept: "Vector Resolution for Smooth Wall Collision",
+          body: `
+            <p>Velocity before impact: $\\mathbf{u} = u_x \\mathbf{i} + u_y \\mathbf{j}$ where $u_x = u\\sin\\theta$ (normal to wall) and $u_y = u\\cos\\theta$ (parallel to wall).</p>
+            <p>Since the wall is smooth, there is no impulse parallel to the wall:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$v_y = u_y = u\\cos\\theta, \\qquad v_x = e u_x = e u\\sin\\theta$$
+            </div>
+            <p><strong>Rebound angle $\\alpha$ with wall:</strong></p>
+            <p>$$\\tan\\alpha = \\frac{v_x}{v_y} = \\frac{e u\\sin\\theta}{u\\cos\\theta} = e \\tan\\theta$$</p>
+            <p><strong>Worked Example 18.9 ($90^\\circ$ Deflection):</strong> When the sphere rebounds at right angles to its original path, $\\theta + \\alpha = 90^\\circ$, giving $\\tan\\alpha = \\cot\\theta = \\frac{1}{\\tan\\theta}$. Therefore $e = \\frac{1}{\\tan^2 60^\\circ} = \\frac{1}{3}$!</p>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Speed & Angle After Rebound:</div>
+            <div class="text-emerald-400">$$v = \\sqrt{(u\\cos\\theta)^2 + (e u\\sin\\theta)^2} \\qquad \\tan\\alpha = e\\tan\\theta$$</div>
+          `,
+          trap: "Remember that kinetic energy loss occurs solely due to the reduction of the perpendicular component: $\\Delta \\mathrm{KE} = \\frac{1}{2}m u_x^2 (1 - e^2)$."
+        }
+      },
+
+      threebodies: {
+        title: "3-Body Chain Reaction (Train Carriages)",
+        kid: {
+          concept: "The Domino Knockout! 🚂🚃🚃",
+          body: `
+            <p>Imagine three train carriages lined up: Car A, Car B, and Car C.</p>
+            <p>Car A shoves Car B with a loud CLACK! Then Car B rolls forward and shoves Car C with another CLACK!</p>
+            <p>Each collision steals a little bit of energy, but the total momentum is protected at every step like treasure in a vault.</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Domino Rule:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Solve Step 1 (A & B) first} \\implies \\text{then solve Step 2 (B & C)!}$$</div>
+          `,
+          trap: "After B hits C, check if B was slowed down enough so that A doesn't crash into it again! Always verify $v_1 \\le v_3$."
+        },
+        math: {
+          concept: "Sequential 1D Collisions & Energy Loss Cascade",
+          body: `
+            <p>Worked Example 18.11: Three collinear spheres $P$ ($2\\text{ kg}$), $Q$ ($3\\text{ kg}$), and $R$ ($1\\text{ kg}$) with restitution $e = 0.6$.</p>
+            <p><strong>Step 1 ($P$ and $Q$ Collision):</strong></p>
+            <p>$$2(5) - 3(1) = 2v_1 + 3v_2 \\implies 2v_1 + 3v_2 = 7$$</p>
+            <p>$$v_2 - v_1 = e(u_1 - u_2) = 0.6(5 - (-1)) = 3.6$$</p>
+            <p>Yields: $$v_2 = 2.84\\text{ m/s}, \\quad v_1 = -0.76\\text{ m/s}$$</p>
+            <p><strong>Step 2 ($Q$ and $R$ Collision):</strong></p>
+            <p>$$3(2.84) + 0 = 3v_3 + v_4 \\implies 3v_3 + v_4 = 8.52$$</p>
+            <p>$$v_4 - v_3 = 0.6(2.84) = 1.704 \\implies v_4 = 3.408\\text{ m/s}, \\quad v_3 = 1.704\\text{ m/s}$$</p>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Sequential Momentum Resolution:</div>
+            <div class="text-emerald-400">$$\\text{Total KE Loss} = \\Delta \\mathrm{KE}_{12} + \\Delta \\mathrm{KE}_{23}$$</div>
+          `,
+          trap: "Review Ex 18 Q3: If asked to prove that there are no further collisions, you must prove $v_B \\le v_C$ and $v_A \\le v_B$ so no sphere can ever overtake another."
+        }
+      },
+
+      obliquespheres: {
+        title: "Oblique Spheres & Line of Centres",
+        kid: {
+          concept: "Snooker / Billiards Trick Shot! 🎱",
+          body: `
+            <p>When you play pool or snooker, you rarely hit a ball dead center. You slice it at an angle!</p>
+            <p><strong>The Golden Secret:</strong> Smooth spheres can ONLY push each other straight along the line connecting their centers (the <em>Line of Centres</em>)!</p>
+            <p>Any motion sideways across that line is completely ignored! The target ball $Q$ gets launched strictly along the line of centres.</p>
+          `,
+          formula: `
+            <div class="text-amber-400 font-bold mb-1">👶 Snooker Secret:</div>
+            <div class="text-sm font-semibold text-white">$$\\text{Target ball ALWAYS shoots out along the line connecting their centers!}$$</div>
+          `,
+          trap: "The deflection angle is NOT the same as the impact angle! Deflection is $\\delta = \\theta_{\\text{after}} - \\theta_{\\text{before}}$."
+        },
+        math: {
+          concept: "2D Momentum Resolution Along and Perpendicular to Line of Centres",
+          body: `
+            <p>Let the $x$-axis be aligned with the <strong>Line of Centres</strong> at impact, and the $y$-axis be the common tangent.</p>
+            <p><strong>Perpendicular to line of centres ($y$-axis):</strong> Because spheres are smooth, no impulse acts along the tangent:</p>
+            <div class="bg-slate-950 p-2 rounded-xl border border-slate-700/80 my-1.5">
+              $$v_{1y} = u_{1y} = u_1 \\sin\\theta, \\qquad v_{2y} = u_{2y} = 0$$
+            </div>
+            <p><strong>Along line of centres ($x$-axis):</strong> Standard 1D Hooke/Newton collision holds:</p>
+            <p>$$m_1 u_{1x} + m_2 u_{2x} = m_1 v_{1x} + m_2 v_{2x}$$</p>
+            <p>$$v_{2x} - v_{1x} = e(u_{1x} - u_{2x})$$</p>
+            <p><strong>Angle of Deflection:</strong> $$\\delta = \\left|\\arctan\\left(\\frac{v_{1y}}{v_{1x}}\\right) - \\theta\\right|$$</p>
+          `,
+          formula: `
+            <div class="text-cyan-300 font-bold mb-1">🎓 Key Point 18.4 (Worked Example 18.12):</div>
+            <div class="text-emerald-400">$$v_Q \\text{ is strictly along line of centres} \\qquad v_{Px} = \\frac{u_{1x}(m_1 - e m_2)}{m_1 + m_2}$$</div>
+          `,
+          trap: "Always specify the angle clearly: is it relative to the line of centres, or relative to the original path of motion? The angle of deflection is the difference between the two."
+        }
+      }
+    };
+  </script>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawSphere(ctx, x, y, r, color1 = '#38bdf8', color2 = '#0284c7', label = '', massText = '', isHovered = false, isSelected = false) {
+      ctx.save();
+      const grad = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.3, color1);
+      grad.addColorStop(1, color2);
+
+      ctx.shadowColor = isSelected ? 'rgba(56, 189, 248, 0.7)' : 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = isSelected ? 18 : 10;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 4;
+
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Rim outline
+      ctx.strokeStyle = isSelected ? '#38bdf8' : (isHovered ? '#fde047' : 'rgba(255,255,255,0.4)');
+      ctx.lineWidth = isSelected ? 3 : (isHovered ? 2.5 : 1.5);
+      ctx.stroke();
+
+      if (isHovered && !isSelected) {
+        ctx.beginPath();
+        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(253, 224, 71, 0.6)';
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      if (label) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x, y - 2);
+      }
+      if (massText) {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '10px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(massText, x, y + r + 14);
+      }
+    }
+
+    function drawVectorArrow(ctx, x, y, dx, dy, color = '#ef4444', label = '', isTipHovered = false, isTipActive = false) {
+      const len = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      ctx.save();
+
+      // If stopped, render aim target ring
+      if (len < 4) {
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.strokeStyle = isTipHovered ? '#38bdf8' : 'rgba(148, 163, 184, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([2, 2]);
+        ctx.stroke();
+
+        ctx.fillStyle = isTipHovered ? '#38bdf8' : '#94a3b8';
+        ctx.font = '9px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText('Aim', x, y - 14);
+        ctx.restore();
+        return { tipX: x, tipY: y };
+      }
+
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+
+      const headLen = Math.min(10, Math.max(6, len * 0.35));
+      ctx.beginPath();
+      ctx.moveTo(x + dx, y + dy);
+      ctx.lineTo(x + dx - headLen * Math.cos(angle - Math.PI / 6), y + dy - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x + dx - headLen * Math.cos(angle + Math.PI / 6), y + dy - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      // Draggable tip handle
+      const tipX = x + dx;
+      const tipY = y + dy;
+      ctx.beginPath();
+      ctx.arc(tipX, tipY, isTipActive ? 8 : (isTipHovered ? 7 : 5), 0, Math.PI * 2);
+      ctx.fillStyle = isTipActive ? '#fbbf24' : (isTipHovered ? '#ffffff' : color);
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      if (isTipHovered || isTipActive) {
+        ctx.beginPath();
+        ctx.arc(tipX, tipY, 11, 0, Math.PI * 2);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.setLineDash([2, 2]);
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      if (label) {
+        ctx.font = 'bold 10.5px Inter, sans-serif';
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        const offset = 14;
+        ctx.fillText(label, tipX + offset * Math.cos(angle), tipY + offset * Math.sin(angle));
+      }
+      ctx.restore();
+
+      return { tipX, tipY };
+    }
+
+    function drawCenterOfMass(ctx, x, y, v_cm) {
+      if (!state.showCoM) return;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(-5, -5, 10, 10);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-5, -5, 10, 10);
+      ctx.rotate(-Math.PI / 4);
+
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(`CoM (${v_cm.toFixed(2)} m/s)`, 0, 18);
+      ctx.restore();
+    }
+
+    function drawBarrier(ctx, x, y, w, h, isVertical = false, isHovered = false) {
+      ctx.save();
+      ctx.fillStyle = isHovered ? '#334155' : '#1e293b';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = isHovered ? '#38bdf8' : '#475569';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+
+      ctx.strokeStyle = isHovered ? '#93c5fd' : '#64748b';
+      ctx.lineWidth = 1.5;
+      if (isVertical) {
+        for (let py = y + 5; py < y + h; py += 14) {
+          ctx.beginPath();
+          ctx.moveTo(x + w, py);
+          ctx.lineTo(x + w + 10, py + 10);
+          ctx.stroke();
+        }
+      } else {
+        for (let px = x + 5; px < x + w; px += 14) {
+          ctx.beginPath();
+          ctx.moveTo(px, y + h);
+          ctx.lineTo(px + 10, y + h + 10);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+  </script>
+
+  <script>
+    function solve1DCollision(m1, m2, u1, u2, e) {
+      const totalP = m1 * u1 + m2 * u2;
+      const totalM = m1 + m2;
+      const relU = u1 - u2;
+      const v1 = (totalP - m2 * e * relU) / totalM;
+      const v2 = (totalP + m1 * e * relU) / totalM;
+      return { v1, v2 };
+    }
+
+    function initSim() {
+      const mode = state.simType;
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || 600;
+
+      if (mode === 'direct1d') {
+        const s = state.direct1d;
+        s.x1 = Math.min(150, w * 0.25);
+        s.x2 = Math.min(360, w * 0.65);
+        s.v1 = s.u1;
+        s.v2 = s.u2;
+        s.collided = false;
+      } else if (mode === 'impulse') {
+        const s = state.impulse;
+        s.x = 100;
+        s.v = s.u;
+        s.current_t = 0;
+        s.forceActive = false;
+        s.completed = false;
+      } else if (mode === 'wallrebound') {
+        const s = state.wallrebound;
+        s.wallX = Math.min(580, w - 40);
+        s.x1 = 110;
+        s.x2 = Math.min(280, s.wallX - 140);
+        s.v1 = s.u1;
+        s.v2 = 0;
+        s.stage = 0;
+      } else if (mode === 'obliquewall') {
+        const s = state.obliquewall;
+        s.wallX = Math.min(550, w - 40);
+        s.x = 100;
+        s.y = 80;
+        const rad = (s.angleDeg * Math.PI) / 180;
+        s.vx = s.u * Math.sin(rad);
+        s.vy = s.u * Math.cos(rad);
+        s.bounced = false;
+        s.trail = [{ x: s.x, y: s.y }];
+      } else if (mode === 'threebodies') {
+        const s = state.threebodies;
+        s.x1 = 90;
+        s.x2 = 250;
+        s.x3 = Math.min(420, w - 80);
+        s.v1 = s.u1;
+        s.v2 = s.u2;
+        s.v3 = s.u3;
+        s.phase = 0;
+      } else if (mode === 'obliquespheres') {
+        const s = state.obliquespheres;
+        s.x1 = 140;
+        s.y1 = 180;
+        s.x2 = Math.min(360, w - 100);
+        s.y2 = 240;
+        const rad = (s.impactAngleDeg * Math.PI) / 180;
+        s.vx1 = s.u1 * Math.cos(rad);
+        s.vy1 = s.u1 * Math.sin(rad);
+        s.vx2 = 0;
+        s.vy2 = 0;
+        s.collided = false;
+      }
+      updateLiveMathBoard();
+    }
+
+    // Freeze all velocities to allow position and velocity aiming
+    function stopAllBodies() {
+      state.isRunning = false;
+      updatePlayPauseButton();
+
+      const mode = state.simType;
+      if (mode === 'direct1d') {
+        state.direct1d.v1 = 0;
+        state.direct1d.v2 = 0;
+        state.direct1d.collided = false;
+      } else if (mode === 'impulse') {
+        state.impulse.v = 0;
+        state.impulse.forceActive = false;
+      } else if (mode === 'wallrebound') {
+        state.wallrebound.v1 = 0;
+        state.wallrebound.v2 = 0;
+      } else if (mode === 'obliquewall') {
+        state.obliquewall.vx = 0;
+        state.obliquewall.vy = 0;
+      } else if (mode === 'threebodies') {
+        state.threebodies.v1 = 0;
+        state.threebodies.v2 = 0;
+        state.threebodies.v3 = 0;
+      } else if (mode === 'obliquespheres') {
+        state.obliquespheres.vx1 = 0;
+        state.obliquespheres.vy1 = 0;
+        state.obliquespheres.vx2 = 0;
+        state.obliquespheres.vy2 = 0;
+        state.obliquespheres.collided = false;
+      }
+      sfx.playThud(0.8);
+      updateLiveMathBoard();
+    }
+
+    function updatePhysics(dt) {
+      if (!state.isRunning) return;
+      const mode = state.simType;
+
+      if (mode === 'direct1d') {
+        const s = state.direct1d;
+        s.x1 += s.v1 * dt * 50;
+        s.x2 += s.v2 * dt * 50;
+
+        if (!s.collided && s.x1 + s.r1 >= s.x2 - s.r2) {
+          s.collided = true;
+          const overlap = (s.x1 + s.r1) - (s.x2 - s.r2);
+          s.x1 -= overlap / 2;
+          s.x2 += overlap / 2;
+
+          const res = solve1DCollision(s.m1, s.m2, s.v1, s.v2, s.e);
+          s.v1 = res.v1;
+          s.v2 = res.v2;
+
+          const contactX = (s.x1 + s.r1 + s.x2 - s.r2) / 2;
+          const centerY = canvas.getBoundingClientRect().height * 0.55;
+          spawnSparks(contactX, centerY, 20, '#38bdf8');
+          sfx.playClack(s.e > 0.4, (s.m1 + s.m2) / 2);
+          updateLiveMathBoard();
+        }
+      } else if (mode === 'impulse') {
+        const s = state.impulse;
+        s.x += s.v * dt * 50;
+
+        if (s.x >= 220 && !s.completed) {
+          s.forceActive = true;
+          s.current_t += dt;
+          const a = s.F / s.m;
+          s.v += a * dt;
+          if (s.current_t >= s.t_duration) {
+            s.forceActive = false;
+            s.completed = true;
+            sfx.playThud(1.2);
+            spawnSparks(s.x, canvas.getBoundingClientRect().height * 0.55, 14, '#f59e0b');
+          }
+        }
+      } else if (mode === 'wallrebound') {
+        const s = state.wallrebound;
+        s.x1 += s.v1 * dt * 50;
+        s.x2 += s.v2 * dt * 50;
+
+        const centerY = canvas.getBoundingClientRect().height * 0.55;
+
+        if (s.stage === 0 && s.x1 + s.r1 >= s.x2 - s.r2) {
+          s.stage = 1;
+          const res = solve1DCollision(s.m1, s.m2, s.v1, s.v2, s.e_spheres);
+          s.v1 = res.v1;
+          s.v2 = res.v2;
+          spawnSparks((s.x1 + s.x2) / 2, centerY, 18, '#fbbf24');
+          sfx.playClack(true, (s.m1 + s.m2) / 2);
+        }
+
+        if (s.stage === 1 && s.x2 + s.r2 >= s.wallX) {
+          s.stage = 2;
+          s.x2 = s.wallX - s.r2;
+          s.v2 = -s.v2 * s.e_wall;
+          spawnSparks(s.wallX, centerY, 24, '#f43f5e');
+          sfx.playWallBounce();
+        }
+
+        if (s.stage === 2 && s.v2 < 0) {
+          if (s.x2 - s.r2 <= s.x1 + s.r1) {
+            s.stage = 3;
+            const res = solve1DCollision(s.m2, s.m1, s.v2, s.v1, s.e_spheres);
+            s.v2 = res.v1;
+            s.v1 = res.v2;
+            spawnSparks((s.x1 + s.x2) / 2, centerY, 28, '#10b981');
+            sfx.playClack(true, (s.m1 + s.m2) / 2);
+          }
+        }
+      } else if (mode === 'obliquewall') {
+        const s = state.obliquewall;
+        s.x += s.vx * dt * 50;
+        s.y += s.vy * dt * 50;
+        s.trail.push({ x: s.x, y: s.y });
+        if (s.trail.length > 90) s.trail.shift();
+
+        if (!s.bounced && s.x + s.r >= s.wallX) {
+          s.bounced = true;
+          s.x = s.wallX - s.r;
+          s.vx = -s.e * s.vx;
+          sfx.playWallBounce();
+          spawnSparks(s.wallX, s.y, 22, '#38bdf8');
+          updateLiveMathBoard();
+        }
+      } else if (mode === 'threebodies') {
+        const s = state.threebodies;
+        s.x1 += s.v1 * dt * 45;
+        s.x2 += s.v2 * dt * 45;
+        s.x3 += s.v3 * dt * 45;
+        const centerY = canvas.getBoundingClientRect().height * 0.55;
+
+        if (s.phase === 0 && s.x1 + s.r1 >= s.x2 - s.r2) {
+          s.phase = 1;
+          const res = solve1DCollision(s.m1, s.m2, s.v1, s.v2, s.e);
+          s.v1 = res.v1;
+          s.v2 = res.v2;
+          spawnSparks((s.x1 + s.x2) / 2, centerY, 18, '#38bdf8');
+          sfx.playClack(true, (s.m1 + s.m2) / 2);
+          updateLiveMathBoard();
+        }
+
+        if (s.phase === 1 && s.x2 + s.r2 >= s.x3 - s.r3) {
+          s.phase = 2;
+          const res = solve1DCollision(s.m2, s.m3, s.v2, s.v3, s.e);
+          s.v2 = res.v1;
+          s.v3 = res.v2;
+          spawnSparks((s.x2 + s.x3) / 2, centerY, 18, '#fbbf24');
+          sfx.playClack(true, (s.m2 + s.m3) / 2);
+          updateLiveMathBoard();
+        }
+      } else if (mode === 'obliquespheres') {
+        const s = state.obliquespheres;
+        s.x1 += s.vx1 * dt * 45;
+        s.y1 += s.vy1 * dt * 45;
+        s.x2 += s.vx2 * dt * 45;
+        s.y2 += s.vy2 * dt * 45;
+
+        const dx = s.x2 - s.x1;
+        const dy = s.y2 - s.y1;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (!s.collided && dist <= s.r1 + s.r2) {
+          s.collided = true;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          const tx = -ny;
+          const ty = nx;
+
+          const u1n = s.vx1 * nx + s.vy1 * ny;
+          const u1t = s.vx1 * tx + s.vy1 * ty;
+          const u2n = s.vx2 * nx + s.vy2 * ny;
+          const u2t = s.vx2 * tx + s.vy2 * ty;
+
+          const res = solve1DCollision(s.m1, s.m2, u1n, u2n, s.e);
+          const v1n = res.v1;
+          const v2n = res.v2;
+
+          const v1t = u1t;
+          const v2t = u2t;
+
+          s.vx1 = v1n * nx + v1t * tx;
+          s.vy1 = v1n * ny + v1t * ty;
+          s.vx2 = v2n * nx + v2t * tx;
+          s.vy2 = v2n * ny + v2t * ty;
+
+          const contactX = (s.x1 * s.r2 + s.x2 * s.r1) / (s.r1 + s.r2);
+          const contactY = (s.y1 * s.r2 + s.y2 * s.r1) / (s.r1 + s.r2);
+          spawnSparks(contactX, contactY, 24, '#f43f5e');
+          sfx.playClack(true, (s.m1 + s.m2) / 2);
+          updateLiveMathBoard();
+        }
+      }
+    }
+  </script>
+
+  <script>
+    const drag = {
+      isDown: false,
+      target: null,
+      hoverTarget: null,
+      startX: 0,
+      startY: 0
+    };
+
+    function updateEnergyBar(curKE, initialKE) {
+      const barKE = document.getElementById('energy-bar-ke');
+      const barLoss = document.getElementById('energy-bar-loss');
+      const pctLabel = document.getElementById('energy-bar-pct');
+
+      const maxKE = Math.max(0.01, initialKE);
+      const safeCurKE = Math.max(0, curKE);
+      const ratio = Math.min(1.0, Math.max(0.0, safeCurKE / maxKE));
+      const pct = (ratio * 100).toFixed(0);
+
+      barKE.style.width = `${pct}%`;
+      barLoss.style.width = `${100 - pct}%`;
+      pctLabel.innerText = `${pct}% KE`;
+    }
+
+    function renderDirect1D(rect) {
+      const s = state.direct1d;
+      const centerY = rect.height * 0.55;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, centerY + 32);
+      ctx.lineTo(rect.width - 40, centerY + 32);
+      ctx.stroke();
+
+      if (drag.isDown && (drag.target === 'tip1' || drag.target === 'tip2')) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        const activeX = drag.target === 'tip1' ? s.x1 : s.x2;
+        const activeV = drag.target === 'tip1' ? s.v1 : s.v2;
+        ctx.moveTo(activeX, centerY);
+        ctx.lineTo(activeX + activeV * 80, centerY);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      drawSphere(ctx, s.x1, centerY, s.r1, '#38bdf8', '#0284c7', 'P', `${s.m1}kg`, drag.hoverTarget === 'ball1', drag.target === 'ball1');
+      drawSphere(ctx, s.x2, centerY, s.r2, '#f43f5e', '#be123c', 'Q', `${s.m2}kg`, drag.hoverTarget === 'ball2', drag.target === 'ball2');
+
+      drawVectorArrow(ctx, s.x1, centerY - s.r1 - 12, s.v1 * 14, 0, '#38bdf8', `v₁ = ${s.v1.toFixed(2)} m/s`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+      drawVectorArrow(ctx, s.x2, centerY - s.r2 - 12, s.v2 * 14, 0, '#f43f5e', `v₂ = ${s.v2.toFixed(2)} m/s`, drag.hoverTarget === 'tip2', drag.target === 'tip2');
+
+      const totalM = s.m1 + s.m2;
+      const x_cm = (s.m1 * s.x1 + s.m2 * s.x2) / totalM;
+      const v_cm = (s.m1 * s.v1 + s.m2 * s.v2) / totalM;
+      drawCenterOfMass(ctx, x_cm, centerY + 32, v_cm);
+
+      const totalP = s.m1 * s.v1 + s.m2 * s.v2;
+      const initKE = 0.5 * s.m1 * s.u1 * s.u1 + 0.5 * s.m2 * s.u2 * s.u2;
+      const curKE = 0.5 * s.m1 * s.v1 * s.v1 + 0.5 * s.m2 * s.v2 * s.v2;
+      const keLoss = Math.max(0, initKE - curKE);
+
+      document.getElementById('lbl-momentum').innerText = `Total P: ${totalP.toFixed(2)} Ns (Conserved)`;
+      document.getElementById('lbl-velocities').innerText = `v₁: ${s.v1.toFixed(2)}, v₂: ${s.v2.toFixed(2)}`;
+      document.getElementById('lbl-energy-loss').innerText = `KE Loss: ${keLoss.toFixed(2)} J`;
+      document.getElementById('lbl-com-readout').innerText = `v_CoM = ${v_cm.toFixed(2)} m/s`;
+      updateEnergyBar(curKE, initKE);
+    }
+
+    function renderImpulse(rect) {
+      const s = state.impulse;
+      const centerY = rect.height * 0.55;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, centerY + 30);
+      ctx.lineTo(rect.width - 40, centerY + 30);
+      ctx.stroke();
+
+      ctx.fillStyle = s.forceActive ? 'rgba(245, 158, 11, 0.25)' : 'rgba(51, 65, 85, 0.25)';
+      ctx.fillRect(220, centerY - 60, 180, 90);
+      ctx.strokeStyle = s.forceActive ? '#f59e0b' : '#475569';
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(220, centerY - 60, 180, 90);
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = s.forceActive ? '#fbbf24' : '#94a3b8';
+      ctx.font = '11px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Force Zone (F = ${s.F}N, t = ${s.t_duration}s)`, 310, centerY - 40);
+
+      drawSphere(ctx, s.x, centerY, 22, '#a855f7', '#7e22ce', 'M', `${s.m}kg`, drag.hoverTarget === 'ball1', drag.target === 'ball1');
+      drawVectorArrow(ctx, s.x, centerY - 34, s.v * 12, 0, '#38bdf8', `v = ${s.v.toFixed(2)} m/s`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+
+      if (s.forceActive) {
+        drawVectorArrow(ctx, s.x, centerY, s.F * 8, 0, '#f59e0b', `F = ${s.F}N`);
+      }
+
+      const impulseVal = s.F * s.t_duration;
+      document.getElementById('lbl-momentum').innerText = `Impulse I = ${impulseVal.toFixed(2)} Ns`;
+      document.getElementById('lbl-velocities').innerText = `Current Speed: ${s.v.toFixed(2)} m/s`;
+      document.getElementById('lbl-energy-loss').innerText = `Work Done: ${(0.5 * s.m * Math.max(0, s.v * s.v - s.u * s.u)).toFixed(2)} J`;
+      document.getElementById('lbl-com-readout').innerText = `v = ${s.v.toFixed(2)} m/s`;
+      updateEnergyBar(0.5 * s.m * s.v * s.v, 0.5 * s.m * Math.max(1, s.v * s.v));
+    }
+
+    function renderWallRebound(rect) {
+      const s = state.wallrebound;
+      const centerY = rect.height * 0.55;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, centerY + 32);
+      ctx.lineTo(s.wallX, centerY + 32);
+      ctx.stroke();
+
+      drawBarrier(ctx, s.wallX, 60, 20, rect.height - 120, true, drag.hoverTarget === 'wall');
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px JetBrains Mono';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Smooth Wall (e = ${s.e_wall})`, s.wallX - 12, 50);
+
+      drawSphere(ctx, s.x1, centerY, s.r1, '#38bdf8', '#0284c7', 'P', `${s.m1}kg`, drag.hoverTarget === 'ball1', drag.target === 'ball1');
+      drawSphere(ctx, s.x2, centerY, s.r2, '#f59e0b', '#d97706', 'Q', `${s.m2}kg`, drag.hoverTarget === 'ball2', drag.target === 'ball2');
+
+      drawVectorArrow(ctx, s.x1, centerY - s.r1 - 12, s.v1 * 14, 0, '#38bdf8', `v₁ = ${s.v1.toFixed(2)}`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+      drawVectorArrow(ctx, s.x2, centerY - s.r2 - 12, s.v2 * 14, 0, '#f59e0b', `v₂ = ${s.v2.toFixed(2)}`, drag.hoverTarget === 'tip2', drag.target === 'tip2');
+
+      let stageLabel = 'Stage 0: Approaching P-Q Impact';
+      if (s.stage === 1) stageLabel = 'Stage 1: Q Racing towards Wall';
+      if (s.stage === 2) stageLabel = 'Stage 2: Q Rebounding, Chasing P!';
+      if (s.stage === 3) stageLabel = 'Stage 3: Second Collision Occurred!';
+
+      document.getElementById('lbl-momentum').innerText = stageLabel;
+      document.getElementById('lbl-velocities').innerText = `P: ${s.v1.toFixed(2)} | Q: ${s.v2.toFixed(2)} m/s`;
+      document.getElementById('lbl-energy-loss').innerText = `e_spheres = ${s.e_spheres.toFixed(2)}`;
+      document.getElementById('lbl-com-readout').innerText = `Wall at x = ${s.wallX.toFixed(0)}`;
+      updateEnergyBar(0.5 * (s.m1 * s.v1 * s.v1 + s.m2 * s.v2 * s.v2), 0.5 * s.m1 * s.u1 * s.u1);
+    }
+
+    function renderObliqueWall(rect) {
+      const s = state.obliquewall;
+      const wallX = s.wallX;
+
+      drawBarrier(ctx, wallX, 30, 22, rect.height - 60, true, drag.hoverTarget === 'wall');
+
+      if (s.trail.length > 1) {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(s.trail[0].x, s.trail[0].y);
+        for (let i = 1; i < s.trail.length; i++) {
+          ctx.lineTo(s.trail[i].x, s.trail[i].y);
+        }
+        ctx.stroke();
+      }
+
+      if (drag.isDown && (drag.target === 'ball1' || drag.target === 'tip1')) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(253, 224, 71, 0.4)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x + s.vx * 60, s.y + s.vy * 60);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      drawSphere(ctx, s.x, s.y, s.r, '#38bdf8', '#0284c7', '', '', drag.hoverTarget === 'ball1', drag.target === 'ball1');
+
+      ctx.strokeStyle = '#64748b';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(wallX - 140, s.y);
+      ctx.lineTo(wallX, s.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawVectorArrow(ctx, s.x, s.y, s.vx * 12, s.vy * 12, '#38bdf8', `v = ${Math.hypot(s.vx, s.vy).toFixed(2)} m/s`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+
+      const currentSpeed = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+      const angleWithWall = (Math.atan2(Math.abs(s.vx), Math.abs(s.vy)) * 180 / Math.PI).toFixed(1);
+
+      document.getElementById('lbl-momentum').innerText = `Angle with Wall: ${angleWithWall}°`;
+      document.getElementById('lbl-velocities').innerText = `v_x = ${s.vx.toFixed(2)}, v_y = ${s.vy.toFixed(2)}`;
+      document.getElementById('lbl-energy-loss').innerText = `Speed: ${currentSpeed.toFixed(2)} m/s`;
+      document.getElementById('lbl-com-readout').innerText = `e = ${s.e}`;
+      updateEnergyBar(0.5 * currentSpeed * currentSpeed, 0.5 * s.u * s.u);
+    }
+
+    function renderThreeBodies(rect) {
+      const s = state.threebodies;
+      const centerY = rect.height * 0.55;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, centerY + 30);
+      ctx.lineTo(rect.width - 40, centerY + 30);
+      ctx.stroke();
+
+      drawSphere(ctx, s.x1, centerY, s.r1, '#38bdf8', '#0284c7', 'A', `${s.m1}kg`, drag.hoverTarget === 'ball1', drag.target === 'ball1');
+      drawSphere(ctx, s.x2, centerY, s.r2, '#fbbf24', '#d97706', 'B', `${s.m2}kg`, drag.hoverTarget === 'ball2', drag.target === 'ball2');
+      drawSphere(ctx, s.x3, centerY, s.r3, '#34d399', '#059669', 'C', `${s.m3}kg`, drag.hoverTarget === 'ball3', drag.target === 'ball3');
+
+      drawVectorArrow(ctx, s.x1, centerY - s.r1 - 12, s.v1 * 12, 0, '#38bdf8', `${s.v1.toFixed(2)}`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+      drawVectorArrow(ctx, s.x2, centerY - s.r2 - 12, s.v2 * 12, 0, '#fbbf24', `${s.v2.toFixed(2)}`, drag.hoverTarget === 'tip2', drag.target === 'tip2');
+      drawVectorArrow(ctx, s.x3, centerY - s.r3 - 12, s.v3 * 12, 0, '#34d399', `${s.v3.toFixed(2)}`, drag.hoverTarget === 'tip3', drag.target === 'tip3');
+
+      const totalM = s.m1 + s.m2 + s.m3;
+      const x_cm = (s.m1 * s.x1 + s.m2 * s.x2 + s.m3 * s.x3) / totalM;
+      const v_cm = (s.m1 * s.v1 + s.m2 * s.v2 + s.m3 * s.v3) / totalM;
+      drawCenterOfMass(ctx, x_cm, centerY + 30, v_cm);
+
+      const totalP = s.m1 * s.v1 + s.m2 * s.v2 + s.m3 * s.v3;
+      const curKE = 0.5 * (s.m1 * s.v1 * s.v1 + s.m2 * s.v2 * s.v2 + s.m3 * s.v3 * s.v3);
+      const initKE = 0.5 * (s.m1 * s.u1 * s.u1 + s.m2 * s.u2 * s.u2 + s.m3 * s.u3 * s.u3);
+
+      document.getElementById('lbl-momentum').innerText = `Total P: ${totalP.toFixed(2)} Ns (Conserved)`;
+      document.getElementById('lbl-velocities').innerText = `v_A: ${s.v1.toFixed(2)}, v_B: ${s.v2.toFixed(2)}, v_C: ${s.v3.toFixed(2)}`;
+      document.getElementById('lbl-energy-loss').innerText = `Phase: ${s.phase} of 2`;
+      document.getElementById('lbl-com-readout').innerText = `v_CoM = ${v_cm.toFixed(2)} m/s`;
+      updateEnergyBar(curKE, initKE);
+    }
+
+    function renderObliqueSpheres(rect) {
+      const s = state.obliquespheres;
+
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(s.x1, s.y1);
+      ctx.lineTo(s.x2, s.y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawSphere(ctx, s.x1, s.y1, s.r1, '#38bdf8', '#0284c7', 'P', `${s.m1}kg`, drag.hoverTarget === 'ball1', drag.target === 'ball1');
+      drawSphere(ctx, s.x2, s.y2, s.r2, '#f43f5e', '#be123c', 'Q', `${s.m2}kg`, drag.hoverTarget === 'ball2', drag.target === 'ball2');
+
+      drawVectorArrow(ctx, s.x1, s.y1, s.vx1 * 14, s.vy1 * 14, '#38bdf8', `v_P = ${Math.hypot(s.vx1, s.vy1).toFixed(2)}`, drag.hoverTarget === 'tip1', drag.target === 'tip1');
+      drawVectorArrow(ctx, s.x2, s.y2, s.vx2 * 14, s.vy2 * 14, '#f43f5e', `v_Q = ${Math.hypot(s.vx2, s.vy2).toFixed(2)}`, drag.hoverTarget === 'tip2', drag.target === 'tip2');
+
+      const speedP = Math.hypot(s.vx1, s.vy1);
+      const speedQ = Math.hypot(s.vx2, s.vy2);
+      const curKE = 0.5 * (s.m1 * speedP * speedP + s.m2 * speedQ * speedQ);
+      const initKE = 0.5 * s.m1 * s.u1 * s.u1;
+
+      document.getElementById('lbl-momentum').innerText = `Line of Centres Angle: ${s.impactAngleDeg}°`;
+      document.getElementById('lbl-velocities').innerText = `v_P: ${speedP.toFixed(2)}, v_Q: ${speedQ.toFixed(2)}`;
+      document.getElementById('lbl-energy-loss').innerText = `Restitution e = ${s.e}`;
+      document.getElementById('lbl-com-readout').innerText = `m_P = ${s.m1}kg, m_Q = ${s.m2}kg`;
+      updateEnergyBar(curKE, initKE);
+    }
+  </script>
+
+  <script>
+    function getPointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function hitTestTarget(mx, my) {
+      const mode = state.simType;
+      const rect = canvas.getBoundingClientRect();
+      const centerY = rect.height * 0.55;
+
+      if (mode === 'direct1d') {
+        const s = state.direct1d;
+        const tip1X = s.x1 + s.v1 * 14;
+        const tip1Y = centerY - s.r1 - 12;
+        if (Math.hypot(mx - tip1X, my - tip1Y) < 14) return 'tip1';
+
+        const tip2X = s.x2 + s.v2 * 14;
+        const tip2Y = centerY - s.r2 - 12;
+        if (Math.hypot(mx - tip2X, my - tip2Y) < 14) return 'tip2';
+
+        if (Math.hypot(mx - s.x1, my - centerY) < s.r1 + 6) return 'ball1';
+        if (Math.hypot(mx - s.x2, my - centerY) < s.r2 + 6) return 'ball2';
+      } else if (mode === 'impulse') {
+        const s = state.impulse;
+        const tipX = s.x + s.v * 12;
+        const tipY = centerY - 34;
+        if (Math.hypot(mx - tipX, my - tipY) < 14) return 'tip1';
+        if (Math.hypot(mx - s.x, my - centerY) < 26) return 'ball1';
+      } else if (mode === 'wallrebound') {
+        const s = state.wallrebound;
+        if (Math.abs(mx - s.wallX) < 16 && my >= 50 && my <= rect.height - 50) return 'wall';
+        const tip1X = s.x1 + s.v1 * 14;
+        const tip1Y = centerY - s.r1 - 12;
+        if (Math.hypot(mx - tip1X, my - tip1Y) < 14) return 'tip1';
+        const tip2X = s.x2 + s.v2 * 14;
+        const tip2Y = centerY - s.r2 - 12;
+        if (Math.hypot(mx - tip2X, my - tip2Y) < 14) return 'tip2';
+        if (Math.hypot(mx - s.x1, my - centerY) < s.r1 + 6) return 'ball1';
+        if (Math.hypot(mx - s.x2, my - centerY) < s.r2 + 6) return 'ball2';
+      } else if (mode === 'obliquewall') {
+        const s = state.obliquewall;
+        if (Math.abs(mx - s.wallX) < 16) return 'wall';
+        const tipX = s.x + s.vx * 12;
+        const tipY = s.y + s.vy * 12;
+        if (Math.hypot(mx - tipX, my - tipY) < 14) return 'tip1';
+        if (Math.hypot(mx - s.x, my - s.y) < s.r + 6) return 'ball1';
+      } else if (mode === 'threebodies') {
+        const s = state.threebodies;
+        const tip1X = s.x1 + s.v1 * 12;
+        const tip1Y = centerY - s.r1 - 12;
+        if (Math.hypot(mx - tip1X, my - tip1Y) < 14) return 'tip1';
+
+        const tip2X = s.x2 + s.v2 * 12;
+        const tip2Y = centerY - s.r2 - 12;
+        if (Math.hypot(mx - tip2X, my - tip2Y) < 14) return 'tip2';
+
+        const tip3X = s.x3 + s.v3 * 12;
+        const tip3Y = centerY - s.r3 - 12;
+        if (Math.hypot(mx - tip3X, my - tip3Y) < 14) return 'tip3';
+
+        if (Math.hypot(mx - s.x1, my - centerY) < s.r1 + 6) return 'ball1';
+        if (Math.hypot(mx - s.x2, my - centerY) < s.r2 + 6) return 'ball2';
+        if (Math.hypot(mx - s.x3, my - centerY) < s.r3 + 6) return 'ball3';
+      } else if (mode === 'obliquespheres') {
+        const s = state.obliquespheres;
+        const tip1X = s.x1 + s.vx1 * 14;
+        const tip1Y = s.y1 + s.vy1 * 14;
+        if (Math.hypot(mx - tip1X, my - tip1Y) < 14) return 'tip1';
+
+        const tip2X = s.x2 + s.vx2 * 14;
+        const tip2Y = s.y2 + s.vy2 * 14;
+        if (Math.hypot(mx - tip2X, my - tip2Y) < 14) return 'tip2';
+
+        if (Math.hypot(mx - s.x1, my - s.y1) < s.r1 + 6) return 'ball1';
+        if (Math.hypot(mx - s.x2, my - s.y2) < s.r2 + 6) return 'ball2';
+      }
+      return null;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      const pos = getPointerPos(e);
+      const target = hitTestTarget(pos.x, pos.y);
+      if (target) {
+        drag.isDown = true;
+        drag.target = target;
+        drag.startX = pos.x;
+        drag.startY = pos.y;
+        canvas.setPointerCapture(e.pointerId);
+        sfx.playClack(false, 1.5);
+      }
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      const pos = getPointerPos(e);
+
+      if (!drag.isDown) {
+        drag.hoverTarget = hitTestTarget(pos.x, pos.y);
+        canvas.style.cursor = drag.hoverTarget ? (drag.hoverTarget.startsWith('tip') ? 'crosshair' : 'grab') : 'default';
+        return;
+      }
+
+      canvas.style.cursor = drag.target.startsWith('tip') ? 'crosshair' : 'grabbing';
+      const mode = state.simType;
+      const rect = canvas.getBoundingClientRect();
+
+      if (mode === 'direct1d') {
+        const s = state.direct1d;
+        if (drag.target === 'ball1') {
+          s.x1 = Math.max(s.r1 + 20, Math.min(pos.x, s.x2 - s.r1 - s.r2 - 2));
+        } else if (drag.target === 'ball2') {
+          s.x2 = Math.max(s.x1 + s.r1 + s.r2 + 2, Math.min(pos.x, rect.width - s.r2 - 20));
+        } else if (drag.target === 'tip1') {
+          s.v1 = (pos.x - s.x1) / 14;
+          s.u1 = s.v1;
+          syncSliderVal('d-u1', s.u1.toFixed(1));
+        } else if (drag.target === 'tip2') {
+          s.v2 = (pos.x - s.x2) / 14;
+          s.u2 = s.v2;
+          syncSliderVal('d-u2', s.u2.toFixed(1));
+        }
+      } else if (mode === 'impulse') {
+        const s = state.impulse;
+        if (drag.target === 'ball1') {
+          s.x = Math.max(40, Math.min(pos.x, rect.width - 40));
+        } else if (drag.target === 'tip1') {
+          s.v = Math.max(0, (pos.x - s.x) / 12);
+          s.u = s.v;
+          syncSliderVal('imp-u', s.u.toFixed(1));
+        }
+      } else if (mode === 'wallrebound') {
+        const s = state.wallrebound;
+        if (drag.target === 'ball1') {
+          s.x1 = Math.max(s.r1 + 20, Math.min(pos.x, s.x2 - s.r1 - s.r2 - 2));
+        } else if (drag.target === 'ball2') {
+          s.x2 = Math.max(s.x1 + s.r1 + s.r2 + 2, Math.min(pos.x, s.wallX - s.r2 - 5));
+        } else if (drag.target === 'wall') {
+          s.wallX = Math.max(s.x2 + s.r2 + 30, Math.min(pos.x, rect.width - 20));
+        } else if (drag.target === 'tip1') {
+          s.v1 = (pos.x - s.x1) / 14;
+          s.u1 = s.v1;
+        } else if (drag.target === 'tip2') {
+          s.v2 = (pos.x - s.x2) / 14;
+        }
+      } else if (mode === 'obliquewall') {
+        const s = state.obliquewall;
+        if (drag.target === 'ball1') {
+          s.x = Math.max(s.r + 20, Math.min(pos.x, s.wallX - s.r - 2));
+          s.y = Math.max(s.r + 20, Math.min(pos.y, rect.height - s.r - 20));
+          s.trail = [{ x: s.x, y: s.y }];
+        } else if (drag.target === 'tip1') {
+          s.vx = (pos.x - s.x) / 12;
+          s.vy = (pos.y - s.y) / 12;
+          s.u = Math.hypot(s.vx, s.vy);
+          s.angleDeg = Math.round(Math.atan2(Math.abs(s.vx), Math.abs(s.vy)) * 180 / Math.PI);
+          syncSliderVal('ow-u', s.u.toFixed(1));
+          syncSliderVal('ow-deg', s.angleDeg);
+        } else if (drag.target === 'wall') {
+          s.wallX = Math.max(s.x + s.r + 20, Math.min(pos.x, rect.width - 20));
+        }
+      } else if (mode === 'threebodies') {
+        const s = state.threebodies;
+        if (drag.target === 'ball1') {
+          s.x1 = Math.max(s.r1 + 20, Math.min(pos.x, s.x2 - s.r1 - s.r2 - 2));
+        } else if (drag.target === 'ball2') {
+          s.x2 = Math.max(s.x1 + s.r1 + s.r2 + 2, Math.min(pos.x, s.x3 - s.r2 - s.r3 - 2));
+        } else if (drag.target === 'ball3') {
+          s.x3 = Math.max(s.x2 + s.r2 + s.r3 + 2, Math.min(pos.x, rect.width - s.r3 - 20));
+        } else if (drag.target === 'tip1') {
+          s.v1 = (pos.x - s.x1) / 12;
+          s.u1 = s.v1;
+        } else if (drag.target === 'tip2') {
+          s.v2 = (pos.x - s.x2) / 12;
+          s.u2 = s.v2;
+        } else if (drag.target === 'tip3') {
+          s.v3 = (pos.x - s.x3) / 12;
+          s.u3 = s.v3;
+        }
+      } else if (mode === 'obliquespheres') {
+        const s = state.obliquespheres;
+        if (drag.target === 'ball1') {
+          s.x1 = Math.max(s.r1 + 20, Math.min(pos.x, rect.width - s.r1 - 20));
+          s.y1 = Math.max(s.r1 + 20, Math.min(pos.y, rect.height - s.r1 - 20));
+        } else if (drag.target === 'ball2') {
+          s.x2 = Math.max(s.r2 + 20, Math.min(pos.x, rect.width - s.r2 - 20));
+          s.y2 = Math.max(s.r2 + 20, Math.min(pos.y, rect.height - s.r2 - 20));
+        } else if (drag.target === 'tip1') {
+          s.vx1 = (pos.x - s.x1) / 14;
+          s.vy1 = (pos.y - s.y1) / 14;
+          s.u1 = Math.hypot(s.vx1, s.vy1);
+          syncSliderVal('os-u', s.u1.toFixed(1));
+        } else if (drag.target === 'tip2') {
+          s.vx2 = (pos.x - s.x2) / 14;
+          s.vy2 = (pos.y - s.y2) / 14;
+        }
+      }
+      updateLiveMathBoard();
+    });
+
+    function endPointerDrag() {
+      if (drag.isDown) {
+        drag.isDown = false;
+        drag.target = null;
+        canvas.style.cursor = 'grab';
+        updateLiveMathBoard();
+      }
+    }
+    canvas.addEventListener('pointerup', endPointerDrag);
+    canvas.addEventListener('pointercancel', endPointerDrag);
+
+    function syncSliderVal(id, val) {
+      const el = document.getElementById(id);
+      const valLabel = document.getElementById(`${id}-val`);
+      if (el) el.value = val;
+      if (valLabel) valLabel.innerText = `${val} ${el ? el.dataset.unit || '' : ''}`;
+    }
+  </script>
+
+  <script>
+    let lastTime = performance.now();
+
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+      const dtReal = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      const dt = Math.min(0.04, dtReal) * (state.slowMo ? 0.25 : 1.0);
+
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      updatePhysics(dt);
+
+      switch (state.simType) {
+        case 'direct1d':
+          renderDirect1D(rect);
+          break;
+        case 'impulse':
+          renderImpulse(rect);
+          break;
+        case 'wallrebound':
+          renderWallRebound(rect);
+          break;
+        case 'obliquewall':
+          renderObliqueWall(rect);
+          break;
+        case 'threebodies':
+          renderThreeBodies(rect);
+          break;
+        case 'obliquespheres':
+          renderObliqueSpheres(rect);
+          break;
+      }
+
+      updateAndRenderParticles(ctx, dt);
+    }
+    requestAnimationFrame(animate);
+  </script>
+
+  <script>
+    const controlsContainer = document.getElementById('dynamic-controls-container');
+    const explanationBody = document.getElementById('explanation-body');
+    const formulaSpotlight = document.getElementById('formula-spotlight');
+    const trapExplanation = document.getElementById('trap-explanation');
+    const liveMathBoard = document.getElementById('live-math-derivation');
+    const canvasStatusTitle = document.getElementById('canvas-status-title');
+
+    function renderLatex(element) {
+      if (!element || typeof renderMathInElement !== 'function') return;
+      try {
+        renderMathInElement(element, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (err) {
+        console.warn('KaTeX render error:', err);
+      }
+    }
+
+    function createSlider(id, label, min, max, step, val, unit, onChange) {
+      const wrap = document.createElement('div');
+      wrap.className = 'bg-slate-900/70 p-3 rounded-xl border border-slate-700/60 flex flex-col gap-1.5';
+      wrap.innerHTML = `
+        <div class="flex items-center justify-between text-slate-300 font-medium">
+          <span>${label}:</span>
+          <span id="${id}-val" class="font-mono-math text-cyan-400 font-bold">${val} ${unit}</span>
+        </div>
+        <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" data-unit="${unit}" class="w-full accent-cyan-500 cursor-pointer">
+      `;
+      const input = wrap.querySelector('input');
+      input.addEventListener('input', (e) => {
+        const v = parseFloat(e.target.value);
+        wrap.querySelector(`#${id}-val`).innerText = `${v} ${unit}`;
+        onChange(v);
+        initSim();
+      });
+      return wrap;
+    }
+
+    function buildControlsForMode() {
+      controlsContainer.innerHTML = '';
+      const mode = state.simType;
+
+      if (mode === 'direct1d') {
+        controlsContainer.appendChild(createSlider('d-m1', 'Mass P (m₁)', 0.5, 6.0, 0.5, state.direct1d.m1, 'kg', (v) => { state.direct1d.m1 = v; }));
+        controlsContainer.appendChild(createSlider('d-m2', 'Mass Q (m₂)', 0.5, 6.0, 0.5, state.direct1d.m2, 'kg', (v) => { state.direct1d.m2 = v; }));
+        controlsContainer.appendChild(createSlider('d-u1', 'Initial Speed P (u₁)', 1.0, 8.0, 0.5, state.direct1d.u1, 'm/s', (v) => { state.direct1d.u1 = v; state.direct1d.v1 = v; }));
+        controlsContainer.appendChild(createSlider('d-u2', 'Initial Speed Q (u₂)', -4.0, 4.0, 0.5, state.direct1d.u2, 'm/s', (v) => { state.direct1d.u2 = v; state.direct1d.v2 = v; }));
+        controlsContainer.appendChild(createSlider('d-e', 'Restitution (e)', 0.0, 1.0, 0.05, state.direct1d.e, '', (v) => { state.direct1d.e = v; }));
+      } else if (mode === 'impulse') {
+        controlsContainer.appendChild(createSlider('imp-m', 'Mass (m)', 1.0, 10.0, 0.5, state.impulse.m, 'kg', (v) => { state.impulse.m = v; }));
+        controlsContainer.appendChild(createSlider('imp-u', 'Initial Speed (u)', 0.0, 6.0, 0.5, state.impulse.u, 'm/s', (v) => { state.impulse.u = v; state.impulse.v = v; }));
+        controlsContainer.appendChild(createSlider('imp-F', 'Applied Force (F)', 2.0, 25.0, 1.0, state.impulse.F, 'N', (v) => { state.impulse.F = v; }));
+        controlsContainer.appendChild(createSlider('imp-t', 'Duration (t)', 0.2, 2.0, 0.1, state.impulse.t_duration, 's', (v) => { state.impulse.t_duration = v; }));
+      } else if (mode === 'wallrebound') {
+        controlsContainer.appendChild(createSlider('wr-m1', 'Mass P (m₁)', 1.0, 4.0, 0.5, state.wallrebound.m1, 'kg', (v) => { state.wallrebound.m1 = v; }));
+        controlsContainer.appendChild(createSlider('wr-m2', 'Mass Q (m₂)', 1.0, 5.0, 0.5, state.wallrebound.m2, 'kg', (v) => { state.wallrebound.m2 = v; }));
+        controlsContainer.appendChild(createSlider('wr-e', 'Ball-Ball Restitution (e)', 0.4, 0.95, 0.02, state.wallrebound.e_spheres, '', (v) => { state.wallrebound.e_spheres = v; }));
+        controlsContainer.appendChild(createSlider('wr-ew', 'Ball-Wall Restitution (e_w)', 0.05, 0.5, 0.025, state.wallrebound.e_wall, '', (v) => { state.wallrebound.e_wall = v; }));
+      } else if (mode === 'obliquewall') {
+        controlsContainer.appendChild(createSlider('ow-u', 'Approach Speed (u)', 2.0, 8.0, 0.5, state.obliquewall.u, 'm/s', (v) => { state.obliquewall.u = v; }));
+        controlsContainer.appendChild(createSlider('ow-deg', 'Angle to Wall (θ)', 15, 75, 5, state.obliquewall.angleDeg, '°', (v) => { state.obliquewall.angleDeg = v; }));
+        controlsContainer.appendChild(createSlider('ow-e', 'Wall Restitution (e)', 0.1, 1.0, 0.05, state.obliquewall.e, '', (v) => { state.obliquewall.e = v; }));
+      } else if (mode === 'threebodies') {
+        controlsContainer.appendChild(createSlider('tb-m1', 'Mass A (m₁)', 1.0, 5.0, 0.5, state.threebodies.m1, 'kg', (v) => { state.threebodies.m1 = v; }));
+        controlsContainer.appendChild(createSlider('tb-m2', 'Mass B (m₂)', 1.0, 5.0, 0.5, state.threebodies.m2, 'kg', (v) => { state.threebodies.m2 = v; }));
+        controlsContainer.appendChild(createSlider('tb-m3', 'Mass C (m₃)', 0.5, 4.0, 0.5, state.threebodies.m3, 'kg', (v) => { state.threebodies.m3 = v; }));
+        controlsContainer.appendChild(createSlider('tb-e', 'Restitution (e)', 0.1, 1.0, 0.05, state.threebodies.e, '', (v) => { state.threebodies.e = v; }));
+      } else if (mode === 'obliquespheres') {
+        controlsContainer.appendChild(createSlider('os-deg', 'Line of Centres Angle', 15, 75, 5, state.obliquespheres.impactAngleDeg, '°', (v) => { state.obliquespheres.impactAngleDeg = v; }));
+        controlsContainer.appendChild(createSlider('os-u', 'Speed of P', 2.0, 7.0, 0.5, state.obliquespheres.u1, 'm/s', (v) => { state.obliquespheres.u1 = v; }));
+        controlsContainer.appendChild(createSlider('os-e', 'Restitution (e)', 0.1, 1.0, 0.05, state.obliquespheres.e, '', (v) => { state.obliquespheres.e = v; }));
+      }
+
+      updateExplanationUI();
+      initSim();
+    }
+
+    function updateExplanationUI() {
+      const info = explanations[state.simType];
+      const isKid = state.viewMode === 'kid';
+
+      canvasStatusTitle.innerText = info.title;
+
+      document.getElementById('perspective-badge-icon').innerText = isKid ? '🚗' : '🎓';
+      document.getElementById('perspective-badge-title').innerText = isKid ? '6-Year-Old "Bumper Cars" Intuition' : 'A-Level Cambridge Rigor';
+      document.getElementById('perspective-badge-sub').innerText = isKid ? 'Physical analogies that make the math stick forever' : 'Exact vector resolution, impulse integrals & mark schemes';
+
+      const content = isKid ? info.kid : info.math;
+      explanationBody.innerHTML = `
+        <div class="font-bold text-sm text-white ${isKid ? 'font-kid text-amber-300' : 'text-cyan-300'} mb-1">${content.concept}</div>
+        ${content.body}
+      `;
+      formulaSpotlight.innerHTML = content.formula;
+      trapExplanation.innerHTML = content.trap;
+
+      renderLatex(explanationBody);
+      renderLatex(formulaSpotlight);
+      renderLatex(trapExplanation);
+    }
+  </script>
+
+  <script>
+    function updateLiveMathBoard() {
+      const mode = state.simType;
+      let html = '';
+
+      if (mode === 'direct1d') {
+        const s = state.direct1d;
+        const totalP = s.m1 * s.v1 + s.m2 * s.v2;
+        const res = solve1DCollision(s.m1, s.m2, s.u1, s.u2, s.e);
+        const initKE = 0.5 * s.m1 * s.u1 * s.u1 + 0.5 * s.m2 * s.u2 * s.u2;
+        const postKE = 0.5 * s.m1 * res.v1 * res.v1 + 0.5 * s.m2 * res.v2 * res.v2;
+        const loss = Math.max(0, initKE - postKE);
+        const v_cm = totalP / (s.m1 + s.m2);
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">1D Conservation & Newton's Law:</div>
+          <div class="space-y-1">
+            <div>• Momentum balance: $$${s.m1}(${s.u1.toFixed(1)}) + ${s.m2}(${s.u2.toFixed(1)}) = \\mathbf{${totalP.toFixed(2)}\\,\\text{Ns}}$$ (Constant)</div>
+            <div>• Center of Mass velocity: $$v_{\\text{CoM}} = \\frac{\\sum mv}{\\sum m} = \\mathbf{${v_cm.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Law of restitution: $$v_2 - v_1 = ${s.e}(${s.u1.toFixed(1)} - (${s.u2.toFixed(1)})) = \\mathbf{${(s.e * (s.u1 - s.u2)).toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Post-impact speeds: $$v_1 = \\mathbf{${res.v1.toFixed(3)}\\,\\text{m/s}}, \\quad v_2 = \\mathbf{${res.v2.toFixed(3)}\\,\\text{m/s}}$$</div>
+            <div class="pt-1 border-t border-slate-700 text-rose-300">• Kinetic Energy Loss: $$\\Delta \\mathrm{KE} = \\mathbf{${loss.toFixed(2)}\\,\\text{J}}$$ ${s.e === 1 ? '(Elastic: 0J lost!)' : ''}</div>
+          </div>
+        `;
+      } else if (mode === 'impulse') {
+        const s = state.impulse;
+        const I = s.F * s.t_duration;
+        const v_final = s.u + I / s.m;
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">Impulse Calculation ($$I = Ft = m\\Delta v$$):</div>
+          <div class="space-y-1">
+            <div>• Force & Duration: $$F = ${s.F}\\,\\text{N}, \\quad t = ${s.t_duration}\\,\\text{s}$$</div>
+            <div>• Total Impulse applied: $$I = Ft = (${s.F})(${s.t_duration}) = \\mathbf{${I.toFixed(2)}\\,\\text{Ns}}$$</div>
+            <div>• Velocity shift: $$\\Delta v = \\frac{I}{m} = \\frac{${I.toFixed(2)}}{${s.m}} = \\mathbf{${(I / s.m).toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Final velocity: $$v = u + \\Delta v = ${s.u} + ${(I / s.m).toFixed(2)} = \\mathbf{${v_final.toFixed(2)}\\,\\text{m/s}}$$</div>
+          </div>
+        `;
+      } else if (mode === 'wallrebound') {
+        const s = state.wallrebound;
+        const resPQ = solve1DCollision(s.m1, s.m2, s.u1, 0, s.e_spheres);
+        const vQ_rebound = Math.abs(resPQ.v2 * s.e_wall);
+        const vP_escape = Math.abs(resPQ.v1);
+        const secondHit = vQ_rebound > vP_escape && resPQ.v1 < 0;
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">Worked Example 18.10 Rebound Condition:</div>
+          <div class="space-y-1">
+            <div>• P-Q Impact: $$v_1 = \\mathbf{${resPQ.v1.toFixed(2)}\\,\\text{m/s}}, \\quad v_2 = \\mathbf{${resPQ.v2.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Q Wall Rebound: $$v_Q' = e_{\\text{wall}} v_2 = (${s.e_wall})(${resPQ.v2.toFixed(2)}) = \\mathbf{${vQ_rebound.toFixed(3)}\\,\\text{m/s}}$$</div>
+            <div>• P Direction: $${resPQ.v1 < 0 ? '\\text{Reversed! (Moving left)}' : '\\text{Still moving right!}'}$$</div>
+            <div class="pt-1 border-t border-slate-700 font-bold ${secondHit ? 'text-emerald-400' : 'text-amber-400'}">
+              • Second Collision: ${secondHit ? 'YES! Q will catch P! ($v_Q\' > -v_1$)' : 'NO. P escapes safely.'}
+            </div>
+          </div>
+        `;
+      } else if (mode === 'obliquewall') {
+        const s = state.obliquewall;
+        const rad = (s.angleDeg * Math.PI) / 180;
+        const ux = s.u * Math.sin(rad);
+        const uy = s.u * Math.cos(rad);
+        const vx = s.e * ux;
+        const alphaDeg = (Math.atan2(vx, uy) * 180 / Math.PI).toFixed(1);
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">Vector Component Resolution:</div>
+          <div class="space-y-1">
+            <div>• Parallel component (smooth): $$u_y = u\\cos${s.angleDeg}^\\circ = \\mathbf{${uy.toFixed(2)}\\,\\text{m/s}}$$ (unchanged)</div>
+            <div>• Normal component: $$u_x = u\\sin${s.angleDeg}^\\circ = ${ux.toFixed(2)}\\,\\text{m/s}$$</div>
+            <div>• After collision: $$v_x = e u_x = (${s.e})(${ux.toFixed(2)}) = \\mathbf{${vx.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Rebound angle with wall: $$\\tan\\alpha = \\frac{v_x}{v_y} = ${s.e}\\tan${s.angleDeg}^\\circ \\implies \\alpha = \\mathbf{${alphaDeg}^\\circ}$$</div>
+          </div>
+        `;
+      } else if (mode === 'threebodies') {
+        const s = state.threebodies;
+        const resAB = solve1DCollision(s.m1, s.m2, s.u1, s.u2, s.e);
+        const resBC = solve1DCollision(s.m2, s.m3, resAB.v2, s.u3, s.e);
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">Multi-Body Chain Derivation:</div>
+          <div class="space-y-1">
+            <div>• Collision 1 (A & B): $$v_A = \\mathbf{${resAB.v1.toFixed(2)}\\,\\text{m/s}}, \\quad v_B = \\mathbf{${resAB.v2.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Collision 2 (B & C): $$v_B' = \\mathbf{${resBC.v1.toFixed(2)}\\,\\text{m/s}}, \\quad v_C = \\mathbf{${resBC.v2.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div class="pt-1 border-t border-slate-700">• Further collisions possible: $${resAB.v1 > resBC.v1 ? '\\text{YES (A catches B)}' : '\\text{NO (A cannot catch B)}'}$$</div>
+          </div>
+        `;
+      } else if (mode === 'obliquespheres') {
+        const s = state.obliquespheres;
+        const rad = (s.impactAngleDeg * Math.PI) / 180;
+        const u1n = s.u1 * Math.cos(rad);
+        const u1t = s.u1 * Math.sin(rad);
+        const resN = solve1DCollision(s.m1, s.m2, u1n, 0, s.e);
+        const postAngle = (Math.atan2(u1t, resN.v1) * 180 / Math.PI).toFixed(1);
+        const deflection = Math.abs(postAngle - s.impactAngleDeg).toFixed(1);
+
+        html = `
+          <div class="text-cyan-300 font-bold border-b border-slate-700 pb-1">Worked Example 18.12 Line of Centres:</div>
+          <div class="space-y-1">
+            <div>• Normal component: $$u_{1n} = ${s.u1}\\cos${s.impactAngleDeg}^\\circ = \\mathbf{${u1n.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Tangential (preserved): $$u_{1t} = ${s.u1}\\sin${s.impactAngleDeg}^\\circ = \\mathbf{${u1t.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Normal speeds after impact: $$v_{1n} = \\mathbf{${resN.v1.toFixed(2)}\\,\\text{m/s}}, \\quad v_{2n} = \\mathbf{${resN.v2.toFixed(2)}\\,\\text{m/s}}$$</div>
+            <div>• Angle of Deflection: $$\\delta = |${postAngle}^\\circ - ${s.impactAngleDeg}^\\circ| = \\mathbf{${deflection}^\\circ}$$</div>
+          </div>
+        `;
+      }
+
+      liveMathBoard.innerHTML = html;
+      renderLatex(liveMathBoard);
+    }
+  </script>
+
+  <script>
+    document.querySelectorAll('.sim-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.sim;
+        if (target === 'twisted') {
+          openSolverModal();
+          return;
+        }
+
+        document.querySelectorAll('.sim-tab-btn').forEach(b => {
+          b.classList.remove('active', 'bg-cyan-600', 'text-white');
+          b.classList.add('bg-slate-700', 'text-slate-300');
+        });
+        btn.classList.add('active', 'bg-cyan-600', 'text-white');
+        btn.classList.remove('bg-slate-700', 'text-slate-300');
+
+        state.simType = target;
+        state.isRunning = true;
+        updatePlayPauseButton();
+        buildControlsForMode();
+        sfx.playClack(true);
+      });
+    });
+
+    const btnKid = document.getElementById('btn-mode-kid');
+    const btnMath = document.getElementById('btn-mode-math');
+
+    btnKid.addEventListener('click', () => {
+      state.viewMode = 'kid';
+      btnKid.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md';
+      btnMath.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
+      updateExplanationUI();
+      sfx.playClack(false);
+    });
+
+    btnMath.addEventListener('click', () => {
+      state.viewMode = 'math';
+      btnMath.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-cyan-600 text-white shadow-md';
+      btnKid.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
+      updateExplanationUI();
+      sfx.playClack(true);
+    });
+
+    const btnSound = document.getElementById('btn-sound-toggle');
+    btnSound.addEventListener('click', () => {
+      sfx.enabled = !sfx.enabled;
+      btnSound.innerText = sfx.enabled ? '🔊' : '🔇';
+      btnSound.title = sfx.enabled ? 'Sound FX On' : 'Sound FX Muted';
+    });
+
+    const btnCoM = document.getElementById('btn-com-toggle');
+    btnCoM.addEventListener('click', () => {
+      state.showCoM = !state.showCoM;
+      btnCoM.className = state.showCoM
+        ? 'bg-slate-800/95 hover:bg-slate-700 text-emerald-400 px-2.5 py-1.5 text-xs rounded-xl border border-slate-600 transition shadow flex items-center gap-1'
+        : 'bg-slate-800/95 hover:bg-slate-700 text-slate-500 px-2.5 py-1.5 text-xs rounded-xl border border-slate-700 transition shadow flex items-center gap-1 line-through';
+    });
+
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const iconPlayPause = document.getElementById('icon-play-pause');
+    const lblPlayPause = document.getElementById('lbl-play-pause');
+    const badgeMode = document.getElementById('canvas-mode-badge');
+    const dotStatus = document.getElementById('canvas-status-dot');
+
+    function updatePlayPauseButton() {
+      if (state.isRunning) {
+        iconPlayPause.innerText = '⏸';
+        lblPlayPause.innerText = 'Pause';
+        badgeMode.innerText = 'Running';
+        badgeMode.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono';
+        dotStatus.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse';
+      } else {
+        iconPlayPause.innerText = '▶';
+        lblPlayPause.innerText = 'Play';
+        badgeMode.innerText = 'Paused / Aim';
+        badgeMode.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 font-mono';
+        dotStatus.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+      }
+    }
+
+    btnPlayPause.addEventListener('click', () => {
+      state.isRunning = !state.isRunning;
+      updatePlayPauseButton();
+      sfx.playClack(state.isRunning);
+    });
+
+    document.getElementById('btn-stop-all').addEventListener('click', () => {
+      stopAllBodies();
+    });
+
+    document.getElementById('btn-step').addEventListener('click', () => {
+      state.isRunning = false;
+      updatePlayPauseButton();
+      updatePhysics(0.02);
+      sfx.playClack(false, 2.0);
+    });
+
+    const btnSlowMo = document.getElementById('btn-slow-mo');
+    btnSlowMo.addEventListener('click', () => {
+      state.slowMo = !state.slowMo;
+      btnSlowMo.className = state.slowMo 
+        ? 'bg-amber-500 text-slate-950 font-bold px-2.5 py-1.5 text-xs rounded-xl border border-amber-400 transition shadow' 
+        : 'bg-slate-800/95 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 text-xs rounded-xl border border-slate-600 transition shadow';
+    });
+
+    document.getElementById('btn-fire-sim').addEventListener('click', () => {
+      state.isRunning = true;
+      updatePlayPauseButton();
+      const mode = state.simType;
+      if (mode === 'direct1d' && state.direct1d.v1 === 0 && state.direct1d.v2 === 0) {
+        state.direct1d.v1 = state.direct1d.u1;
+        state.direct1d.v2 = state.direct1d.u2;
+      } else if (mode === 'obliquewall' && state.obliquewall.vx === 0 && state.obliquewall.vy === 0) {
+        const rad = (state.obliquewall.angleDeg * Math.PI) / 180;
+        state.obliquewall.vx = state.obliquewall.u * Math.sin(rad);
+        state.obliquewall.vy = state.obliquewall.u * Math.cos(rad);
+      }
+      sfx.playThud(1.2);
+    });
+
+    document.getElementById('btn-reset-sim').addEventListener('click', () => {
+      state.isRunning = true;
+      updatePlayPauseButton();
+      initSim();
+      sfx.playClack(true);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        state.isRunning = !state.isRunning;
+        updatePlayPauseButton();
+        sfx.playClack(state.isRunning);
+      } else if (e.code === 'KeyS') {
+        state.isRunning = false;
+        updatePlayPauseButton();
+        updatePhysics(0.02);
+      } else if (e.code === 'KeyR') {
+        state.isRunning = true;
+        updatePlayPauseButton();
+        initSim();
+      } else if (e.code === 'KeyZ') {
+        stopAllBodies();
+      }
+    });
+  </script>
+
+  <script>
+    const presets = {
+      p1: {
+        title: "Worked Example 18.5: Two Opposing Spheres (2m & 3m, e = 2/3)",
+        prompt: "Sphere A (mass 2m, speed 2u) and Sphere B (mass 3m, speed u) head toward each other on a smooth surface. Restitution is e = 2/3. Find the velocity of each sphere and the loss in kinetic energy.",
+        kidView: "Two bumper cars rush head-on! Because Car B is heavier, it has lots of momentum even though it rolls slower. After the crash, both cars bounce backwards in opposite directions!",
+        cambridgeSteps: [
+          "1. Direction choice: Take right as positive ($A \\to +2u$, $B \\to -u$).",
+          "2. Conservation of Momentum: $$2m(2u) + 3m(-u) = 2mv_1 + 3mv_2 \\implies 2v_1 + 3v_2 = u$$",
+          "3. Newton's Experimental Law: $$e = \\frac{v_2 - v_1}{2u - (-u)} = \\frac{2}{3} \\implies 3v_2 - 3v_1 = 6u$$",
+          "4. Solving simultaneously: $$v_1 = -u\\,(\\text{reverses left}), \\qquad v_2 = +u\\,(\\text{reverses right})$$",
+          "5. Initial Kinetic Energy: $$\\mathrm{KE}_{\\text{before}} = \\frac{1}{2}(2m)(2u)^2 + \\frac{1}{2}(3m)(u)^2 = \\frac{11}{2}mu^2$$",
+          "6. Final Kinetic Energy: $$\\mathrm{KE}_{\\text{after}} = \\frac{1}{2}(2m)(u)^2 + \\frac{1}{2}(3m)(u)^2 = \\frac{5}{2}mu^2$$",
+          "7. Loss in Kinetic Energy: $$\\Delta \\mathrm{KE} = \\frac{11}{2}mu^2 - \\frac{5}{2}mu^2 = 3mu^2\\,\\text{J}$$"
+        ],
+        targetMode: 'direct1d'
+      },
+      p2: {
+        title: "Worked Example 18.6: Condition for Direction Reversal",
+        prompt: "Sphere P of mass m is projected with velocity u towards stationary sphere Q of mass 2m. Find a condition on e such that P reverses direction.",
+        kidView: "You roll a light tennis ball into a heavy bowling ball. If your ball is made of wet dough (e = 0), it keeps rolling forward with the bowling ball. But if it's super bouncy (high e), it bounces right back into your hand! The bounciness must be at least half (e > 1/2) to bounce backwards.",
+        cambridgeSteps: [
+          "1. Conservation of Momentum: $$mu + 0 = mv_1 + 2mv_2 \\implies v_1 + 2v_2 = u$$",
+          "2. Newton's Experimental Law: $$e = \\frac{v_2 - v_1}{u} \\implies v_2 - v_1 = eu$$",
+          "3. Eliminate $v_2$: Multiply (2) by 2 and subtract from (1): $$3v_1 = u(1 - 2e) \\implies v_1 = \\frac{u}{3}(1 - 2e)$$",
+          "4. For P to reverse direction, its velocity must be negative: $$v_1 < 0 \\implies 1 - 2e < 0 \\implies e > \\frac{1}{2}$$"
+        ],
+        targetMode: 'direct1d'
+      },
+      p3: {
+        title: "Worked Example 18.9: Oblique Rebound at Right Angles (90°)",
+        prompt: "A sphere travelling at angle 60° to a smooth vertical wall rebounds off the wall at right angles (90°) to its original path. Find the coefficient of restitution e.",
+        kidView: "Imagine bouncing a ball so that its incoming and outgoing paths make a crisp 90° square corner! The parallel glide along the wall never changes, so only the bounciness e controls the rebound angle. Geometry forces e = 1/3!",
+        cambridgeSteps: [
+          "1. Before impact: $$u_y = u\\cos 60^\\circ = \\frac{u}{2}, \\qquad u_x = u\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}u$$",
+          "2. Parallel to smooth wall: $v_y = u_y = \\frac{u}{2}$.",
+          "3. Perpendicular to wall: $v_x = e u_x = \\frac{\\sqrt{3}}{2} e u$.",
+          "4. Since paths are at 90°, the rebound angle with the wall is $90^\\circ - 60^\\circ = 30^\\circ$.",
+          "5. Using tangent: $$\\tan 30^\\circ = \\frac{v_x}{v_y} \\implies \\frac{1}{\\sqrt{3}} = \\frac{\\frac{\\sqrt{3}}{2} e u}{\\frac{u}{2}} = \\sqrt{3} e$$",
+          "6. Solving yields: $$e = \\frac{1}{3}$$"
+        ],
+        targetMode: 'obliquewall'
+      },
+      p4: {
+        title: "Worked Example 18.10: Rebound & Double Collision Race",
+        prompt: "Sphere P (2m) strikes sphere Q (3m) with speed 2u. Q rebounds off a wall with e_wall = 1/8. Given that P reversed direction and Q strikes P again, find the range of e.",
+        kidView: "After the first hit, P runs away to the left. Q hits the wall and chases after P! For Q to catch P, two things must happen: P must be fast enough to bounce backwards (e > 2/3), but not TOO fast or Q can never catch it (e < 9/11)!",
+        cambridgeSteps: [
+          "1. P-Q impact: $$2(2u) = 2v_1 + 3v_2 \\implies 2v_1 + 3v_2 = 4u$$ and $$v_2 - v_1 = 2eu$$",
+          "2. Solving: $$v_2 = \\frac{4}{5}u(1+e), \\qquad v_1 = \\frac{2}{5}u(2-3e)$$",
+          "3. Q rebounds off wall: $$v_Q' = \\frac{1}{8} v_2 = \\frac{1}{10}u(1+e)$$",
+          "4. P must reverse direction: $$2 - 3e < 0 \\implies e > \\frac{2}{3}$$",
+          "5. For Q to catch P: $$v_Q' > -v_1 \\implies \\frac{1}{10}u(1+e) > \\frac{2}{5}u(3e - 2)$$",
+          "6. Multiply by 10: $$1 + e > 12e - 8 \\implies 11e < 9 \\implies e < \\frac{9}{11}$$",
+          "7. Final range: $$\\frac{2}{3} < e < \\frac{9}{11}$$"
+        ],
+        targetMode: 'wallrebound'
+      },
+      p5: {
+        title: "Worked Example 18.12: Oblique Sphere Impact (Angle of Deflection)",
+        prompt: "Sphere P (mass m, speed 4u) collides obliquely with stationary sphere Q (mass 3m). Angle between P's path and line of centres is 60°. If e = 1/4, find the angle of deflection.",
+        kidView: "Like a professional billiards player aiming an off-center cut shot! P grazes Q at a 60° angle. Q shoots off straight along their center line, while P gets knocked off course by 27.9°!",
+        cambridgeSteps: [
+          "1. Velocity components for P: $$u_x = 4u\\cos 60^\\circ = 2u, \\qquad u_y = 4u\\sin 60^\\circ = 2\\sqrt{3}u$$",
+          "2. Along line of centres (x-axis): $$mu_x = mv_{1x} + 3mv_{2x} \\implies 2u = v_{1x} + 3v_{2x}$$",
+          "3. Restitution along line of centres: $$v_{2x} - v_{1x} = e u_x = \\frac{1}{4}(2u) = \\frac{u}{2}$$",
+          "4. Solving gives: $$v_{1x} = \\frac{1}{8}u, \\qquad v_{2x} = \\frac{5}{8}u$$",
+          "5. Perpendicular component is unchanged: $$v_{1y} = u_y = 2\\sqrt{3}u$$",
+          "6. Direction of P after collision: $$\\tan\\phi = \\frac{v_{1y}}{v_{1x}} = \\frac{2\\sqrt{3}u}{\\frac{1}{8}u} = 16\\sqrt{3} \\approx 27.71 \\implies \\phi = 87.9^\\circ$$",
+          "7. Angle of deflection: $$\\delta = 87.9^\\circ - 60^\\circ = \\mathbf{27.9^\\circ}$$"
+        ],
+        targetMode: 'obliquespheres'
+      },
+      p6: {
+        title: "Review Ex 18.1 (Nov 2010 P2 Q3): A Brought to Rest, Prove alpha ≥ 2",
+        prompt: "Sphere A (mass m, speed u) collides with Sphere B (mass alpha*m, speed u/4) moving in same direction. A is brought to rest (v_A = 0). Find e in terms of alpha, and deduce that alpha ≥ 2.",
+        kidView: "Ball A hits Ball B from behind and completely stops in its tracks! Since bounciness e can never be bigger than 1 (you can't bounce more than 100%), Ball B must be at least twice as heavy as Ball A!",
+        cambridgeSteps: [
+          "1. Momentum conservation: $$mu + \\alpha m\\left(\\frac{u}{4}\\right) = 0 + \\alpha m v_B \\implies v_B = \\frac{4 + \\alpha}{4\\alpha} u$$",
+          "2. Newton's Experimental Law: $$e = \\frac{v_B - v_A}{u_A - u_B} = \\frac{v_B - 0}{u - \\frac{u}{4}} = \\frac{v_B}{\\frac{3}{4}u}$$",
+          "3. Substitute $v_B$: $$e = \\frac{\\frac{4 + \\alpha}{4\\alpha}u}{\\frac{3}{4}u} = \\frac{4 + \\alpha}{3\\alpha}$$",
+          "4. Since $e \\le 1$: $$\\frac{4 + \\alpha}{3\\alpha} \\le 1 \\implies 4 + \\alpha \\le 3\\alpha \\implies 2\\alpha \\ge 4 \\implies \\mathbf{\\alpha \\ge 2}$$"
+        ],
+        targetMode: 'direct1d'
+      },
+      p7: {
+        title: "Review Ex 18.3 (June 2011 P23 Q1): 3 Spheres, No Further Collisions",
+        prompt: "Spheres A (m), B (km), C (6m) at rest. Restitution between A and B is 1/2. A hits B with speed u and stops. Show k = 2. If restitution between B and C is e, show e ≤ 1/3 for no further collisions.",
+        kidView: "Sphere A stops dead, passing its energy to B. B rolls into massive Sphere C. For B not to bounce backwards and re-hit A, B must not bounce back towards A faster than A is moving (which is 0)! That caps the bounciness e at 1/3.",
+        cambridgeSteps: [
+          "1. A-B impact with $v_A = 0$: $$mu = k m v_B \\implies v_B = \\frac{u}{k}$$",
+          "2. Newton's Law with $e = \\frac{1}{2}$: $$\\frac{1}{2} = \\frac{v_B - 0}{u - 0} = \\frac{u/k}{u} = \\frac{1}{k} \\implies \\mathbf{k = 2}$$",
+          "3. Speed of B before hitting C: $$u_B = \\frac{u}{2}$$. Mass of B is $2m$, mass of C is $6m$.",
+          "4. B-C collision: $$2m\\left(\\frac{u}{2}\\right) = 2m v_B' + 6m v_C \\implies u = 2v_B' + 6v_C$$",
+          "5. Restitution: $$v_C - v_B' = e\\left(\\frac{u}{2}\\right)$$",
+          "6. Solving for $v_B'$: $$v_B' = \\frac{u}{8}(1 - 3e)$$",
+          "7. For no further collision with A (which is at rest), B must not move to the left: $$v_B' \\ge 0 \\implies 1 - 3e \\ge 0 \\implies \\mathbf{e \\le \\frac{1}{3}}$$"
+        ],
+        targetMode: 'threebodies'
+      }
+    };
+
+    const solverModal = document.getElementById('solver-modal');
+    const selectPreset = document.getElementById('preset-problem-select');
+    const solutionCard = document.getElementById('problem-solution-card');
+
+    function openSolverModal() {
+      solverModal.classList.remove('hidden');
+      updatePresetDisplay();
+    }
+
+    function closeSolverModal() {
+      solverModal.classList.add('hidden');
+    }
+
+    function updatePresetDisplay() {
+      const p = presets[selectPreset.value];
+      solutionCard.innerHTML = `
+        <h4 class="font-bold text-sm text-amber-400 font-kid tracking-wide">${p.title}</h4>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-300">
+          <strong>Problem Statement:</strong> ${p.prompt}
+        </div>
+        
+        <div class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-xl">
+          <div class="font-bold text-amber-300 font-kid mb-1">🚗 How a 6-Year-Old Sees It:</div>
+          <p class="text-amber-100/90 leading-relaxed">${p.kidView}</p>
+        </div>
+
+        <div class="p-3 bg-cyan-950/40 border border-cyan-500/40 rounded-xl space-y-2">
+          <div class="font-bold text-cyan-300 mb-1">🎓 Cambridge Step-by-Step Mark Scheme Solution:</div>
+          ${p.cambridgeSteps.map(step => `<div class="text-[12px] text-slate-200">${step}</div>`).join('')}
+        </div>
+      `;
+      renderLatex(solutionCard);
+    }
+
+    selectPreset.addEventListener('change', updatePresetDisplay);
+    document.getElementById('btn-close-modal').addEventListener('click', closeSolverModal);
+
+    document.getElementById('btn-load-into-sim').addEventListener('click', () => {
+      const p = presets[selectPreset.value];
+      closeSolverModal();
+
+      const targetBtn = document.querySelector(`[data-sim="${p.targetMode}"]`);
+      if (targetBtn) {
+        targetBtn.click();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildControlsForMode();
+      updatePlayPauseButton();
+    });
+  </script>
+</body>
+<!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</html>

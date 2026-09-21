@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 17: Linear Motion Under a Variable Force</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for high-precision mathematical typesetting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0369a1',
+              900: '#0c4a6e',
+            },
+            kid: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .canvas-grid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .trap-badge {
+      animation: pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-x-hidden select-none">
+
+  <!-- Header Bar with Chapter Title, Mode Toggle & Quick Trap Inspector -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center font-bold text-lg shadow-inner text-white font-mono">
+        ∫a
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-extrabold text-base md:text-lg text-white tracking-tight">Chapter 17: Linear motion under a variable force</h1>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-mono">CAIE 9231</span>
+        </div>
+        <p class="text-xs text-slate-400">Interactive Topic Laboratory & Twisted Exam Question Mastery</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Trap Detective Button -->
+      <button onclick="toggleTrapModal()" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-950/70 hover:bg-rose-900 border border-rose-700/80 text-rose-300 flex items-center gap-1.5 transition-all">
+        <span class="w-2 h-2 rounded-full bg-rose-500 trap-badge"></span>
+        <span>Cambridge Trap Guide</span>
+      </button>
+
+      <!-- Mode Toggle (Exam vs 6-Year-Old) -->
+      <div class="flex items-center bg-slate-950 p-1 rounded-full border border-slate-700/80 shadow-inner">
+        <button id="examModeBtn" onclick="switchExplanationMode('exam')" class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <span>Exam Mode (9231)</span>
+        </button>
+        <button id="kidModeBtn" onclick="switchExplanationMode('kid')" class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 text-slate-400 hover:text-amber-300">
+          <span>🧸 6-Year-Old Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 p-3 md:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-7xl mx-auto w-full">
+    
+    <!-- Left Column: Topic Archetype Selector & Parameters (4 cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- Topic Archetype Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-sky-400">Core Topic Archetype</label>
+          <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono" id="topicCatBadge">Time Dependent</span>
+        </div>
+
+        <select id="topicSelector" onchange="onTopicChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+          <optgroup label="Topic 1: Time-Dependent a = f(t) or F(t)">
+            <option value="topic1_poly">1A. Polynomial & Non-Zero Initial Constant</option>
+            <option value="topic1_rocket">1B. Multi-Phase Propulsion & Engine Cutoff (Piecewise)</option>
+            <option value="topic1_harmonic">1C. Harmonic / Trigonometric Acceleration a = sin(2t)</option>
+            <option value="topic1_decay">1D. Exponential Drag F = -e^(0.5t)</option>
+          </optgroup>
+          <optgroup label="Topic 2: Spatial Acceleration a = f(x) or F(x)">
+            <option value="topic2_chain">2A. Spatial Polynomial a = 2(x-1)² (Use v dv/dx)</option>
+            <option value="topic2_log">2B. Spatial Resistance F = -4/(x+1) (Logarithmic)</option>
+            <option value="topic2_trig">2C. Spatial Curvature a = -tan(x)</option>
+            <option value="topic2_inverse">2D. Inverse Law a = -k/x² & Conversion to Time t</option>
+          </optgroup>
+          <optgroup label="Topic 3: Velocity-Dependent Drag F(v)">
+            <option value="topic3_linear">3A. Linear Viscous Air Drag: F = -kv (Time vs Distance)</option>
+            <option value="topic3_dual">3B. Surface Friction + Air Drag: F = -(μmg + kv)</option>
+            <option value="topic3_terminal">3C. Falling Object with Terminal Speed: mg - kv²</option>
+          </optgroup>
+          <optgroup label="Topic 4: Engine Power & Driving Forces">
+            <option value="topic4_power">4A. Constant Power P = Fv => F = P/v - kv (Asymptotic Limit)</option>
+          </optgroup>
+          <optgroup label="Topic 5: The Direction-Reversal Trap">
+            <option value="topic5_reversal">5A. Reversing Particle: Displacement ≠ Distance</option>
+          </optgroup>
+          <optgroup label="Topic 6: Twisted Question Sandbox">
+            <option value="sandbox_custom">⚡ 6A. Custom Formula Sandbox (Test ANY Question)</option>
+          </optgroup>
+        </select>
+
+        <!-- Topic Differential Equation Badge -->
+        <div class="mt-3 text-xs bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 text-slate-300 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Required Calculus Formula:</span>
+            <span id="diffFormulaBadge" class="font-mono text-amber-300 font-semibold text-xs">a = dv/dt</span>
+          </div>
+          <div id="topicCoreRule" class="text-[11px] text-slate-400 italic">Integrate with respect to time directly.</div>
+        </div>
+      </div>
+
+      <!-- Custom Formula Sandbox Input (shown when Sandbox is active) -->
+      <div id="sandboxCard" class="hidden bg-slate-900 border border-indigo-800/80 rounded-2xl p-4 shadow-lg flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Sandbox Equation Parser</span>
+          <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded font-mono">Custom a(t,x,v)</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Enter mathematical expression for acceleration <code>a</code> in terms of <code>t</code>, <code>x</code>, and/or <code>v</code>:</p>
+        
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-sm text-indigo-300 font-bold">a =</span>
+          <input type="text" id="sandboxExpr" value="15 - 6*x" placeholder="e.g. 15 - 6*x or -0.8 - 0.4*v" class="flex-1 bg-slate-950 border border-indigo-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-indigo-100 focus:ring-1 focus:ring-indigo-400">
+        </div>
+        
+        <div class="flex items-center justify-between text-[10px] text-slate-400">
+          <span>Supported: <code>sin, cos, exp, log, pow, sqrt</code></span>
+          <button onclick="applySandboxExpression()" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">Apply</button>
+        </div>
+      </div>
+
+      <!-- Interactive Parameter Inputs Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col gap-3">
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Initial Conditions & Constants</h2>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Mass <span class="text-slate-200 font-mono">m (kg)</span></label>
+            <input type="number" id="paramMass" step="0.1" min="0.1" value="1.0" onchange="updateCustomParams()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-100 focus:ring-1 focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Initial Velocity <span class="text-slate-200 font-mono">v₀ (m/s)</span></label>
+            <input type="number" id="paramV0" step="0.5" value="0.0" onchange="updateCustomParams()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-100 focus:ring-1 focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Initial Position <span class="text-slate-200 font-mono">x₀ (m)</span></label>
+            <input type="number" id="paramX0" step="0.5" value="0.0" onchange="updateCustomParams()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-100 focus:ring-1 focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Sim Time Multiplier</label>
+            <select id="simSpeed" onchange="updateSpeed()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-100">
+              <option value="0.25">0.25x (Super Slow)</option>
+              <option value="0.5">0.5x (Slow-Mo)</option>
+              <option value="1.0" selected>1.0x (Real-Time)</option>
+              <option value="2.0">2.0x (Fast)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Simulation Control Buttons -->
+        <div class="grid grid-cols-3 gap-2 mt-2">
+          <button id="playBtn" onclick="togglePlay()" class="col-span-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+            <span id="playText">Start Motion</span>
+          </button>
+          <button onclick="resetSimulation()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition flex items-center justify-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Real-Time Telemetry Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-2.5">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Telemetry</h2>
+          <span id="terminalTag" class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded font-mono hidden">Apex / Rest</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <div class="text-[10px] text-slate-400 uppercase font-mono">Time (t)</div>
+            <div class="text-xl font-bold font-mono text-white" id="liveT">0.00 <span class="text-xs font-normal text-slate-400">s</span></div>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <div class="text-[10px] text-slate-400 uppercase font-mono">Displacement (x)</div>
+            <div class="text-xl font-bold font-mono text-emerald-400" id="liveX">0.00 <span class="text-xs font-normal text-slate-400">m</span></div>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <div class="text-[10px] text-slate-400 uppercase font-mono">Velocity (v)</div>
+            <div class="text-xl font-bold font-mono text-sky-400" id="liveV">0.00 <span class="text-xs font-normal text-slate-400">m/s</span></div>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <div class="text-[10px] text-slate-400 uppercase font-mono">Acceleration (a)</div>
+            <div class="text-xl font-bold font-mono text-amber-400" id="liveA">0.00 <span class="text-xs font-normal text-slate-400">m/s²</span></div>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <span>Net Force (F = ma):</span>
+          <span id="liveF" class="text-pink-400 font-bold font-mono">0.00 N</span>
+        </div>
+        <div class="mt-1 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+          <span>Total Distance Travelled (s):</span>
+          <span id="liveTotalDist" class="text-yellow-300 font-semibold font-mono">0.00 m</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Middle & Right Columns: Interactive Animation Track & Real-Time Plots (8 cols) -->
+    <div class="lg:col-span-8 flex flex-col gap-4">
+      
+      <!-- Particle Motion Canvas Track -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300" id="visTitle">Linear Physical Motion</span>
+          </div>
+          <div class="text-xs text-slate-400" id="visSubtitle">Trajectory along line Ox with real-time vector arrows</div>
+        </div>
+        
+        <div class="relative w-full h-44 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 canvas-grid flex items-center">
+          <canvas id="motionCanvas" class="w-full h-full block"></canvas>
+          
+          <!-- On-canvas overlay labels -->
+          <div class="absolute top-2 left-3 pointer-events-none text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-700/50">
+            Origin O (x = 0m)
+          </div>
+          <div id="vectorLegend" class="absolute bottom-2 right-3 pointer-events-none flex items-center gap-3 text-[11px] font-mono bg-slate-900/80 px-2 py-0.5 rounded border border-slate-700/50">
+            <span class="flex items-center gap-1 text-sky-400"><span class="w-2.5 h-0.5 bg-sky-400 inline-block"></span> Velocity</span>
+            <span class="flex items-center gap-1 text-amber-400"><span class="w-2.5 h-0.5 bg-amber-400 inline-block"></span> Force / Accel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Mathematical Curve Canvas -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Kinetic & Phase Plots</span>
+            <span id="graphInsightTag" class="text-[11px] bg-slate-800 text-sky-300 px-2 py-0.5 rounded font-mono">Area under v-t = Displacement x</span>
+          </div>
+          <div class="flex gap-1.5">
+            <button id="plotVBtn" onclick="setActivePlot('v')" class="px-2 py-0.5 text-xs rounded bg-sky-500 text-slate-950 font-bold">v(t)</button>
+            <button id="plotABtn" onclick="setActivePlot('a')" class="px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700">a(t)</button>
+            <button id="plotXBtn" onclick="setActivePlot('x')" class="px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700">x(t)</button>
+            <button id="plotPhaseBtn" onclick="setActivePlot('vx')" class="px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700">v(x) Phase</button>
+          </div>
+        </div>
+
+        <div class="relative w-full h-48 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 canvas-grid">
+          <canvas id="graphCanvas" class="w-full h-full block"></canvas>
+        </div>
+      </div>
+
+      <!-- Dynamic Explanation Container (Exam Calculus vs 6-Year-Old Mode) -->
+      <div id="explanationContainer" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-lg flex flex-col gap-3 transition-colors duration-300">
+        <!-- Content injected dynamically via updateExplanationCard() -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Cambridge Trap Modal Inspector -->
+  <div id="trapModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-rose-800/80 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⚠️</span>
+          <div>
+            <h3 class="text-base font-bold text-rose-400">The 6 Classic CAIE 9231 Exam Traps</h3>
+            <p class="text-xs text-slate-400">How Cambridge examiners twist questions and where students drop marks</p>
+          </div>
+        </div>
+        <button onclick="toggleTrapModal()" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs text-slate-300 leading-relaxed">
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 1: Integrating a(x) with respect to time</div>
+          <p>When acceleration is given as a function of position $a(x)$, never write $\int a(x) dt$. The variables don't match! You must immediately use $a = v\frac{dv}{dx}$ so you can separate: $\int v\,dv = \int a(x)\,dx$.</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 2: Assuming the constant of integration is 0</div>
+          <p>When $t=0$, functions like $e^{0} = 1$, $\cos(0) = 1$, or $\ln(0+1) = 0$ appear. Many students instinctively set $c = 0$ or $c = v_0$ without evaluating the algebraic substitution. Always write out $v(0) = f(0) + c$ explicitly!</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 3: Distance travelled vs Displacement when v changes sign</div>
+          <p>If velocity changes sign (e.g. projectile or reversing particle), displacement $\Delta x = x(t_2) - x(t_1)$ is NOT equal to total distance. You MUST find where $v = 0$, split into intervals, and sum absolute values $\int |v| dt$.</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 4: Integrating unnecessarily to find Maximum Velocity</div>
+          <p>Maximum velocity occurs when $\frac{dv}{dt} = 0$, which means Acceleration $a = 0$ (Net Force $= 0$). You can usually find the position or time of $v_{\text{max}}$ in one step by setting the acceleration formula to zero!</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 5: The "Time to stop" vs "Distance to stop" choice for $F(v)$</div>
+          <p>If an exam asks: "Find the time taken to come to rest", use $\frac{dv}{dt} = f(v) \implies dt = \frac{1}{f(v)} dv$. If it asks: "Find the distance travelled before coming to rest", use $v\frac{dv}{dx} = f(v) \implies dx = \frac{v}{f(v)} dv$. Choosing the wrong form wastes 10 minutes trying to convert.</p>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-rose-900/40">
+          <div class="font-bold text-rose-300 mb-1">Trap 6: Coulomb Friction acting in reverse</div>
+          <p>Surface friction $\mu mg$ always opposes existing motion. Once $v = 0$, friction drops to 0 unless a remaining external force exceeds $\mu mg$. In numeric simulations, if you let friction keep acting after $v=0$, it unphysically pulls the particle backwards!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* --- Topic-Based Scenarios & Generalized Framework --- */
+  const TOPICS = {
+    // TOPIC 1: Time-Dependent a = f(t)
+    topic1_poly: {
+      category: "Topic 1: a = f(t)",
+      title: "1A. Polynomial Acceleration & Non-Zero Initial Constant",
+      diffFormula: "a = dv/dt = f(t)",
+      rule: "Use a = dv/dt. Beware: initial constant C is evaluated from v(0).",
+      defaultMass: 2.0,
+      defaultV0: 3.0,
+      defaultX0: 0.0,
+      maxT: 4.0,
+      accel: (t, x, v) => -(2 * t * t) / 2.0,
+      examContent: {
+        headline: "Integration with Non-Zero Initial Constant",
+        summary: "An opposing force $F = -2t^2\\,\\text{N}$ acts on a mass of $2\\,\\text{kg}$. Initial speed is $3\\,\\text{m/s}$ at origin $O$.",
+        steps: [
+          { title: "1. Newton's 2nd Law Formulation", math: "F = ma \\implies -2t^2 = 2\\frac{dv}{dt} \\implies \\frac{dv}{dt} = -t^2" },
+          { title: "2. Separating Variables & Integrating", math: "\\int dv = -\\int t^2\\, dt \\implies v(t) = -\\frac{1}{3}t^3 + C" },
+          { title: "3. Constant Evaluation (v = 3 at t = 0)", math: "3 = 0 + C \\implies C = 3 \\implies v(t) = 3 - \\frac{1}{3}t^3" },
+          { title: "4. Displacement Integration", math: "x(t) = \\int (3 - \\frac{1}{3}t^3)\\, dt = 3t - \\frac{1}{12}t^4 + K. \\quad x(0)=0 \\implies K = 0" },
+          { title: "5. Time of Instantaneous Rest (v = 0)", math: "0 = 3 - \\frac{1}{3}t^3 \\implies t^3 = 9 \\implies t = 9^{1/3} \\approx 2.08\\text{ s}" }
+        ],
+        tip: "Twisted trick: Notice that when calculating total distance, the particle stops at t = 2.08 s and reverses thereafter! If asked for distance in 3 seconds, partition at t = 2.08s."
+      },
+      kidContent: {
+        headline: "The Slowing Skateboarder 🛹",
+        simpleStory: "You are rolling on a skateboard at speed 3! Suddenly, a big windy gust blows against you. The gust gets stronger and stronger the longer it blows!",
+        bulletPoints: [
+          "💨 <strong>Wind picks up:</strong> Every second, the push in your face gets much bigger!",
+          "🛑 <strong>Freeze moment:</strong> At exactly 2.08 seconds, the wind completely stops your forward roll!",
+          "🔙 <strong>Rolling backwards:</strong> If the wind keeps blowing, you start zooming backwards!"
+        ],
+        funQuestion: "Can you see the moment the speed number touches 0.00 and turns into a minus?"
+      }
+    },
+
+    topic1_rocket: {
+      category: "Topic 1: a = f(t)",
+      title: "1B. Multi-Phase Propulsion: Fuel Cut-Off (Piecewise)",
+      diffFormula: "Piecewise: a(t) then a = -g",
+      rule: "Engine burns for t <= 5s, then cuts off leaving gravity alone. Velocity must remain continuous across boundary.",
+      defaultMass: 1.0,
+      defaultV0: 0.0,
+      defaultX0: 0.0,
+      maxT: 9.0,
+      accel: (t, x, v) => (t <= 5.0 ? 10.0 - t : -10.0),
+      examContent: {
+        headline: "Piecewise Continuous Differential Equations",
+        summary: "Thrust $F = 20 - t$ for $0 \\le t \\le 5$. Mass $m = 1\\,\\text{kg}$, $g = 10\\,\\text{m/s}^2$. At $t > 5$, engine cuts out.",
+        steps: [
+          { title: "1. Phase 1 (0 <= t <= 5): Burn Period", math: "F_{\\text{net}} = (20 - t) - 1(10) = 10 - t \\implies \\frac{dv}{dt} = 10 - t" },
+          { title: "2. Velocity and Height at Cutoff", math: "v(t) = 10t - \\frac{1}{2}t^2 \\implies v(5) = 37.5\\text{ m/s}, \\quad x(5) = 104.2\\text{ m}" },
+          { title: "3. Phase 2 (t > 5): Free Flight Under Gravity", math: "\\frac{dv}{dt} = -10 \\implies v(t) = 37.5 - 10(t - 5)" },
+          { title: "4. Maximum Height (Apex where v = 0)", math: "0 = 37.5 - 10(t_{\\text{apex}} - 5) \\implies t_{\\text{apex}} = 8.75\\text{ s}. \\quad H_{\\text{max}} \\approx 174.5\\text{ m}" }
+        ],
+        tip: "Cambridge Tip: When an engine burns out, NEVER restart time to 0 without clearly stating so. Keeping time continuous avoids losing method marks!"
+      },
+      kidContent: {
+        headline: "The Firework Rocket Launch! 🚀",
+        simpleStory: "You light a toy rocket with 5 seconds of fuel. It roars into the sky! When the fuel clicks off, it doesn't fall down immediately because it is still flying super fast.",
+        bulletPoints: [
+          "🔥 <strong>0 to 5 seconds:</strong> Fire spits out the bottom and makes it zoom!",
+          "☁️ <strong>5 to 8.75 seconds:</strong> Engine is off! The rocket coasts upwards until it stops at the highest cloud.",
+          "⬇️ <strong>After apex:</strong> Gravity pulls it back down to earth!"
+        ],
+        funQuestion: "Why doesn't the rocket immediately fall down the instant fuel runs out?"
+      }
+    },
+
+    topic1_harmonic: {
+      category: "Topic 1: a = f(t)",
+      title: "1C. Trigonometric / Oscillating Acceleration a = sin(2t)",
+      diffFormula: "dv/dt = sin(2t)",
+      rule: "Trig integration generates a cosine with negative sign. cos(0) = 1, NOT 0!",
+      defaultMass: 1.0,
+      defaultV0: 4.5,
+      defaultX0: 0.0,
+      maxT: 7.0,
+      accel: (t, x, v) => Math.sin(2 * t),
+      examContent: {
+        headline: "Trigonometric Acceleration and Non-Zero Constants",
+        summary: "A particle starts with $v(0) = 4.5\\,\\text{m/s}$ at $O$ and experiences periodic acceleration $a = \\sin(2t)$.",
+        steps: [
+          { title: "1. Integrating Acceleration", math: "\\int dv = \\int \\sin(2t)\\, dt \\implies v(t) = -\\frac{1}{2}\\cos(2t) + C" },
+          { title: "2. The cos(0) trap!", math: "4.5 = -\\frac{1}{2}\\cos(0) + C \\implies 4.5 = -0.5(1) + C \\implies C = 5" },
+          { title: "3. Speed Envelope", math: "v(t) = 5 - \\frac{1}{2}\\cos(2t) \\implies v_{\\text{max}} = 5.5\\text{ m/s}, \\quad v_{\\text{min}} = 4.5\\text{ m/s}" }
+        ],
+        tip: "Notice that v(t) never equals zero! The minimum speed is 4.5 m/s, so the particle never reverses."
+      },
+      kidContent: {
+        headline: "The Happy Bouncing Swing! 🎠",
+        simpleStory: "Picture a gentle breeze on a swing that pushes, then relaxes, then pushes again in a calm rhythm like music!",
+        bulletPoints: [
+          "🌊 <strong>Wavy pushes:</strong> The speed wobbles gently between 4.5 and 5.5!",
+          "⏩ <strong>Always cruising:</strong> The breeze never pushes hard enough to stop you, so you always keep moving forwards!"
+        ],
+        funQuestion: "Can you see the graph waving up and down like a smooth ocean ripple?"
+      }
+    },
+
+    topic1_decay: {
+      category: "Topic 1: a = f(t)",
+      title: "1D. Exponential Opposing Drag F = -e^(0.5t)",
+      diffFormula: "a = -e^(0.5t) / m",
+      rule: "Exponential integral maintains sign. Remember e^0 = 1 when evaluating constant K.",
+      defaultMass: 4.0,
+      defaultV0: 2.0,
+      defaultX0: 0.0,
+      maxT: 5.5,
+      accel: (t, x, v) => -Math.exp(0.5 * t) / 4.0,
+      examContent: {
+        headline: "Exponential Retardation & Constant Evaluation",
+        summary: "Mass $4\\,\\text{kg}$, opposing force magnitude $e^{0.5t}$, initial speed $2\\,\\text{m/s}$.",
+        steps: [
+          { title: "1. Equation of Motion", math: "-e^{0.5t} = 4\\frac{dv}{dt} \\implies \\frac{dv}{dt} = -\\frac{1}{4}e^{0.5t}" },
+          { title: "2. Solving for v(t)", math: "v(t) = -\\frac{1}{2}e^{0.5t} + C. \\quad v(0) = 2 \\implies C = 2.5" },
+          { title: "3. Displacement Integration Trap", math: "x(t) = 2.5t - e^{0.5t} + K. \\quad x(0) = 0 \\implies K = 1" }
+        ],
+        tip: "Exam Trap Alert: Forgetting that e^0 = 1 causes students to write K = 0. This instantly loses 2 accuracy marks in Paper 3."
+      },
+      kidContent: {
+        headline: "The Sticky Bubblegum Floor! 🍬",
+        simpleStory: "You glide onto a floor where magic bubblegum grows stickier and stickier every second!",
+        bulletPoints: [
+          "🍯 <strong>Fast growth:</strong> At first, the gum is thin. But soon, it grabs your shoes tightly!",
+          "🛑 <strong>Stops & Pulls back:</strong> It halts your roll and starts dragging your cart in reverse!"
+        ],
+        funQuestion: "Watch how the cart stops and gets yanked backwards by the super-glue!"
+      }
+    },
+
+    // TOPIC 2: Spatial Acceleration a = f(x)
+    topic2_chain: {
+      category: "Topic 2: a = f(x)",
+      title: "2A. Spatial Polynomial a = 2(x-1)² (Chain Rule)",
+      diffFormula: "a = v(dv/dx) = g(x)",
+      rule: "DO NOT integrate with respect to time! Use v(dv/dx) = a(x) => ∫v dv = ∫a(x) dx.",
+      defaultMass: 1.0,
+      defaultV0: 4.0,
+      defaultX0: 1.0,
+      maxT: 1.2,
+      accel: (t, x, v) => 2 * Math.pow(x - 1, 2),
+      examContent: {
+        headline: "The Spatial Chain Rule: a = v(dv/dx)",
+        summary: "Given $a = 2(x - 1)^2\\,\\text{m/s}^2$ with initial state $v(1) = 4\\,\\text{m/s}$.",
+        steps: [
+          { title: "1. Applying the Chain Rule Definition", math: "a = \\frac{dv}{dt} = v\\frac{dv}{dx}" },
+          { title: "2. Separating Variables", math: "\\int v\\, dv = \\int 2(x - 1)^2\\, dx" },
+          { title: "3. Constant Evaluation", math: "\\frac{1}{2}v^2 = \\frac{2}{3}(x - 1)^3 + 8" },
+          { title: "4. Target Velocity at x = 4m", math: "v = 2\\sqrt{13} \\approx 7.21\\text{ m/s}" }
+        ],
+        tip: "Key Point 17.2: If the problem asks for velocity at a given position x, you can solve it completely without ever knowing time t!"
+      },
+      kidContent: {
+        headline: "The Rainbow Turbo Slide! 🛝",
+        simpleStory: "You are sliding down a slide with turbo booster pads painted on the ground! The boosters don't care what time your watch says—they only care where you are on the slide!",
+        bulletPoints: [
+          "👟 <strong>Start at Gate 1:</strong> You enter running at speed 4.",
+          "⚡ <strong>Distance boost:</strong> The farther past Gate 1 you travel, the harder the floor rockets you forwards!"
+        ],
+        funQuestion: "Notice how fast the velocity climbs once you pass mark 2!"
+      }
+    },
+
+    topic2_log: {
+      category: "Topic 2: a = f(x)",
+      title: "2B. Logarithmic Spatial Resistance: F = -4/(x+1)",
+      diffFormula: "0.5 v(dv/dx) = -4/(x+1)",
+      rule: "Integrating 1/(x+1) gives ln(x+1). Initial condition at x=0 gives ln(1) = 0.",
+      defaultMass: 0.5,
+      defaultV0: 8.0,
+      defaultX0: 0.0,
+      maxT: 3.5,
+      accel: (t, x, v) => (-4 / (x + 1)) / 0.5,
+      examContent: {
+        headline: "Logarithmic Spatial Differential Equation",
+        summary: "A $0.5\\,\\text{kg}$ particle experiences opposing force $F = \\frac{4}{x+1}\\,\\text{N}$. Starts at $x=0$ with $v=8\\,\\text{m/s}$.",
+        steps: [
+          { title: "1. Setting up v(dv/dx)", math: "v\\frac{dv}{dx} = -\\frac{8}{x+1}" },
+          { title: "2. Integrating both sides", math: "\\frac{1}{2}v^2 = -8\\ln(x+1) + 32" },
+          { title: "3. Distance when Speed Drops to 6 m/s", math: "x = e^{1.75} - 1 \\approx 4.75\\text{ m}" }
+        ],
+        tip: "Exact value advice: In Paper 3, never write just 4.75 if asked for 'exact distance'—write e^(7/4) - 1!"
+      },
+      kidContent: {
+        headline: "The Pudding Pool! 🍮",
+        simpleStory: "You drive into a warm swimming pool filled with chocolate pudding! Right at the edge you splash in quickly, but the pudding resists you as you push through.",
+        bulletPoints: [
+          "🚗 <strong>Zoom in:</strong> Start at speed 8.",
+          "🍮 <strong>Smooth braking:</strong> The pudding smoothly drains the speed down to 6 right at the 4.75m marker!"
+        ],
+        funQuestion: "Can you see where the pudding completely brings the car to rest?"
+      }
+    },
+
+    topic2_trig: {
+      category: "Topic 2: a = f(x)",
+      title: "2C. Spatial Curvature Brake: a = -tan(x)",
+      diffFormula: "v(dv/dx) = -tan(x)",
+      rule: "∫tan(x) dx = -ln|cos(x)|. Watch the double negative when moving signs!",
+      defaultMass: 1.0,
+      defaultV0: 4.0,
+      defaultX0: 0.0,
+      maxT: 2.0,
+      accel: (t, x, v) => -Math.tan(x),
+      examContent: {
+        headline: "Integrating Trigonometric Spatial Functions",
+        summary: "Particle passes origin with $v = 4\\,\\text{m/s}$ subject to $a = -\\tan(x)$ for $0 \\le x \\le \\pi/3$.",
+        steps: [
+          { title: "1. Formulating with v(dv/dx)", math: "v\\frac{dv}{dx} = -\\frac{\\sin(x)}{\\cos(x)}" },
+          { title: "2. Integrating with Logarithms", math: "\\frac{1}{2}v^2 = \\ln|\\cos(x)| + 8" },
+          { title: "3. Value at x = π/3", math: "v(\\pi/3) = \\sqrt{2\\ln(0.5) + 16} \\approx 3.82\\text{ m/s}" }
+        ],
+        tip: "Notice that cos(pi/3) = 0.5, so 2*ln(0.5) is negative, correctly reducing the velocity."
+      },
+      kidContent: {
+        headline: "The Gently Curving Hill 🏔️",
+        simpleStory: "You're skateboarding up a magical hill that gets steeper the further you roll up!",
+        bulletPoints: [
+          "🛹 <strong>Coast up:</strong> Start fast at speed 4.",
+          "🛑 <strong>Soft brake:</strong> The hill gently shaves off speed until you reach the summit flag at π/3 (1.05m)!"
+        ],
+        funQuestion: "Does the skateboard stop, or does it sail over the top at 3.82 m/s?"
+      }
+    },
+
+    topic2_inverse: {
+      category: "Topic 2: a = f(x)",
+      title: "2D. Inverse Law a = -k/x² & Conversion to Time t",
+      diffFormula: "v(dv/dx) = -k/x² => ∫(1/v)dx = t",
+      rule: "The classic twisted trick: Once v(x) is found, get time t by writing dt = dx/v and integrating!",
+      defaultMass: 1.0,
+      defaultV0: 2.0,
+      defaultX0: 1.0,
+      maxT: 3.5,
+      accel: (t, x, v) => (x > 0.05 ? -2.0 / (x * x) : 0),
+      examContent: {
+        headline: "The Two-Step Twist: From v(x) to Time t",
+        summary: "Given $a = -\\frac{2}{x^2}\\,\\text{m/s}^2$ with $v(1) = 2\\,\\text{m/s}$. How do we find the time taken to reach position $x$?",
+        steps: [
+          { title: "1. Step 1: Solve for v(x)", math: "v(x) = \\frac{2}{\\sqrt{x}}" },
+          { title: "2. Step 2: Convert to Time with dt = dx/v", math: "\\frac{dx}{dt} = \\frac{2}{\\sqrt{x}} \\implies t = \\frac{1}{3}\\left(x^{3/2} - 1\\right)" }
+        ],
+        tip: "Twisted Question Master Key: Whenever asked for time t in a problem where a is a function of x, you MUST first find v(x), invert it to dt/dx = 1/v(x), and integrate with respect to x!"
+      },
+      kidContent: {
+        headline: "The Magnet Floor & Clock Mystery ⏰",
+        simpleStory: "Imagine rolling away from a giant magnet! When you are close, the magnet pulls strongly. As you get farther away, its pull gets weak.",
+        bulletPoints: [
+          "🧲 <strong>Step 1:</strong> We figure out how fast you roll at every meter mark.",
+          "⏱️ <strong>Step 2:</strong> Then we use your speed to work backwards and calculate how many ticks of the clock it took!"
+        ],
+        funQuestion: "Can you see why we needed to know your speed before we could calculate the time?"
+      }
+    },
+
+    // TOPIC 3: Velocity-Dependent Drag F(v)
+    topic3_linear: {
+      category: "Topic 3: Drag F(v)",
+      title: "3A. Linear Viscous Drag F = -kv (Time vs Distance)",
+      diffFormula: "Time: dt = dv/(-kv) | Distance: dx = v dv/(-kv)",
+      rule: "To find time: use dv/dt. To find distance: use v dv/dx. Notice how much simpler separation is!",
+      defaultMass: 1.0,
+      defaultV0: 10.0,
+      defaultX0: 0.0,
+      maxT: 4.0,
+      accel: (t, x, v) => -1.5 * v,
+      examContent: {
+        headline: "Time vs Distance Dichotomy under Viscous Drag",
+        summary: "A particle of mass $1\\,\\text{kg}$ experiences resistive force $F = -1.5v\\,\\text{N}$. Starts with $v_0 = 10\\,\\text{m/s}$.",
+        steps: [
+          { title: "1. Velocity as a function of time", math: "v(t) = 10e^{-1.5t}" },
+          { title: "2. Velocity as a function of distance", math: "v(x) = 10 - 1.5x \\implies x_{\\text{max}} = 6.67\\text{ m}" }
+        ],
+        tip: "Huge Time-Saver: By using v(dv/dx), the v cancels completely, making the distance integral trivial: dv = -1.5 dx!"
+      },
+      kidContent: {
+        headline: "The Windy Air Shield! 💨",
+        simpleStory: "Hold up a giant cardboard sheet while running! The faster you run, the harder the wind pushes you back.",
+        bulletPoints: [
+          "🏃 <strong>Fast run:</strong> At speed 10, the wind slams against the cardboard!",
+          "🚶 <strong>Gentle coast:</strong> As you slow down, the wind softens up. You coast gently until you stop at 6.67 meters!"
+        ],
+        funQuestion: "Did you notice that the particle never travels farther than 6.67m, no matter how long you wait?"
+      }
+    },
+
+    topic3_dual: {
+      category: "Topic 3: Drag F(v)",
+      title: "3B. Dual Resistance: Surface Friction + Air Drag (9709 P5)",
+      diffFormula: "0.5 dv/dt = -(0.4 + 0.2v)",
+      rule: "Surface friction (0.4N) is constant; air drag (0.2v) is variable. At rest, motion ceases!",
+      defaultMass: 0.5,
+      defaultV0: 4.0,
+      defaultX0: 0.0,
+      maxT: 3.5,
+      accel: (t, x, v) => (v <= 0.001 ? 0 : -0.8 - 0.4 * v),
+      examContent: {
+        headline: "Cambridge Past Paper Question (9709 P5 June 2008)",
+        summary: "Mass $0.5\\,\\text{kg}$, $\\mu = 0.08$, air drag $0.2v\\,\\text{N}$. Particle passes $O$ with speed $4\\,\\text{m/s}$.",
+        steps: [
+          { title: "1. Equation of motion", math: "2.5\\frac{dv}{dt} = -(v + 2)" },
+          { title: "2. Time to rest (v = 0)", math: "t = 2.5\\ln(3) \\approx 2.75\\text{ s}" },
+          { title: "3. Total distance to rest", math: "x = 4.51\\text{ m}" }
+        ],
+        tip: "Exam Trap Alert: Friction drops to zero when v = 0! The particle stops permanently at 4.51m and does not reverse."
+      },
+      kidContent: {
+        headline: "The Carpet & Fan Team! 🧶🌬️",
+        simpleStory: "Two playful obstacles team up to stop our sliding puck: a fuzzy carpet under its belly, and a fan blowing in its face!",
+        bulletPoints: [
+          "🌬️ <strong>Fan:</strong> Pushes hard when fast, then eases off.",
+          "🧶 <strong>Carpet:</strong> Grips with the exact same rub the whole time!",
+          "🛑 <strong>Dead stop:</strong> Together they bring the puck to a dead halt at 4.51 meters!"
+        ],
+        funQuestion: "Can you see the live velocity hit 0.00 and freeze cleanly without bouncing back?"
+      }
+    },
+
+    topic3_terminal: {
+      category: "Topic 3: Drag F(v)",
+      title: "3C. Vertical Fall & Terminal Velocity: mg - kv²",
+      diffFormula: "dv/dt = g - (k/m)v²",
+      rule: "Terminal velocity occurs when acceleration a = 0 WITHOUT needing to integrate!",
+      defaultMass: 2.0,
+      defaultV0: 0.0,
+      defaultX0: 0.0,
+      maxT: 6.0,
+      accel: (t, x, v) => 10.0 - 0.1 * v * v,
+      examContent: {
+        headline: "Quadratic Drag & Terminal Velocity Equilibrium",
+        summary: "A $2\\,\\text{kg}$ ball is dropped from rest under gravity $g = 10\\,\\text{m/s}^2$ with quadratic air drag $F_d = 0.2v^2\\,\\text{N}$.",
+        steps: [
+          { title: "1. Equation of Motion", math: "\\frac{dv}{dt} = 10 - 0.1v^2" },
+          { title: "2. Terminal Speed Shortcut (a = 0)", math: "10 - 0.1v_t^2 = 0 \\implies v_t = 10\\text{ m/s}" }
+        ],
+        tip: "Cambridge Shortcut: When an exam asks 'state the terminal speed', do NOT waste time integrating! Just set a = 0 and solve for v."
+      },
+      kidContent: {
+        headline: "The Parachute Drop! 🪂",
+        simpleStory: "You drop a toy skydiver! Gravity pulls it faster and faster, but the air rushes into its parachute.",
+        bulletPoints: [
+          "🪂 <strong>Balancing act:</strong> Gravity pulls down, but the air parachute pushes up!",
+          "⚖️ <strong>Speed limit:</strong> Soon, the two forces balance like two kids on a seesaw, and it cruises at a safe 10 m/s!"
+        ],
+        funQuestion: "Watch how the velocity curve levels out flat at exactly 10 m/s!"
+      }
+    },
+
+    // TOPIC 4: Constant Power
+    topic4_power: {
+      category: "Topic 4: Power Engines",
+      title: "4A. Constant Power Engine P = Fv => a = (P/mv) - (k/m)v",
+      diffFormula: "m v(dv/dx) = P/v - kv",
+      rule: "Power P = F * v => Driving force F = P/v. Force diverges at v = 0, so start with v0 > 0.",
+      defaultMass: 1000.0,
+      defaultV0: 5.0,
+      defaultX0: 0.0,
+      maxT: 8.0,
+      accel: (t, x, v) => (v > 0.1 ? 20000 / (1000 * v) - 0.05 * v : 0),
+      examContent: {
+        headline: "Constant Power Propulsion & Maximum Speed",
+        summary: "A car of mass $1000\\,\\text{kg}$ operates at constant power $P = 20\\,\\text{kW}$ against resistance $R = 50v\\,\\text{N}$.",
+        steps: [
+          { title: "1. Driving Force from Power", math: "F_{\\text{drive}} = \\frac{20000}{v}" },
+          { title: "2. Maximum Top Speed (a = 0)", math: "v_{\\text{max}}^2 = 400 \\implies v_{\\text{max}} = 20\\text{ m/s}" }
+        ],
+        tip: "Cambridge Exam Note: At low speeds, driving force P/v is huge! That is why electric vehicles accelerate so rapidly off the line."
+      },
+      kidContent: {
+        headline: "The Super Battery Go-Kart! ⚡🏎️",
+        simpleStory: "You are driving a go-kart with a steady electric battery that delivers steady juice to the wheels!",
+        bulletPoints: [
+          "⚡ <strong>Punchy start:</strong> At slow speed, the battery gives massive torque!",
+          "🏁 <strong>Top speed ceiling:</strong> Eventually, wind resistance balances the battery power at a top speed of 20 m/s!"
+        ],
+        funQuestion: "Can you see how quickly it climbs from 5 m/s toward the top speed of 20 m/s?"
+      }
+    },
+
+    // TOPIC 5: Direction Reversal Trap
+    topic5_reversal: {
+      category: "Topic 5: Reversal Trap",
+      title: "5A. The Direction-Reversal Trap: Displacement ≠ Distance",
+      diffFormula: "a = -4t => v(t) = 12 - 2t²",
+      rule: "Particle starts forward, stops, and reverses. Total distance requires integrating |v|dt in two parts!",
+      defaultMass: 1.0,
+      defaultV0: 12.0,
+      defaultX0: 0.0,
+      maxT: 4.5,
+      accel: (t, x, v) => -4 * t,
+      examContent: {
+        headline: "Total Distance vs Displacement Trap (Ex 17A Q11)",
+        summary: "A particle passes $O$ with speed $12\\,\\text{m/s}$ with acceleration $a = -4t\\,\\text{m/s}^2$.",
+        steps: [
+          { title: "1. Velocity function v(t)", math: "v(t) = 12 - 2t^2" },
+          { title: "2. Instantaneous Rest (v = 0)", math: "t = \\sqrt{6} \\approx 2.45\\text{ s} \\implies x(\\sqrt{6}) = 19.6\\text{ m}" },
+          { title: "3. Total Distance at t = 4s", math: "s = 19.6 + (19.6 - 5.33) \\approx 33.87\\text{ m}" }
+        ],
+        tip: "CRITICAL EXAM TRAP: If asked for distance, substituting t = 4 into x(t) gives 5.33m (displacement), which loses almost ALL marks! You must add the forward path + reverse path."
+      },
+      kidContent: {
+        headline: "The Boomerang Ball! 🪃",
+        simpleStory: "You throw a magic ball down the hallway. It flies forward, stops in mid-air at 19.6 meters, and zooms right back towards you!",
+        bulletPoints: [
+          "➡️ <strong>Trip there:</strong> Flew forward 19.6 meters.",
+          "⬅️ <strong>Trip back:</strong> Turned around and flew backwards 14.3 meters.",
+          "📏 <strong>Distance vs Position:</strong> Its odometer rolled 33.9 meters, even though it ended up only 5.3 meters from your toes!"
+        ],
+        funQuestion: "Watch the 'Total Distance' telemetry counter keep increasing even when 'Displacement' starts shrinking!"
+      }
+    },
+
+    // TOPIC 6: Sandbox
+    sandbox_custom: {
+      category: "Topic 6: Sandbox",
+      title: "6A. Custom Formula Sandbox (Test ANY Question)",
+      diffFormula: "Custom a(t, x, v)",
+      rule: "Enter any acceleration expression above to test any textbook problem or past paper question!",
+      defaultMass: 1.0,
+      defaultV0: 0.0,
+      defaultX0: 0.0,
+      maxT: 6.0,
+      accel: (t, x, v) => 15.0 - 6.0 * x,
+      examContent: {
+        headline: "Free-Form Cambridge Problem Solver",
+        summary: "Current Custom Equation: a = 15 - 6x. Demonstrating End-of-Chapter Review Q1 (9709 P51 June 2011).",
+        steps: [
+          { title: "1. Solving a = 15 - 6x", math: "v^2 = 30x - 6x^2" },
+          { title: "2. Maximum Velocity (a = 0)", math: "x = 2.5\\text{ m} \\implies v_{\\text{max}} \\approx 6.12\\text{ m/s}" }
+        ],
+        tip: "Sandbox Tip: You can type any expression in the box above, including powers, sines, logs, or combinations of x and v!"
+      },
+      kidContent: {
+        headline: "Your Very Own Magic Physics Lab! 🧪✨",
+        simpleStory: "You are the scientist! You get to type in any magic potion formula you want and watch the cart dance!",
+        bulletPoints: [
+          "✏️ <strong>Type your rule:</strong> Tell the cart how to speed up or slow down.",
+          "🔍 <strong>Watch it roll:</strong> See the velocity, forces, and graphs follow your exact command!"
+        ],
+        funQuestion: "Can you create a formula that makes the cart bounce back and forth like a yo-yo?"
+      }
+    }
+  };
+
+  /* Simulation State Variables */
+  let currentTopicKey = 'topic1_poly';
+  let explanationMode = 'exam';
+  let activePlotType = 'v';
+
+  let isSimRunning = false;
+  let animFrameId = null;
+  let speedMultiplier = 1.0;
+
+  let simState = { t: 0, x: 0, v: 0, a: 0, m: 1.0, totalDistance: 0 };
+  let historyData = [];
+  let customAccelFn = null;
+
+  const motionCanvas = document.getElementById('motionCanvas');
+  const motionCtx = motionCanvas.getContext('2d');
+  const graphCanvas = document.getElementById('graphCanvas');
+  const graphCtx = graphCanvas.getContext('2d');
+
+  function resizeAllCanvases() {
+    const dpr = window.devicePixelRatio || 1;
+    [motionCanvas, graphCanvas].forEach(cnv => {
+      const rect = cnv.getBoundingClientRect();
+      cnv.width = rect.width * dpr;
+      cnv.height = rect.height * dpr;
+      const ctx = cnv.getContext('2d');
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
+    });
+    renderMotionCanvas();
+    renderGraphCanvas();
+  }
+  window.addEventListener('resize', resizeAllCanvases);
+
+  function parseMathExpression(exprStr) {
+    try {
+      let clean = exprStr
+        .replace(/\^/g, '**')
+        .replace(/\bsin\b/g, 'Math.sin')
+        .replace(/\bcos\b/g, 'Math.cos')
+        .replace(/\btan\b/g, 'Math.tan')
+        .replace(/\bexp\b/g, 'Math.exp')
+        .replace(/\blog\b/g, 'Math.log')
+        .replace(/\bln\b/g, 'Math.log')
+        .replace(/\bsqrt\b/g, 'Math.sqrt')
+        .replace(/\bpi\b/gi, 'Math.PI');
+      const fn = new Function('t', 'x', 'v', `return (${clean});`);
+      fn(0, 0, 0);
+      return fn;
+    } catch (e) {
+      console.error("Invalid Math Expression:", e);
+      return null;
+    }
+  }
+
+  function applySandboxExpression() {
+    const exprInput = document.getElementById('sandboxExpr').value;
+    const parsed = parseMathExpression(exprInput);
+    if (parsed) {
+      customAccelFn = parsed;
+      resetSimulation();
+      renderExplanationCard();
+    } else {
+      const sandboxExpr = document.getElementById('sandboxExpr');
+      sandboxExpr.classList.add('border-rose-500');
+      setTimeout(() => sandboxExpr.classList.remove('border-rose-500'), 1500);
+    }
+  }
+
+  function rk4Step(t, x, v, dt, accelFn) {
+    const k1_v = accelFn(t, x, v);
+    const k1_x = v;
+
+    const t2 = t + 0.5 * dt;
+    const x2 = x + 0.5 * dt * k1_x;
+    const v2 = v + 0.5 * dt * k1_v;
+    const k2_v = accelFn(t2, x2, v2);
+    const k2_x = v2;
+
+    const t3 = t + 0.5 * dt;
+    const x3 = x + 0.5 * dt * k2_x;
+    const v3 = v + 0.5 * dt * k2_v;
+    const k3_v = accelFn(t3, x3, v3);
+    const k3_x = v3;
+
+    const t4 = t + dt;
+    const x4 = x + dt * k3_x;
+    const v4 = v + dt * k3_v;
+    const k4_v = accelFn(t4, x4, v4);
+    const k4_x = v4;
+
+    const newX = x + (dt / 6) * (k1_x + 2 * k2_x + 2 * k3_x + k4_x);
+    const newV = v + (dt / 6) * (k1_v + 2 * k2_v + 2 * k3_v + k4_v);
+    const newT = t + dt;
+
+    return { t: newT, x: newX, v: newV };
+  }
+
+  let lastRealTime = 0;
+  function simulationLoop(timestamp) {
+    if (!isSimRunning) return;
+
+    if (!lastRealTime) lastRealTime = timestamp;
+    const elapsedSeconds = Math.min((timestamp - lastRealTime) / 1000, 0.1);
+    lastRealTime = timestamp;
+
+    const topic = TOPICS[currentTopicKey];
+    const activeAccel = (currentTopicKey === 'sandbox_custom' && customAccelFn) ? customAccelFn : topic.accel;
+    
+    const subSteps = 6;
+    const dt = (elapsedSeconds * speedMultiplier) / subSteps;
+
+    for (let step = 0; step < subSteps; step++) {
+      if (currentTopicKey === 'topic3_dual' && simState.v <= 0.001 && simState.t > 0.5) {
+        simState.v = 0;
+        simState.a = 0;
+        isSimRunning = false;
+        document.getElementById('terminalTag').classList.remove('hidden');
+        updatePlayButtonState();
+        break;
+      }
+
+      if (simState.t >= topic.maxT) {
+        isSimRunning = false;
+        updatePlayButtonState();
+        break;
+      }
+
+      const prevX = simState.x;
+      const next = rk4Step(simState.t, simState.x, simState.v, dt, activeAccel);
+      simState.t = next.t;
+      simState.x = next.x;
+      simState.v = next.v;
+      simState.a = activeAccel(simState.t, simState.x, simState.v);
+      simState.totalDistance += Math.abs(simState.x - prevX);
+
+      historyData.push({ t: simState.t, x: simState.x, v: simState.v, a: simState.a, s: simState.totalDistance });
+    }
+
+    updateTelemetryDOM();
+    renderMotionCanvas();
+    renderGraphCanvas();
+
+    if (isSimRunning) {
+      animFrameId = requestAnimationFrame(simulationLoop);
+    }
+  }
+
+  function togglePlay() {
+    isSimRunning = !isSimRunning;
+    lastRealTime = 0;
+    updatePlayButtonState();
+
+    if (isSimRunning) {
+      animFrameId = requestAnimationFrame(simulationLoop);
+    } else {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+    }
+  }
+
+  function updatePlayButtonState() {
+    const playBtn = document.getElementById('playBtn');
+    const playText = document.getElementById('playText');
+    const playIcon = document.getElementById('playIcon');
+
+    if (isSimRunning) {
+      playBtn.className = "col-span-2 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2";
+      playText.textContent = "Pause Motion";
+      playIcon.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>`;
+    } else {
+      playBtn.className = "col-span-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2";
+      playText.textContent = simState.t >= TOPICS[currentTopicKey].maxT ? "Finished (Reset)" : "Resume Motion";
+      playIcon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>`;
+    }
+  }
+
+  function resetSimulation() {
+    if (isSimRunning) togglePlay();
+    const topic = TOPICS[currentTopicKey];
+    const activeAccel = (currentTopicKey === 'sandbox_custom' && customAccelFn) ? customAccelFn : topic.accel;
+
+    simState.t = 0;
+    simState.m = parseFloat(document.getElementById('paramMass').value) || topic.defaultMass;
+    simState.v = parseFloat(document.getElementById('paramV0').value) || topic.defaultV0;
+    simState.x = parseFloat(document.getElementById('paramX0').value) || topic.defaultX0;
+    simState.a = activeAccel(0, simState.x, simState.v);
+    simState.totalDistance = 0;
+
+    document.getElementById('terminalTag').classList.add('hidden');
+
+    historyData = [{ t: simState.t, x: simState.x, v: simState.v, a: simState.a, s: 0 }];
+
+    updateTelemetryDOM();
+    renderMotionCanvas();
+    renderGraphCanvas();
+  }
+
+  function onTopicChange() {
+    const selector = document.getElementById('topicSelector');
+    currentTopicKey = selector.value;
+    const topic = TOPICS[currentTopicKey];
+
+    const sandboxCard = document.getElementById('sandboxCard');
+    if (currentTopicKey === 'sandbox_custom') {
+      sandboxCard.classList.remove('hidden');
+      applySandboxExpression();
+    } else {
+      sandboxCard.classList.add('hidden');
+    }
+
+    document.getElementById('paramMass').value = topic.defaultMass;
+    document.getElementById('paramV0').value = topic.defaultV0;
+    document.getElementById('paramX0').value = topic.defaultX0;
+
+    document.getElementById('topicCatBadge').textContent = topic.category;
+    document.getElementById('diffFormulaBadge').textContent = topic.diffFormula;
+    document.getElementById('topicCoreRule').textContent = topic.rule;
+
+    resetSimulation();
+    renderExplanationCard();
+  }
+
+  function updateCustomParams() {
+    simState.m = Math.max(0.1, parseFloat(document.getElementById('paramMass').value) || 1.0);
+    simState.v = parseFloat(document.getElementById('paramV0').value) || 0;
+    simState.x = parseFloat(document.getElementById('paramX0').value) || 0;
+    const activeAccel = (currentTopicKey === 'sandbox_custom' && customAccelFn) ? customAccelFn : TOPICS[currentTopicKey].accel;
+    simState.a = activeAccel(simState.t, simState.x, simState.v);
+    renderMotionCanvas();
+    renderGraphCanvas();
+  }
+
+  function updateSpeed() {
+    speedMultiplier = parseFloat(document.getElementById('simSpeed').value) || 1.0;
+  }
+
+  function setActivePlot(type) {
+    activePlotType = type;
+    document.getElementById('plotVBtn').className = type === 'v' ? 'px-2 py-0.5 text-xs rounded bg-sky-500 text-slate-950 font-bold' : 'px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700';
+    document.getElementById('plotABtn').className = type === 'a' ? 'px-2 py-0.5 text-xs rounded bg-amber-500 text-slate-950 font-bold' : 'px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700';
+    document.getElementById('plotXBtn').className = type === 'x' ? 'px-2 py-0.5 text-xs rounded bg-emerald-500 text-slate-950 font-bold' : 'px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700';
+    document.getElementById('plotPhaseBtn').className = type === 'vx' ? 'px-2 py-0.5 text-xs rounded bg-purple-500 text-slate-950 font-bold' : 'px-2 py-0.5 text-xs rounded bg-slate-800 text-slate-300 hover:bg-slate-700';
+    
+    const insightTag = document.getElementById('graphInsightTag');
+    if (type === 'v') insightTag.textContent = "Area under v-t = Displacement x";
+    else if (type === 'a') insightTag.textContent = "Area under a-t = Change in Velocity Δv";
+    else if (type === 'x') insightTag.textContent = "Slope of x-t = Velocity v";
+    else if (type === 'vx') insightTag.textContent = "Phase space: Kinetic energy trajectory (v vs x)";
+
+    renderGraphCanvas();
+  }
+
+  function switchExplanationMode(newMode) {
+    explanationMode = newMode;
+    const examBtn = document.getElementById('examModeBtn');
+    const kidBtn = document.getElementById('kidModeBtn');
+
+    if (newMode === 'exam') {
+      examBtn.className = "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow-sm";
+      kidBtn.className = "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 text-slate-400 hover:text-amber-300";
+    } else {
+      kidBtn.className = "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 bg-amber-400 text-slate-950 shadow-sm";
+      examBtn.className = "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 text-slate-400 hover:text-sky-300";
+    }
+
+    renderExplanationCard();
+    renderMotionCanvas();
+  }
+
+  function toggleTrapModal() {
+    const modal = document.getElementById('trapModal');
+    modal.classList.toggle('hidden');
+  }
+
+  function updateTelemetryDOM() {
+    document.getElementById('liveT').innerHTML = `${simState.t.toFixed(2)} <span class="text-xs font-normal text-slate-400">s</span>`;
+    document.getElementById('liveX').innerHTML = `${simState.x.toFixed(2)} <span class="text-xs font-normal text-slate-400">m</span>`;
+    document.getElementById('liveV').innerHTML = `${simState.v.toFixed(2)} <span class="text-xs font-normal text-slate-400">m/s</span>`;
+    document.getElementById('liveA').innerHTML = `${simState.a.toFixed(2)} <span class="text-xs font-normal text-slate-400">m/s²</span>`;
+    
+    const fNet = simState.m * simState.a;
+    document.getElementById('liveF').textContent = `${fNet >= 0 ? '+' : ''}${fNet.toFixed(2)} N`;
+    document.getElementById('liveTotalDist').textContent = `${simState.totalDistance.toFixed(2)} m`;
+  }
+
+  /* Canvas 1: Interactive Physical Track Renderer */
+  function renderMotionCanvas() {
+    const w = motionCanvas.clientWidth;
+    const h = motionCanvas.clientHeight;
+    motionCtx.clearRect(0, 0, w, h);
+
+    const isRocket = currentTopicKey === 'topic1_rocket';
+    const isKid = explanationMode === 'kid';
+
+    if (isRocket) {
+      drawVerticalTrack(w, h, isKid);
+    } else {
+      drawHorizontalTrack(w, h, isKid);
+    }
+  }
+
+  function drawHorizontalTrack(w, h, isKid) {
+    const baselineY = h * 0.65;
+
+    motionCtx.strokeStyle = '#334155';
+    motionCtx.lineWidth = 2;
+    motionCtx.beginPath();
+    motionCtx.moveTo(20, baselineY);
+    motionCtx.lineTo(w - 20, baselineY);
+    motionCtx.stroke();
+
+    const originScreenX = 70;
+    const scalePxPerMeter = Math.max(10, Math.min(28, (w - 120) / 18));
+
+    motionCtx.fillStyle = '#64748b';
+    motionCtx.font = '10px monospace';
+    for (let meter = -4; meter <= 30; meter += 2) {
+      const sx = originScreenX + meter * scalePxPerMeter;
+      if (sx >= 20 && sx <= w - 20) {
+        motionCtx.beginPath();
+        motionCtx.moveTo(sx, baselineY - 4);
+        motionCtx.lineTo(sx, baselineY + 4);
+        motionCtx.strokeStyle = meter === 0 ? '#38bdf8' : '#475569';
+        motionCtx.lineWidth = meter === 0 ? 2 : 1;
+        motionCtx.stroke();
+        motionCtx.fillText(`${meter}m`, sx - 8, baselineY + 16);
+      }
+    }
+
+    const screenX = originScreenX + simState.x * scalePxPerMeter;
+
+    if (historyData.length > 2) {
+      motionCtx.beginPath();
+      const startIdx = Math.max(0, historyData.length - 30);
+      for (let i = startIdx; i < historyData.length; i++) {
+        const hx = originScreenX + historyData[i].x * scalePxPerMeter;
+        if (i === startIdx) motionCtx.moveTo(hx, baselineY - 14);
+        else motionCtx.lineTo(hx, baselineY - 14);
+      }
+      motionCtx.strokeStyle = isKid ? 'rgba(251, 191, 36, 0.3)' : 'rgba(56, 189, 248, 0.3)';
+      motionCtx.lineWidth = 4;
+      motionCtx.stroke();
+    }
+
+    if (isKid) {
+      motionCtx.save();
+      motionCtx.translate(screenX, baselineY - 16);
+      motionCtx.fillStyle = '#f59e0b';
+      motionCtx.beginPath();
+      motionCtx.roundRect(-20, -14, 40, 20, 6);
+      motionCtx.fill();
+      motionCtx.strokeStyle = '#d97706';
+      motionCtx.lineWidth = 2;
+      motionCtx.stroke();
+
+      motionCtx.fillStyle = '#0f172a';
+      motionCtx.beginPath();
+      motionCtx.arc(-12, 8, 5, 0, Math.PI * 2);
+      motionCtx.arc(12, 8, 5, 0, Math.PI * 2);
+      motionCtx.fill();
+
+      motionCtx.fillStyle = '#000';
+      motionCtx.beginPath();
+      motionCtx.arc(-4, -6, 2, 0, Math.PI * 2);
+      motionCtx.arc(8, -6, 2, 0, Math.PI * 2);
+      motionCtx.fill();
+      motionCtx.restore();
+    } else {
+      motionCtx.save();
+      motionCtx.translate(screenX, baselineY - 14);
+      motionCtx.fillStyle = '#38bdf8';
+      motionCtx.beginPath();
+      motionCtx.arc(0, 0, 11, 0, Math.PI * 2);
+      motionCtx.fill();
+      motionCtx.strokeStyle = '#e2e8f0';
+      motionCtx.lineWidth = 2;
+      motionCtx.stroke();
+      motionCtx.fillStyle = '#ffffff';
+      motionCtx.font = 'bold 10px monospace';
+      motionCtx.fillText('P', -3, 3);
+      motionCtx.restore();
+    }
+
+    const vArrowLen = Math.max(-80, Math.min(80, simState.v * 6));
+    if (Math.abs(vArrowLen) > 3) {
+      drawArrow(motionCtx, screenX, baselineY - 34, screenX + vArrowLen, baselineY - 34, '#38bdf8', `v = ${simState.v.toFixed(1)}`);
+    }
+
+    const fNet = simState.m * simState.a;
+    const fArrowLen = Math.max(-80, Math.min(80, fNet * 4));
+    if (Math.abs(fArrowLen) > 3) {
+      drawArrow(motionCtx, screenX, baselineY - 48, screenX + fArrowLen, baselineY - 48, '#fbbf24', `F = ${fNet.toFixed(1)}N`);
+    }
+  }
+
+  function drawVerticalTrack(w, h, isKid) {
+    const trackX = w * 0.5;
+    const groundY = h * 0.85;
+
+    motionCtx.fillStyle = '#334155';
+    motionCtx.fillRect(trackX - 80, groundY, 160, 6);
+
+    motionCtx.strokeStyle = '#1e293b';
+    motionCtx.lineWidth = 2;
+    motionCtx.beginPath();
+    motionCtx.moveTo(trackX, 15);
+    motionCtx.lineTo(trackX, groundY);
+    motionCtx.stroke();
+
+    const maxRocketHeight = 180;
+    const pxPerMeter = (groundY - 30) / maxRocketHeight;
+    const rocketScreenY = groundY - simState.x * pxPerMeter;
+
+    motionCtx.fillStyle = '#64748b';
+    motionCtx.font = '9px monospace';
+    for (let alt = 0; alt <= 180; alt += 30) {
+      const sy = groundY - alt * pxPerMeter;
+      motionCtx.strokeStyle = '#334155';
+      motionCtx.beginPath();
+      motionCtx.moveTo(trackX - 10, sy);
+      motionCtx.lineTo(trackX + 10, sy);
+      motionCtx.stroke();
+      motionCtx.fillText(`${alt}m`, trackX + 16, sy + 3);
+    }
+
+    motionCtx.save();
+    motionCtx.translate(trackX, Math.max(25, rocketScreenY));
+
+    if (isKid) {
+      motionCtx.fillStyle = '#ef4444';
+      motionCtx.beginPath();
+      motionCtx.moveTo(0, -18);
+      motionCtx.lineTo(9, -2);
+      motionCtx.lineTo(9, 12);
+      motionCtx.lineTo(-9, 12);
+      motionCtx.lineTo(-9, -2);
+      motionCtx.closePath();
+      motionCtx.fill();
+    } else {
+      motionCtx.fillStyle = '#38bdf8';
+      motionCtx.beginPath();
+      motionCtx.arc(0, 0, 9, 0, Math.PI * 2);
+      motionCtx.fill();
+      motionCtx.strokeStyle = '#fff';
+      motionCtx.lineWidth = 1.5;
+      motionCtx.stroke();
+    }
+    motionCtx.restore();
+
+    motionCtx.fillStyle = '#38bdf8';
+    motionCtx.font = '11px monospace';
+    motionCtx.fillText(`h = ${simState.x.toFixed(1)} m`, trackX - 90, Math.max(30, rocketScreenY));
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color, label) {
+    const headLen = 6;
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+
+    if (label) {
+      ctx.font = '10px monospace';
+      ctx.fillText(label, (x1 + x2) / 2 - 14, y1 - 4);
+    }
+  }
+
+  /* Canvas 2: Real-time Graphs & Shaded Integral Area */
+  function renderGraphCanvas() {
+    const w = graphCanvas.clientWidth;
+    const h = graphCanvas.clientHeight;
+    graphCtx.clearRect(0, 0, w, h);
+
+    const padL = 45;
+    const padR = 25;
+    const padT = 25;
+    const padB = 30;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    const topic = TOPICS[currentTopicKey];
+
+    let xMin = 0;
+    let xMax = topic.maxT;
+    let yMin = -2;
+    let yMax = 12;
+
+    if (activePlotType === 'v') {
+      const vVals = historyData.map(d => d.v);
+      const maxRecordedV = Math.max(10, ...vVals);
+      const minRecordedV = Math.min(-2, ...vVals);
+      yMin = Math.floor(minRecordedV - 1);
+      yMax = Math.ceil(maxRecordedV + 2);
+    } else if (activePlotType === 'a') {
+      const aVals = historyData.map(d => d.a);
+      yMin = Math.min(-12, ...aVals) - 1;
+      yMax = Math.max(12, ...aVals) + 1;
+    } else if (activePlotType === 'x') {
+      const xVals = historyData.map(d => d.x);
+      yMin = Math.min(-2, ...xVals);
+      yMax = Math.max(15, ...xVals) + 2;
+    } else if (activePlotType === 'vx') {
+      xMin = Math.min(0, ...historyData.map(d => d.x));
+      xMax = Math.max(10, ...historyData.map(d => d.x));
+      yMin = Math.min(0, ...historyData.map(d => d.v));
+      yMax = Math.max(10, ...historyData.map(d => d.v)) + 2;
+    }
+
+    const toScreenX = (val) => padL + ((val - xMin) / (xMax - xMin || 1)) * plotW;
+    const toScreenY = (val) => padT + (1 - (val - yMin) / (yMax - yMin || 1)) * plotH;
+
+    graphCtx.strokeStyle = '#1e293b';
+    graphCtx.lineWidth = 1;
+    graphCtx.fillStyle = '#64748b';
+    graphCtx.font = '9px monospace';
+
+    if (yMin <= 0 && yMax >= 0) {
+      const zeroY = toScreenY(0);
+      graphCtx.beginPath();
+      graphCtx.moveTo(padL, zeroY);
+      graphCtx.lineTo(w - padR, zeroY);
+      graphCtx.strokeStyle = '#475569';
+      graphCtx.stroke();
+      graphCtx.fillText('0', padL - 14, zeroY + 3);
+    }
+
+    graphCtx.strokeRect(padL, padT, plotW, plotH);
+
+    graphCtx.fillStyle = '#94a3b8';
+    graphCtx.font = '10px monospace';
+    if (activePlotType === 'vx') {
+      graphCtx.fillText('Displacement x (m)', w - padR - 95, h - 10);
+      graphCtx.fillText('Velocity v (m/s)', 8, padT - 8);
+    } else {
+      graphCtx.fillText('Time t (s)', w - padR - 60, h - 10);
+      if (activePlotType === 'v') graphCtx.fillText('Velocity v (m/s)', 8, padT - 8);
+      else if (activePlotType === 'a') graphCtx.fillText('Accel a (m/s²)', 8, padT - 8);
+      else if (activePlotType === 'x') graphCtx.fillText('Displacement x (m)', 8, padT - 8);
+    }
+
+    if (activePlotType === 'v' && historyData.length > 2) {
+      graphCtx.save();
+      graphCtx.beginPath();
+      const zeroScreenY = toScreenY(0);
+      graphCtx.moveTo(toScreenX(historyData[0].t), zeroScreenY);
+
+      for (let i = 0; i < historyData.length; i++) {
+        const pt = historyData[i];
+        graphCtx.lineTo(toScreenX(pt.t), toScreenY(pt.v));
+      }
+      const lastPt = historyData[historyData.length - 1];
+      graphCtx.lineTo(toScreenX(lastPt.t), zeroScreenY);
+      graphCtx.closePath();
+
+      const grad = graphCtx.createLinearGradient(0, padT, 0, padT + plotH);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.02)');
+      graphCtx.fillStyle = grad;
+      graphCtx.fill();
+      graphCtx.restore();
+
+      graphCtx.fillStyle = '#38bdf8';
+      graphCtx.font = '10px monospace';
+      graphCtx.fillText(`∫ v dt = Displacement = ${simState.x.toFixed(2)} m`, padL + 10, padT + 20);
+    }
+
+    if (historyData.length > 1) {
+      graphCtx.strokeStyle = activePlotType === 'v' ? '#38bdf8' : activePlotType === 'a' ? '#fbbf24' : activePlotType === 'x' ? '#34d399' : '#c084fc';
+      graphCtx.lineWidth = 2.5;
+      graphCtx.beginPath();
+
+      for (let i = 0; i < historyData.length; i++) {
+        const pt = historyData[i];
+        const px = toScreenX(activePlotType === 'vx' ? pt.x : pt.t);
+        const py = toScreenY(activePlotType === 'v' ? pt.v : activePlotType === 'a' ? pt.a : activePlotType === 'x' ? pt.x : pt.v);
+
+        if (i === 0) graphCtx.moveTo(px, py);
+        else graphCtx.lineTo(px, py);
+      }
+      graphCtx.stroke();
+    }
+  }
+
+  /* Dynamic HTML Explanation Generator */
+  function renderExplanationCard() {
+    const topic = TOPICS[currentTopicKey];
+    const container = document.getElementById('explanationContainer');
+
+    if (explanationMode === 'exam') {
+      const exam = topic.examContent;
+      let stepsHtml = exam.steps.map(s => `
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div class="text-xs font-semibold text-sky-400 mb-1">${s.title}</div>
+          <div class="font-mono text-xs text-slate-200 overflow-x-auto py-1 katex-render" data-tex="${s.math}"></div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-wide">${exam.headline}</h3>
+            <p class="text-xs text-slate-400">${topic.title}</p>
+          </div>
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-medium">CAIE 9231 Exam Method</span>
+        </div>
+
+        <p class="text-xs text-slate-300 leading-relaxed">${exam.summary}</p>
+        
+        <div class="flex flex-col gap-2.5 my-1">
+          ${stepsHtml}
+        </div>
+
+        <div class="bg-sky-950/40 border border-sky-800/80 rounded-xl p-3 text-xs text-sky-200 flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-sky-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div><strong>Cambridge Mark Scheme Tip:</strong> ${exam.tip}</div>
+        </div>
+      `;
+    } else {
+      const kid = topic.kidContent;
+      let bulletsHtml = kid.bulletPoints.map(b => `
+        <li class="bg-slate-950 p-2.5 rounded-xl border border-amber-900/40 text-xs text-slate-200">${b}</li>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between border-b border-amber-900/40 pb-2">
+          <div>
+            <h3 class="text-sm font-bold text-amber-300 tracking-wide">${kid.headline}</h3>
+            <p class="text-xs text-amber-200/70">Story time for Curious Little Minds</p>
+          </div>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">🧸 6-Year-Old Mode</span>
+        </div>
+
+        <div class="bg-amber-950/20 border border-amber-800/50 rounded-xl p-3 text-xs md:text-sm text-amber-100 leading-relaxed">
+          ${kid.simpleStory}
+        </div>
+
+        <ul class="flex flex-col gap-2 my-1">
+          ${bulletsHtml}
+        </ul>
+
+        <div class="bg-indigo-950/40 border border-indigo-800/80 rounded-xl p-3 text-xs text-indigo-200 flex items-center gap-2">
+          <span class="text-lg">💡</span>
+          <div><strong>Fun Puzzle Question:</strong> ${kid.funQuestion}</div>
+        </div>
+      `;
+    }
+
+    renderKaTeXElements();
+  }
+
+  function renderKaTeXElements() {
+    if (window.katex) {
+      document.querySelectorAll('.katex-render').forEach(el => {
+        const tex = el.getAttribute('data-tex');
+        if (tex) {
+          try {
+            katex.render(tex, el, { displayMode: true, throwOnError: false });
+          } catch (e) {
+            el.textContent = tex;
+          }
+        }
+      });
+    }
+  }
+
+  window.onload = () => {
+    resizeAllCanvases();
+    onTopicChange();
+  };
+</script>
+<!-- Robust Global Logo & Home Link Injector -->
+<script>
+(function() {
+  const LOGO_SRC = 'logo.png';
+  const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+
+  function applyLogo() {
+    // 1. Favicon Injection
+    let fav = document.querySelector("link[rel~='icon']");
+    if (!fav) {
+      fav = document.createElement('link');
+      fav.rel = 'icon';
+      document.head.appendChild(fav);
+    }
+    fav.href = LOGO_SRC;
+
+    // 2. Identify Target in Vectors.html vs Tailwind Pages
+    const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
+    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+
+    const target = brandIcon || tailwindIcon;
+    if (!target) return;
+
+    // Avoid infinite replacement loops
+    if (target.getAttribute('data-logo-applied') === 'true' || target.parentElement?.getAttribute('data-logo-applied') === 'true') {
+      return;
+    }
+
+    // Build replacement element
+    const container = document.createElement(isIndex ? 'div' : 'a');
+    if (!isIndex) {
+      container.href = 'index.html';
+      container.title = 'Return to Portal Home';
+    }
+
+    container.setAttribute('data-logo-applied', 'true');
+    container.style.display = 'inline-flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.width = '42px';
+    container.style.height = '42px';
+    container.style.minWidth = '42px';
+    container.style.borderRadius = '12px';
+    container.style.background = 'rgba(255, 255, 255, 0.06)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    container.style.padding = '3px';
+    container.style.overflow = 'hidden';
+    container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    container.style.transition = 'transform 0.2s ease';
+    container.style.cursor = isIndex ? 'default' : 'pointer';
+
+    container.onmouseenter = () => { if (!isIndex) container.style.transform = 'scale(1.08)'; };
+    container.onmouseleave = () => { if (!isIndex) container.style.transform = 'scale(1)'; };
+
+    const img = document.createElement('img');
+    img.src = LOGO_SRC;
+    img.alt = 'Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    container.appendChild(img);
+    target.replaceWith(container);
+  }
+
+  // Run at all lifecycle stages to survive KaTeX re-renders
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLogo);
+  } else {
+    applyLogo();
+  }
+
+  window.addEventListener('load', () => {
+    applyLogo();
+    // Safety delay for async renderMath(document.body) calls
+    setTimeout(applyLogo, 250);
+  });
+})();
+</script>
+</body>
+</html>

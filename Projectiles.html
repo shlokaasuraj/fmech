@@ -62,6 +62,10 @@
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <!-- Title & Syllabus Badge -->
       <div class="flex items-center gap-3">
+        <!-- Dedicated Portal Logo Target to protect badgeIcon from being replaced -->
+        <div class="brand hidden">
+          <div class="brand-icon"></div>
+        </div>
         <div id="badgeIcon" class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xl shadow-inner">
           🚀
         </div>
@@ -101,8 +105,8 @@
   <!-- Topic Navigation Bar -->
   <div class="bg-slate-900 border-b border-slate-800 px-4 py-2">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2">
-      <div class="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 md:pb-0 scrollbar-thin">
-        <span class="text-slate-400 font-semibold uppercase text-[10px] whitespace-nowrap mr-1">📚 Exam Topics:</span>
+      <div class="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 md:pb-0 scrollbar-thin" id="topicTabsBar">
+        <span id="topicSectionLabel" class="text-slate-400 font-semibold uppercase text-[10px] whitespace-nowrap mr-1">📚 Exam Topics:</span>
         <button onclick="selectTopic('cartesian')" id="tab-cartesian" class="topic-tab px-2.5 py-1 rounded-lg bg-blue-600/30 border border-blue-500 text-blue-200 whitespace-nowrap font-medium transition">
           1. Cartesian & $\tan\theta$ Quadratic
         </button>
@@ -150,7 +154,7 @@
             <span class="text-slate-600">|</span>
             <span class="text-slate-400">Position: <b id="hudCoords" class="text-sky-400 font-mono">(0.0m, 0.0m)</b></span>
             <span class="text-slate-600">|</span>
-            <span class="text-slate-400">Speed $v$: <b id="hudSpeed" class="text-emerald-400 font-mono">0.0 m/s</b></span>
+            <span class="text-slate-400">Speed <span class="math-render">$v$</span>: <b id="hudSpeed" class="text-emerald-400 font-mono">0.0 m/s</b></span>
           </div>
 
           <div id="targetBadge" class="hidden bg-purple-950/90 backdrop-blur border border-purple-600 text-purple-200 rounded-xl px-3 py-1.5 text-xs flex items-center gap-2 pointer-events-auto shadow-lg">
@@ -209,28 +213,28 @@
         <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
           <div class="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-md"></div>
           <div>
-            <div class="text-[10px] text-slate-400 font-semibold uppercase">Resultant Velocity $\mathbf{v}$</div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Resultant Velocity <span class="math-render">$\mathbf{v}$</span></div>
             <div id="metricV" class="font-mono text-sky-400 font-bold">20.0 m/s</div>
           </div>
         </div>
         <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
           <div class="w-3.5 h-3.5 rounded-full bg-amber-400 shadow-md"></div>
           <div>
-            <div class="text-[10px] text-slate-400 font-semibold uppercase">Horizontal $v_x$</div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Horizontal <span class="math-render">$v_x$</span></div>
             <div id="metricVx" class="font-mono text-amber-300 font-bold">18.1 m/s (Const)</div>
           </div>
         </div>
         <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
           <div class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-md"></div>
           <div>
-            <div class="text-[10px] text-slate-400 font-semibold uppercase">Vertical $v_y$</div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Vertical <span class="math-render">$v_y$</span></div>
             <div id="metricVy" class="font-mono text-emerald-300 font-bold">8.5 m/s</div>
           </div>
         </div>
         <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2.5 shadow">
           <div class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-md"></div>
           <div>
-            <div class="text-[10px] text-slate-400 font-semibold uppercase">Downward Accel $g$</div>
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Downward Accel <span class="math-render">$g$</span></div>
             <div class="font-mono text-rose-400 font-bold">-10.0 m/s²</div>
           </div>
         </div>
@@ -246,13 +250,13 @@
           <h2 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
             <span>⚙️</span> Launch Parameters
           </h2>
-          <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">CAIE $g = 10\text{ ms}^{-2}$</span>
+          <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">CAIE <span class="math-render">$g = 10\text{ ms}^{-2}$</span></span>
         </div>
 
         <!-- Initial Speed (u) -->
         <div>
           <div class="flex justify-between text-xs mb-1">
-            <label for="sliderU" class="text-slate-300 font-medium">Initial Speed ($u$):</label>
+            <label for="sliderU" class="text-slate-300 font-medium">Initial Speed (<span class="math-render">$u$</span>):</label>
             <span id="labelU" class="font-mono text-sky-400 font-semibold">20.0 m/s</span>
           </div>
           <input type="range" id="sliderU" min="2" max="60" step="0.5" value="20" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
@@ -261,7 +265,7 @@
         <!-- Launch Angle (theta) -->
         <div>
           <div class="flex justify-between text-xs mb-1">
-            <label for="sliderAngle" class="text-slate-300 font-medium">Launch Angle ($\theta$):</label>
+            <label for="sliderAngle" class="text-slate-300 font-medium">Launch Angle (<span class="math-render">$\theta$</span>):</label>
             <span id="labelAngle" class="font-mono text-amber-400 font-semibold">25.0° (Elevation)</span>
           </div>
           <input type="range" id="sliderAngle" min="-60" max="89" step="0.5" value="25" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
@@ -276,7 +280,7 @@
         <!-- Platform Height (h) -->
         <div>
           <div class="flex justify-between text-xs mb-1">
-            <label for="sliderH" class="text-slate-300 font-medium">Platform Height ($h$):</label>
+            <label for="sliderH" class="text-slate-300 font-medium">Platform Height (<span class="math-render">$h$</span>):</label>
             <span id="labelH" class="font-mono text-emerald-400 font-semibold">0.0 m (Ground level)</span>
           </div>
           <input type="range" id="sliderH" min="0" max="40" step="1" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
@@ -285,7 +289,7 @@
         <!-- Carrier horizontal velocity (Airplane drop) -->
         <div id="carrierBox" class="pt-2 border-t border-slate-800">
           <div class="flex justify-between text-xs mb-1">
-            <label for="sliderCarrier" class="text-slate-300 font-medium">Moving Carrier Velocity ($u_{\text{carrier}}$):</label>
+            <label for="sliderCarrier" class="text-slate-300 font-medium">Moving Carrier Velocity (<span class="math-render">$u_{\text{carrier}}$</span>):</label>
             <span id="labelCarrier" class="font-mono text-purple-400 font-semibold">0.0 m/s</span>
           </div>
           <input type="range" id="sliderCarrier" min="0" max="60" step="2" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
@@ -299,7 +303,7 @@
           </label>
           <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
             <input type="checkbox" id="checkGhost" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
-            <span>Ghost Trajectory ($t < 0$)</span>
+            <span>Ghost Trajectory (<span class="math-render">$t < 0$</span>)</span>
           </label>
           <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
             <input type="checkbox" id="checkKeyPoints" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
@@ -307,7 +311,7 @@
           </label>
           <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
             <input type="checkbox" id="checkSightLine" checked class="rounded bg-slate-800 border-slate-700 text-sky-500">
-            <span>Line of Sight Angle $\beta$</span>
+            <span>Line of Sight Angle <span class="math-render">$\beta$</span></span>
           </label>
         </div>
       </div>
@@ -869,12 +873,101 @@
         const pPerp = worldToScreen(perpPt.x, perpPt.y);
         ctx.fillStyle = '#a855f7';
         ctx.beginPath();
-        ctx.arc(pPerp.px, pPerp.py, 4.5, 0, Math.PI * 2);
+        ctx.arc(pPerp.px, pPerp.py, 5.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.font = '10px JetBrains Mono, monospace';
         ctx.fillStyle = '#c084fc';
-        ctx.fillText(`u ⊥ v (t=${kin.tPerp.toFixed(2)}s)`, pPerp.px + 10, pPerp.py);
+        ctx.fillText(`u ⊥ v (t=${kin.tPerp.toFixed(2)}s, 90°)`, pPerp.px + 12, pPerp.py - 6);
+
+        // Highlight orthogonal angle if in direction tab
+        if (state.currentTopic === 'direction') {
+          const uRad = (state.angleDeg * Math.PI) / 180;
+          const vRad = (perpPt.angle * Math.PI) / 180;
+          const armLen = 22;
+
+          // Right-angle square indicator
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([]);
+          const cosU = Math.cos(uRad);
+          const sinU = -Math.sin(uRad);
+          const cosV = Math.cos(vRad);
+          const sinV = -Math.sin(vRad);
+
+          ctx.beginPath();
+          ctx.moveTo(pPerp.px + armLen * 0.45 * cosU, pPerp.py + armLen * 0.45 * sinU);
+          ctx.lineTo(
+            pPerp.px + armLen * 0.45 * (cosU + cosV),
+            pPerp.py + armLen * 0.45 * (sinU + sinV)
+          );
+          ctx.lineTo(pPerp.px + armLen * 0.45 * cosV, pPerp.py + armLen * 0.45 * sinV);
+          ctx.stroke();
+
+          // Dotted initial direction line for visual reference
+          ctx.strokeStyle = 'rgba(192, 132, 252, 0.4)';
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(pPerp.px - 30 * cosU, pPerp.py - 30 * sinU);
+          ctx.lineTo(pPerp.px + 35 * cosU, pPerp.py + 35 * sinU);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // 4. Trajectory Fitting Equation Banner (Topic 5)
+      if (state.currentTopic === 'curvefit') {
+        const aCoeff = Math.tan((state.angleDeg * Math.PI) / 180);
+        const bCoeff = (g * (1 + aCoeff * aCoeff)) / (2 * state.u * state.u);
+        const pApex = worldToScreen(kin.apexX, kin.apexY);
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 1.5;
+        const badgeW = 190;
+        const badgeH = 26;
+        const bx = Math.max(10, pApex.px - badgeW / 2);
+        const by = Math.max(40, pApex.py - 42);
+
+        ctx.fillRect(bx, by, badgeW, badgeH);
+        ctx.strokeRect(bx, by, badgeW, badgeH);
+
+        ctx.fillStyle = '#67e8f9';
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.fillText(`y = ${aCoeff.toFixed(2)}x - ${bCoeff.toFixed(4)}x²`, bx + 10, by + 17);
+      }
+      ctx.restore();
+    }
+
+    function drawLineOfSight(kin) {
+      const curT = Math.min(state.currentTime, kin.flightTime);
+      const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
+      const pStart = worldToScreen(0, state.h);
+      const pBall = worldToScreen(pt.x, pt.y);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.85)';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(pStart.px, pStart.py);
+      ctx.lineTo(pBall.px, pBall.py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (curT > 0.08) {
+        // Line-of-sight arc at origin
+        const arcRadius = 24;
+        const sightRad = (pt.sightAngleDeg * Math.PI) / 180;
+        ctx.strokeStyle = '#f472b6';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(pStart.px, pStart.py, arcRadius, 0, -sightRad, sightRad < 0);
+        ctx.stroke();
+
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.fillStyle = '#f472b6';
+        ctx.fillText(`β = ${pt.sightAngleDeg.toFixed(1)}°`, pStart.px + arcRadius + 4, pStart.py - 6);
       }
       ctx.restore();
     }
@@ -1090,8 +1183,33 @@
       document.getElementById('maxTimeLabel').textContent = `${kin.flightTime.toFixed(2)}s`;
     }
 
+    /**
+     * Re-renders math formatting in a given container or element
+     */
+    function renderMath(targetElement) {
+      if (window.renderMathInElement && targetElement) {
+        renderMathInElement(targetElement, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function refreshStaticMath() {
+      const headerEl = document.querySelector('header');
+      const tabsEl = document.getElementById('topicTabsBar');
+      const mainEl = document.querySelector('main');
+      if (headerEl) renderMath(headerEl);
+      if (tabsEl) renderMath(tabsEl);
+      if (mainEl) renderMath(mainEl);
+    }
+
     function renderExplanations() {
       const container = document.getElementById('explanationContent');
+      if (!container) return;
       const kin = computeKinematics(state.u, state.angleDeg, state.h, state.carrierVx);
       const curT = Math.min(state.currentTime, kin.flightTime);
       const pt = getParticleAtTime(curT, state.u, state.angleDeg, state.h, state.carrierVx);
@@ -1102,16 +1220,8 @@
         renderEli6Mode(container, kin, curT, pt);
       }
 
-      // Re-trigger KaTeX rendering
-      if (window.renderMathInElement) {
-        renderMathInElement(container, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false }
-          ],
-          throwOnError: false
-        });
-      }
+      // Re-trigger KaTeX rendering inside dynamic explanations
+      renderMath(container);
     }
 
     function renderExamMode(container, kin, curT, pt) {
@@ -1286,6 +1396,84 @@
     }
 
     function renderEli6Mode(container, kin, curT, pt) {
+      let topicEli6Html = '';
+
+      if (state.currentTopic === 'cartesian') {
+        topicEli6Html = `
+          <div class="bg-slate-900 p-3 rounded-xl border border-amber-400/30 space-y-2">
+            <div class="font-bold text-amber-300 text-sm flex items-center gap-1.5">
+              <span>🎯</span> Story 1: Two Paths to the Same Cookie!
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              If your friend is standing far away holding a cookie jar, you can throw a ball to hit it in <b>two completely different ways</b>:
+            </p>
+            <ul class="text-[11px] text-amber-100/90 list-disc list-inside space-y-1">
+              <li><b>1. The Fast Flat Dart:</b> Aim low and throw quick! It reaches there super fast!</li>
+              <li><b>2. The Giant Rainbow Lob:</b> Aim super high into the clouds! It spends lots of time floating before falling right on target!</li>
+            </ul>
+            <p class="text-[10px] text-pink-300 bg-pink-950/30 p-2 rounded-lg border border-pink-500/20">
+              🔮 <b>The Magic Shield:</b> The pink dotted line is like a forcefield. Even superheroes cannot throw outside it without throwing harder!
+            </p>
+          </div>
+        `;
+      } else if (state.currentTopic === 'direction') {
+        topicEli6Html = `
+          <div class="bg-slate-900 p-3 rounded-xl border border-emerald-400/30 space-y-2">
+            <div class="font-bold text-emerald-300 text-sm flex items-center gap-1.5">
+              <span>📐</span> Story 2: Turning the Corner in the Sky!
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              When you launch the ball slanted up, notice the purple dot labeled <b>u ⊥ v</b>! That is the special moment when the ball makes an exact <b>"L" square corner (90 degrees)</b> compared to how you first threw it!
+            </p>
+            <p class="text-[11px] text-emerald-200">
+              ${kin.tPerp ? `✨ Look! It turns the square corner at <b>${kin.tPerp.toFixed(2)} seconds</b>!` : `✨ If you don't throw high enough, it hits the ground before it can turn the corner!`}
+            </p>
+          </div>
+        `;
+      } else if (state.currentTopic === 'platform') {
+        topicEli6Html = `
+          <div class="bg-slate-900 p-3 rounded-xl border border-amber-400/30 space-y-2">
+            <div class="font-bold text-amber-300 text-sm flex items-center gap-1.5">
+              <span>🏰</span> Story 3: Treehouse Jumps & The Ghost Ball!
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Standing on top of a cliff or playground tower? When you throw a ball off the edge, look backwards!
+            </p>
+            <div class="p-2 bg-slate-950 rounded-lg border border-slate-800 text-[11px] text-slate-300">
+              👻 <b>The Ghost Trail:</b> The grey dashed line shows where the ball <i>would have started</i> on the ground in the past to fly right through your hands!
+            </div>
+            <p class="text-[11px] text-amber-200">
+              ⚡ <b>Speed secret:</b> No matter if you throw it straight out or slanted down, it hits the grass at the exact same crash speed!
+            </p>
+          </div>
+        `;
+      } else if (state.currentTopic === 'elevation') {
+        topicEli6Html = `
+          <div class="bg-slate-900 p-3 rounded-xl border border-pink-400/30 space-y-2">
+            <div class="font-bold text-pink-300 text-sm flex items-center gap-1.5">
+              <span>🔦</span> Story 4: Follow the Flashlight Beam!
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Imagine shining a pink flashlight from your shoes straight at the ball as it flies. That line is your <b>Line-of-Sight</b> angle ($\beta$)!
+            </p>
+            <p class="text-[11px] text-pink-200">
+              At first you tilt your flashlight way up high, but as the ball flies farther and falls down, you have to slowly lower your flashlight back down towards the grass!
+            </p>
+          </div>
+        `;
+      } else if (state.currentTopic === 'curvefit') {
+        topicEli6Html = `
+          <div class="bg-slate-900 p-3 rounded-xl border border-cyan-400/30 space-y-2">
+            <div class="font-bold text-cyan-300 text-sm flex items-center gap-1.5">
+              <span>🕵️</span> Story 5: Detective Clues from the Sky Rainbow!
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              If someone froze the glowing curve in the sky and left, you can play detective! Just by measuring how steep it starts and how fat the rainbow belly is, you can calculate exactly how fast the ball was launched!
+            </p>
+          </div>
+        `;
+      }
+
       container.innerHTML = `
         <div class="space-y-3 font-eli6 text-slate-200">
           <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
@@ -1303,7 +1491,7 @@
               <span>🛼</span> Meet the Two Secret Helpers!
             </div>
             <p class="text-xs leading-relaxed text-amber-100/90">
-              When you throw a ball into the sky, it doesn't just do one thing. <b>Two invisible buddies</b> control it:
+              When you throw a ball into the sky, <b>two invisible buddies</b> make it curve:
             </p>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
@@ -1312,7 +1500,7 @@
                   <span>🛹</span> 1. The Sideways Skater
                 </div>
                 <p class="text-[11px] text-slate-300 mt-1">
-                  He carries the ball forwards at <b>${kin.ux.toFixed(1)} meters every single second</b>. Nobody slows him down, so he glides forever!
+                  Glides forward at <b>${kin.ux.toFixed(1)} meters every second</b>. Nothing slows him down!
                 </p>
               </div>
 
@@ -1321,21 +1509,14 @@
                   <span>🪂</span> 2. The Gravity Monster
                 </div>
                 <p class="text-[11px] text-slate-300 mt-1">
-                  He is standing at the bottom pulling down by <b>10 speed points</b> every second until the ball reaches the top and falls down!
+                  Pulls down by <b>10 speed points</b> every second until the ball reaches the top and falls down!
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- Drag Hint Card -->
-          <div class="bg-blue-950/30 border border-blue-500/30 p-3 rounded-2xl text-xs space-y-1">
-            <div class="font-bold text-sky-300 flex items-center gap-1">
-              <span>🖐️</span> Play with the Ball Yourself!
-            </div>
-            <p class="text-[11px] text-blue-100/90 leading-relaxed">
-              Grab the glowing ball with your finger or mouse and drag it along the flying curve! Watch how the yellow arrow (sideways) never changes, while the green arrow (up-down) gets pulled down!
-            </p>
-          </div>
+          <!-- Active Section Story -->
+          ${topicEli6Html}
 
           <!-- Where is it right now? -->
           <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl space-y-1.5">
@@ -1345,12 +1526,12 @@
             <div class="text-xs text-slate-300 space-y-1">
               ${
                 curT < 0.05
-                  ? `🚀 <b>Ready for Blastoff!</b> The ball is waiting at the launcher with speed <b>${state.u} m/s</b>. Tap ▶ or drag it forward!`
+                  ? `🚀 <b>Ready for Blastoff!</b> Ball is waiting at launcher with speed <b>${state.u} m/s</b>. Tap ▶ or drag it along the line!`
                   : curT < kin.tApex
-                  ? `🧗 <b>Climbing Upwards!</b> The ball reached <b>${pt.y.toFixed(1)} meters high</b>. Gravity is slowing down its upward climb to <b>${pt.vy.toFixed(1)} m/s</b>.`
+                  ? `🧗 <b>Climbing Upwards!</b> Height is <b>${pt.y.toFixed(1)} meters</b>. Gravity is slowing upward speed down to <b>${pt.vy.toFixed(1)} m/s</b>.`
                   : curT < kin.flightTime
-                  ? `🦅 <b>Falling Down to Grass!</b> The ball crossed the highest point and is now plunging faster toward the ground!`
-                  : `💥 <b>Touchdown!</b> The ball reached the ground <b>${kin.rangeX.toFixed(1)} meters away</b>!`
+                  ? `🦅 <b>Falling Down!</b> Ball passed the highest point and is now plunging faster toward the grass!`
+                  : `💥 <b>Touchdown!</b> The ball landed on the ground <b>${kin.rangeX.toFixed(1)} meters away</b>!`
               }
             </div>
           </div>
@@ -1592,17 +1773,133 @@
       canvas.addEventListener('pointercancel', handlePointerUp);
     }
 
-    function selectTopic(topicKey) {
+    function updateTabLabels() {
+      const isEli6 = state.mode === 'eli6';
+      const secLabel = document.getElementById('topicSectionLabel');
+      if (secLabel) {
+        secLabel.textContent = isEli6 ? '🧸 Fun Adventures:' : '📚 Exam Topics:';
+      }
+
+      const tabTitles = isEli6 ? {
+        cartesian: '1. Two Paths to Target',
+        direction: '2. Turning the Corner',
+        platform: '3. Treehouse & Ghost Ball',
+        elevation: '4. Flashlight Beam $\\beta$',
+        curvefit: '5. Sky Rainbow Detective'
+      } : {
+        cartesian: '1. Cartesian & $\\tan\\theta$ Quadratic',
+        direction: '2. Tangents & $\\mathbf{u}\\perp\\mathbf{v}$',
+        platform: '3. Cliffs & Depression (Ghost Paths)',
+        elevation: '4. Line-of-Sight Angle $\\beta$',
+        curvefit: '5. Unknown Trajectory Fitting'
+      };
+
+      Object.keys(tabTitles).forEach(key => {
+        const el = document.getElementById(`tab-${key}`);
+        if (el) {
+          el.innerHTML = tabTitles[key];
+        }
+      });
+
+      const tabsBar = document.getElementById('topicTabsBar');
+      if (tabsBar) renderMath(tabsBar);
+    }
+
+    function selectTopic(topicKey, configureDefaults = true) {
       state.currentTopic = topicKey;
+      const isEli6 = state.mode === 'eli6';
+
+      // Update Tab button visuals
       document.querySelectorAll('.topic-tab').forEach(tab => {
         tab.className = 'topic-tab px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white whitespace-nowrap font-medium transition';
       });
       const activeTab = document.getElementById(`tab-${topicKey}`);
       if (activeTab) {
-        activeTab.className = 'topic-tab px-2.5 py-1 rounded-lg bg-blue-600/30 border border-blue-500 text-blue-200 whitespace-nowrap font-medium transition';
+        activeTab.className = isEli6 
+          ? 'topic-tab px-2.5 py-1 rounded-lg bg-amber-500/30 border border-amber-400 text-amber-200 whitespace-nowrap font-medium transition shadow'
+          : 'topic-tab px-2.5 py-1 rounded-lg bg-blue-600/30 border border-blue-500 text-blue-200 whitespace-nowrap font-medium transition shadow';
       }
+
+      // Automatically configure the simulation parameters to showcase this specific topic
+      if (configureDefaults) {
+        state.isPlaying = false;
+        const btnPlay = document.getElementById('btnPlayPause');
+        if (btnPlay) btnPlay.textContent = '▶';
+
+        if (topicKey === 'cartesian') {
+          state.u = 20.0;
+          state.angleDeg = 36.9;
+          state.h = 0.0;
+          state.carrierVx = 0.0;
+          state.currentTime = 0.0;
+          setTarget(16.0, 7.0);
+        } else if (topicKey === 'direction') {
+          // u ⊥ v requires upward launch with sufficient airtime
+          state.u = 22.0;
+          state.angleDeg = 65.0;
+          state.h = 0.0;
+          state.carrierVx = 0.0;
+          clearTarget();
+          const kin = computeKinematics(state.u, state.angleDeg, state.h, 0);
+          state.currentTime = kin.tPerp ? kin.tPerp : 0;
+        } else if (topicKey === 'platform') {
+          state.u = 18.0;
+          state.angleDeg = 30.0;
+          state.h = 16.0;
+          state.carrierVx = 0.0;
+          state.currentTime = 0.0;
+          clearTarget();
+          const checkGhost = document.getElementById('checkGhost');
+          if (checkGhost) checkGhost.checked = true;
+        } else if (topicKey === 'elevation') {
+          state.u = 20.0;
+          state.angleDeg = 45.0;
+          state.h = 0.0;
+          state.carrierVx = 0.0;
+          clearTarget();
+          const checkSight = document.getElementById('checkSightLine');
+          if (checkSight) checkSight.checked = true;
+          state.currentTime = 1.4; // Mid-flight to show angle beta clearly
+        } else if (topicKey === 'curvefit') {
+          state.u = 20.0;
+          state.angleDeg = 36.9;
+          state.h = 0.0;
+          state.carrierVx = 0.0;
+          state.currentTime = 0.0;
+          clearTarget();
+        }
+
+        // Synchronize UI inputs and labels
+        syncControlsToState();
+      }
+
       draw();
       renderExplanations();
+    }
+
+    function syncControlsToState() {
+      const sliderU = document.getElementById('sliderU');
+      const sliderAngle = document.getElementById('sliderAngle');
+      const sliderH = document.getElementById('sliderH');
+      const sliderCarrier = document.getElementById('sliderCarrier');
+
+      if (sliderU) {
+        sliderU.value = state.u;
+        document.getElementById('labelU').textContent = `${state.u.toFixed(1)} m/s`;
+      }
+      if (sliderAngle) {
+        sliderAngle.value = state.angleDeg;
+        const desc = state.angleDeg >= 0 ? `${state.angleDeg.toFixed(1)}° (Elevation)` : `${Math.abs(state.angleDeg).toFixed(1)}° (Depression)`;
+        document.getElementById('labelAngle').textContent = desc;
+      }
+      if (sliderH) {
+        sliderH.value = state.h;
+        document.getElementById('labelH').textContent = state.h === 0 ? '0.0 m (Ground level)' : `${state.h.toFixed(1)} m (Cliff)`;
+      }
+      if (sliderCarrier) {
+        sliderCarrier.value = state.carrierVx;
+        document.getElementById('labelCarrier').textContent = `${state.carrierVx.toFixed(1)} m/s`;
+      }
     }
 
     function setMode(newMode) {
@@ -1611,24 +1908,47 @@
       const btnEli6 = document.getElementById('btnEli6Mode');
       const root = document.getElementById('bodyRoot');
       const badgeIcon = document.getElementById('badgeIcon');
+      const appTitle = document.getElementById('appTitle');
+      const subBadge = document.getElementById('subBadge');
+      const appSubtitle = document.getElementById('appSubtitle');
 
       if (newMode === 'exam') {
-        btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-blue-600 text-white shadow';
-        btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-amber-300 transition-all';
-        root.classList.remove('eli6-mode');
-        badgeIcon.textContent = '🚀';
-        badgeIcon.className = 'w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xl shadow-inner';
-        document.getElementById('appTitle').textContent = 'CAIE 9231 / 9709 Projectiles Laboratory';
-        document.getElementById('subBadge').textContent = 'Ch 13: Projectiles & Trajectories';
+        if (btnExam) btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-blue-600 text-white shadow';
+        if (btnEli6) btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-amber-300 transition-all';
+        if (root) root.classList.remove('eli6-mode');
+        if (badgeIcon) {
+          badgeIcon.textContent = '🚀';
+          badgeIcon.className = 'w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xl shadow-inner';
+        }
+        if (appTitle) appTitle.textContent = 'CAIE 9231 / 9709 Projectiles Laboratory';
+        if (subBadge) {
+          subBadge.textContent = 'Ch 13: Projectiles & Trajectories';
+          subBadge.className = 'text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-950 text-blue-300 border border-blue-700/60';
+        }
+        if (appSubtitle) {
+          appSubtitle.innerHTML = 'Newtonian mechanics, Cartesian trajectory equation $y = x\\tan\\theta - \\frac{gx^2}{2u^2}(1+\\tan^2\\theta)$, $g = 10\\text{ ms}^{-2}$';
+        }
       } else {
-        btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 font-bold shadow';
-        btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-blue-300 transition-all';
-        root.classList.add('eli6-mode');
-        badgeIcon.textContent = '🧸';
-        badgeIcon.className = 'w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-xl shadow-inner';
-        document.getElementById('appTitle').textContent = 'The Flying Ball Adventure!';
-        document.getElementById('subBadge').textContent = 'Kids Science Lab';
+        if (btnEli6) btnEli6.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950 font-bold shadow';
+        if (btnExam) btnExam.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-blue-300 transition-all';
+        if (root) root.classList.add('eli6-mode');
+        if (badgeIcon) {
+          badgeIcon.textContent = '🧸';
+          badgeIcon.className = 'w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-xl shadow-inner';
+        }
+        if (appTitle) appTitle.textContent = 'The Great Flying Ball Adventure!';
+        if (subBadge) {
+          subBadge.textContent = 'Kids Science Lab';
+          subBadge.className = 'text-[11px] px-2 py-0.5 rounded-full font-semibold bg-amber-950 text-amber-300 border border-amber-700/60';
+        }
+        if (appSubtitle) {
+          appSubtitle.innerHTML = 'Watch how sideways skating and downward gravity make the flying ball curve through the air!';
+        }
       }
+
+      updateTabLabels();
+      selectTopic(state.currentTopic, false);
+      refreshStaticMath();
       draw();
       renderExplanations();
     }
@@ -1746,6 +2066,10 @@
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
 
+      // Perform initial KaTeX typesetting for header, tabs, and static labels
+      updateTabLabels();
+      refreshStaticMath();
+
       loadPreset('standard');
       requestAnimationFrame(animate);
     });
@@ -1769,7 +2093,7 @@
 
     // 2. Identify Target in Vectors.html vs Tailwind Pages
     const brandIcon = document.querySelector('.brand .brand-icon'); // Vectors.html
-    const tailwindIcon = document.querySelector('header .w-10.h-10'); // All other pages
+    const tailwindIcon = document.querySelector('header .header-logo-slot'); // Avoid matching badgeIcon
 
     const target = brandIcon || tailwindIcon;
     if (!target) return;
@@ -1826,7 +2150,7 @@
 
   window.addEventListener('load', () => {
     applyLogo();
-    // Safety delay for async renderMath(document.body) calls
+    // Safety delay for async renderMath calls
     setTimeout(applyLogo, 250);
   });
 })();
